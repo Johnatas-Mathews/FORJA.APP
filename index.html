@@ -72,12 +72,9 @@
 </head>
 <body class="min-h-screen flex flex-col font-sans pb-24 selection:bg-brand-lime selection:text-black">
 
-  <!-- ================= AUTH GATEWAY (TELA DE LOGIN/CADASTRO) ================= -->
+  <!-- AUTH GATEWAY -->
   <div id="authGate" class="fixed inset-0 z-50 bg-[#07090c] flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-[#111620] tactical-border rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-      <div class="absolute -top-24 -left-24 w-48 h-48 bg-brand-lime/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute -top-24 -right-24 w-48 h-48 bg-brand-fire/10 rounded-full blur-3xl pointer-events-none"></div>
-
       <div class="text-center mb-8 relative">
         <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-lime to-emerald-600 text-black shadow-lg mb-3">
           <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -89,10 +86,10 @@
       </div>
 
       <div class="flex bg-slate-900/80 p-1 rounded-xl tactical-border mb-6">
-        <button type="button" id="btnTabLogin" onclick="switchAuthMode('login')" class="flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all bg-brand-lime text-black">
+        <button id="btnTabLogin" onclick="switchAuthMode('login')" class="flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all bg-brand-lime text-black">
           ENTRAR
         </button>
-        <button type="button" id="btnTabRegister" onclick="switchAuthMode('register')" class="flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all text-slate-400 hover:text-white">
+        <button id="btnTabRegister" onclick="switchAuthMode('register')" class="flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all text-slate-400 hover:text-white">
           CRIAR CONTA
         </button>
       </div>
@@ -102,12 +99,10 @@
           <label class="block text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-1">E-mail</label>
           <input type="email" id="authEmail" required placeholder="seu@email.com" class="w-full bg-slate-950/80 tactical-border rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-brand-lime transition-all" />
         </div>
-
         <div>
           <label class="block text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-1">Senha</label>
           <input type="password" id="authPassword" required minlength="6" placeholder="••••••••" class="w-full bg-slate-950/80 tactical-border rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-brand-lime transition-all" />
         </div>
-
         <button type="submit" id="authSubmitBtn" class="w-full py-3.5 bg-brand-lime text-black font-mono font-black text-sm uppercase tracking-wider rounded-xl hover:brightness-110 active:scale-[0.98] transition-all glow-lime mt-2 flex items-center justify-center gap-2">
           <span id="authSubmitText">ACESSAR MINHA CONTA</span>
           <svg id="authSpinner" class="w-4 h-4 animate-spin hidden" viewBox="0 0 24 24" fill="none">
@@ -119,12 +114,10 @@
     </div>
   </div>
 
-  <!-- ================= TOP BAR ================= -->
+  <!-- TOP BAR -->
   <header class="sticky top-0 z-30 bg-[#07090c]/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 flex items-center justify-between">
     <div class="flex items-center gap-2">
-      <div class="w-8 h-8 rounded-lg bg-brand-lime flex items-center justify-center text-black font-black text-sm">
-        F
-      </div>
+      <div class="w-8 h-8 rounded-lg bg-brand-lime flex items-center justify-center text-black font-black text-sm">F</div>
       <div>
         <h1 class="text-lg font-display font-black tracking-wide leading-none">FORJA</h1>
         <p class="text-[9px] font-mono text-brand-lime tracking-widest uppercase">Construa sua evolução</p>
@@ -141,13 +134,11 @@
     </div>
   </header>
 
-  <!-- ================= CONTEÚDO PRINCIPAL (5 TELAS) ================= -->
+  <!-- TELAS -->
   <main class="flex-1 max-w-xl w-full mx-auto p-4">
-
-    <!-- 1. TELA: INÍCIO -->
+    <!-- INÍCIO -->
     <section id="screen-home" class="space-y-5">
       <div class="bg-gradient-to-br from-[#111620] to-[#151c2a] rounded-2xl p-5 tactical-border relative overflow-hidden">
-        <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-brand-lime/10 rounded-full blur-2xl pointer-events-none"></div>
         <div class="flex justify-between items-start mb-3">
           <div>
             <span class="text-[10px] font-mono uppercase tracking-widest text-brand-lime">Sequência Atual</span>
@@ -156,8 +147,7 @@
           <span class="px-2 py-0.5 rounded bg-brand-lime/10 text-brand-lime border border-brand-lime/20 text-[11px] font-mono font-bold">FASE DE FORÇA</span>
         </div>
         <p id="nextWorkoutDesc" class="text-xs text-slate-400 mb-4">Rotina focada em hipertrofia e progressão de carga linear.</p>
-        <button onclick="quickStartTemplate()" class="w-full py-3 bg-brand-lime text-black font-mono font-bold text-xs uppercase tracking-wider rounded-xl hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 glow-lime">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /></svg>
+        <button onclick="quickStartTemplate()" class="w-full py-3 bg-brand-lime text-black font-mono font-bold text-xs uppercase tracking-wider rounded-xl hover:brightness-110 flex items-center justify-center gap-2 glow-lime">
           INICIAR ESTA SESSÃO AGORA
         </button>
       </div>
@@ -182,7 +172,7 @@
       </div>
     </section>
 
-    <!-- 2. TELA: MINHAS FICHAS -->
+    <!-- FICHAS -->
     <section id="screen-templates" class="hidden space-y-4">
       <div class="flex justify-between items-center mb-1">
         <div>
@@ -190,30 +180,26 @@
           <p class="text-xs text-slate-400">Rotinas organizadas por divisões</p>
         </div>
         <button onclick="openCreateTemplateModal()" class="px-3 py-1.5 bg-brand-lime text-black font-mono font-bold text-xs rounded-lg hover:brightness-110 flex items-center gap-1.5">
-          <span>+ Nova Ficha</span>
+          + Nova Ficha
         </button>
       </div>
       <div id="templatesList" class="space-y-3"></div>
     </section>
 
-    <!-- 3. TELA: TREINAR (EXECUÇÃO) -->
+    <!-- TREINAR -->
     <section id="screen-workout" class="hidden space-y-4">
       <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
         <div class="flex justify-between items-center">
           <input type="text" id="activeWorkoutName" value="Treino Força" class="bg-transparent text-lg font-display font-extrabold text-white focus:outline-none focus:border-b border-brand-lime w-2/3" />
           <span id="workoutTimer" class="text-xs font-mono bg-slate-900 px-2 py-1 rounded text-slate-400">00:00</span>
         </div>
-        <div class="flex items-center gap-2">
-          <select id="workoutTemplateSelect" onchange="loadTemplateIntoWorkout(this.value)" class="bg-slate-900 border border-slate-800 text-xs rounded-lg px-2.5 py-1.5 text-slate-300 w-full focus:outline-none focus:border-brand-lime">
-            <option value="">Carregar de uma Ficha...</option>
-          </select>
-        </div>
+        <select id="workoutTemplateSelect" onchange="loadTemplateIntoWorkout(this.value)" class="bg-slate-900 border border-slate-800 text-xs rounded-lg px-2.5 py-1.5 text-slate-300 w-full focus:outline-none focus:border-brand-lime">
+          <option value="">Carregar de uma Ficha...</option>
+        </select>
       </div>
-
       <div id="activeExercisesList" class="space-y-4"></div>
-
       <div class="flex gap-2">
-        <button onclick="openExerciseLibraryModal('workout')" class="flex-1 py-2.5 bg-slate-900 border border-slate-800 hover:border-slate-700 text-white font-mono text-xs rounded-xl flex items-center justify-center gap-1.5">
+        <button onclick="openExerciseLibraryModal('workout')" class="flex-1 py-2.5 bg-slate-900 border border-slate-800 text-white font-mono text-xs rounded-xl">
           + Arsenal de Exercícios
         </button>
         <button onclick="finishAndSaveWorkout()" class="flex-1 py-2.5 bg-brand-lime text-black font-mono font-bold text-xs rounded-xl hover:brightness-110 glow-lime">
@@ -222,69 +208,55 @@
       </div>
     </section>
 
-    <!-- 4. TELA: EVOLUÇÃO (GRÁFICOS & HISTÓRICO) -->
+    <!-- EVOLUÇÃO -->
     <section id="screen-progress" class="hidden space-y-5">
       <div>
         <h2 class="text-lg font-display font-extrabold text-white">Evolução & Análise</h2>
-        <p class="text-xs text-slate-400">Progressão de cargas e registros de treino</p>
+        <p class="text-xs text-slate-400">Progressão de cargas e registros</p>
       </div>
-
       <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
         <div class="flex justify-between items-center">
           <label class="text-[11px] font-mono uppercase text-slate-400">Exercício Monitorado</label>
-          <select id="progressExerciseSelect" onchange="updateProgressChart()" class="bg-slate-900 border border-slate-800 text-xs text-white rounded-lg px-2 py-1 focus:outline-none">
-          </select>
+          <select id="progressExerciseSelect" onchange="updateProgressChart()" class="bg-slate-900 border border-slate-800 text-xs text-white rounded-lg px-2 py-1 focus:outline-none"></select>
         </div>
-        <div class="h-56 relative">
-          <canvas id="progressChart"></canvas>
-        </div>
+        <div class="h-56 relative"><canvas id="progressChart"></canvas></div>
       </div>
-
       <div class="space-y-2">
         <h3 class="text-xs font-mono uppercase text-slate-400">Histórico de Treinos</h3>
         <div id="workoutsHistoryList" class="space-y-2"></div>
       </div>
     </section>
 
-    <!-- 5. TELA: PERFIL -->
+    <!-- PERFIL -->
     <section id="screen-profile" class="hidden space-y-4">
       <div>
         <h2 class="text-lg font-display font-extrabold text-white">Perfil & Configurações</h2>
         <p class="text-xs text-slate-400">Gerencie sua conta e sincronização</p>
       </div>
-
-      <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
-        <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-brand-lime font-mono font-bold text-lg">
-            ⚡
-          </div>
-          <div>
-            <p id="profileUserEmail" class="text-sm font-mono font-bold text-white">atleta@forja.app</p>
-            <span class="text-[11px] text-brand-lime font-mono">Conta Sincronizada com Supabase</span>
-          </div>
+      <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3 flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-brand-lime text-lg">⚡</div>
+        <div>
+          <p id="profileUserEmail" class="text-sm font-mono font-bold text-white">atleta@forja.app</p>
+          <span class="text-[11px] text-brand-lime font-mono">Conectado ao Supabase</span>
         </div>
       </div>
-
       <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-2">
-        <span class="text-[10px] font-mono uppercase text-slate-500">Dados da Aplicação</span>
-        <div class="flex justify-between items-center py-2 border-b border-slate-800/60 text-xs font-mono">
+        <div class="flex justify-between py-2 border-b border-slate-800 text-xs font-mono">
           <span class="text-slate-400">Treinos Registrados</span>
           <span id="profileWorkoutsCount" class="text-white font-bold">0</span>
         </div>
-        <div class="flex justify-between items-center py-2 border-b border-slate-800/60 text-xs font-mono">
+        <div class="flex justify-between py-2 border-b border-slate-800 text-xs font-mono">
           <span class="text-slate-400">Fichas Cadastradas</span>
           <span id="profileTemplatesCount" class="text-white font-bold">0</span>
         </div>
-        <div class="pt-2">
-          <button onclick="handleLogout()" class="w-full py-2.5 bg-red-950/40 border border-red-800/40 text-red-400 font-mono text-xs rounded-xl hover:bg-red-900/30">
-            Encerrar Sessão (Logout)
-          </button>
-        </div>
+        <button onclick="handleLogout()" class="w-full py-2.5 mt-2 bg-red-950/40 border border-red-800/40 text-red-400 font-mono text-xs rounded-xl">
+          Encerrar Sessão (Logout)
+        </button>
       </div>
     </section>
   </main>
 
-  <!-- ================= CRONÔMETRO DE DESCANSO FLUTUANTE ================= -->
+  <!-- CRONÔMETRO FLUTUANTE -->
   <div id="restTimerWidget" class="fixed bottom-20 right-4 z-40 bg-[#111620] tactical-border rounded-2xl p-3 shadow-2xl flex items-center gap-3 hidden">
     <div class="relative w-11 h-11 flex items-center justify-center">
       <svg class="w-full h-full transform -rotate-90">
@@ -296,57 +268,50 @@
     <div>
       <span class="text-[10px] font-mono text-slate-400 uppercase block">Descanso</span>
       <div class="flex items-center gap-1 mt-0.5">
-        <button onclick="addRestTime(30)" class="text-[10px] font-mono bg-slate-900 hover:bg-slate-800 px-1.5 py-0.5 rounded text-brand-lime border border-slate-800">+30s</button>
-        <button onclick="cancelRestTimer()" class="text-[10px] font-mono bg-slate-900 hover:bg-slate-800 px-1.5 py-0.5 rounded text-red-400 border border-slate-800">Parar</button>
+        <button onclick="addRestTime(30)" class="text-[10px] font-mono bg-slate-900 px-1.5 py-0.5 rounded text-brand-lime border border-slate-800">+30s</button>
+        <button onclick="cancelRestTimer()" class="text-[10px] font-mono bg-slate-900 px-1.5 py-0.5 rounded text-red-400 border border-slate-800">Parar</button>
       </div>
     </div>
   </div>
 
-  <!-- ================= DOCK DE NAVEGAÇÃO INFERIOR ================= -->
+  <!-- NAVEGAÇÃO INFERIOR -->
   <nav class="fixed bottom-0 left-0 right-0 z-40 bottom-dock px-3 py-2">
     <div class="max-w-md mx-auto grid grid-cols-5 gap-1 text-center font-mono">
       <button onclick="switchTab('home')" id="tab-home" class="flex flex-col items-center py-1 text-brand-lime">
-        <svg class="w-5 h-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+        <span class="text-xs">🏠</span>
         <span class="text-[9px] uppercase tracking-wider">Início</span>
       </button>
-
       <button onclick="switchTab('templates')" id="tab-templates" class="flex flex-col items-center py-1 text-slate-400 hover:text-white">
-        <svg class="w-5 h-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+        <span class="text-xs">📋</span>
         <span class="text-[9px] uppercase tracking-wider">Fichas</span>
       </button>
-
       <button onclick="switchTab('workout')" id="tab-workout" class="flex flex-col items-center py-1 text-slate-400 hover:text-white relative">
-        <div class="absolute -top-3 w-8 h-8 rounded-full bg-brand-lime text-black flex items-center justify-center shadow-lg font-bold">
-          ⚡
-        </div>
-        <span class="text-[9px] uppercase tracking-wider mt-4">Treinar</span>
+        <div class="w-7 h-7 rounded-full bg-brand-lime text-black flex items-center justify-center font-bold text-xs -mt-1 mb-0.5">⚡</div>
+        <span class="text-[9px] uppercase tracking-wider">Treinar</span>
       </button>
-
       <button onclick="switchTab('progress')" id="tab-progress" class="flex flex-col items-center py-1 text-slate-400 hover:text-white">
-        <svg class="w-5 h-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+        <span class="text-xs">📈</span>
         <span class="text-[9px] uppercase tracking-wider">Evolução</span>
       </button>
-
       <button onclick="switchTab('profile')" id="tab-profile" class="flex flex-col items-center py-1 text-slate-400 hover:text-white">
-        <svg class="w-5 h-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+        <span class="text-xs">👤</span>
         <span class="text-[9px] uppercase tracking-wider">Perfil</span>
       </button>
     </div>
   </nav>
 
-  <!-- ================= MODAL: ARSENAL EXPANDIDO DE EXERCÍCIOS ================= -->
+  <!-- MODAL: ARSENAL -->
   <div id="modalExerciseLibrary" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-[#111620] tactical-border rounded-2xl w-full max-w-lg p-5 space-y-4 max-h-[85vh] flex flex-col">
       <div class="flex justify-between items-center">
         <div>
           <h3 class="text-base font-display font-bold text-white">Arsenal de Exercícios</h3>
-          <p class="text-xs text-slate-400">Mais de 65 variações com análise biomecânica</p>
+          <p class="text-xs text-slate-400">65+ variações biomecânicas</p>
         </div>
         <button onclick="closeExerciseLibraryModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
       </div>
-
       <div class="space-y-2">
-        <input type="text" id="librarySearchInput" oninput="filterExerciseLibrary()" placeholder="Buscar por exercício, equipamento ou músculo..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-brand-lime" />
+        <input type="text" id="librarySearchInput" oninput="filterExerciseLibrary()" placeholder="Buscar por exercício ou músculo..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-brand-lime" />
         <div class="flex gap-1.5 overflow-x-auto pb-1 text-[11px] font-mono scrollbar-none" id="libraryFilterButtons">
           <button onclick="filterByGroup('Todos')" class="px-2.5 py-1 rounded bg-brand-lime text-black font-bold whitespace-nowrap">Todos</button>
           <button onclick="filterByGroup('Peito')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white whitespace-nowrap">Peito</button>
@@ -356,16 +321,13 @@
           <button onclick="filterByGroup('Bíceps')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white whitespace-nowrap">Bíceps</button>
           <button onclick="filterByGroup('Tríceps')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white whitespace-nowrap">Tríceps</button>
           <button onclick="filterByGroup('Abdômen')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white whitespace-nowrap">Abdômen</button>
-          <button onclick="filterByGroup('Trapézio')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white whitespace-nowrap">Trapézio</button>
-          <button onclick="filterByGroup('Antebraço')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white whitespace-nowrap">Antebraço</button>
         </div>
       </div>
-
       <div id="libraryListContainer" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
     </div>
   </div>
 
-  <!-- ================= MODAL: DETALHE VISUAL / EXECUÇÃO DO EXERCÍCIO ================= -->
+  <!-- MODAL: DETALHE VISUAL -->
   <div id="modalExerciseDetail" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="bg-[#111620] tactical-border rounded-2xl w-full max-w-sm p-5 space-y-4 relative">
       <button onclick="closeExerciseDetailModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">&times;</button>
@@ -374,23 +336,18 @@
         <h3 id="detailExerciseName" class="text-lg font-display font-extrabold text-white mt-1">Supino Reto</h3>
         <p id="detailEquipment" class="text-[10px] font-mono text-slate-400">Equipamento: Barra</p>
       </div>
-
       <div class="w-full h-44 bg-slate-950 rounded-xl tactical-border relative flex items-center justify-center overflow-hidden">
-        <img id="detailExerciseImg" src="" alt="Demonstração do Exercício" class="w-full h-full object-contain p-2" onerror="this.src='https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press/0.jpg'" />
-        <div class="absolute bottom-2 left-2 bg-slate-900/90 border border-slate-800 px-2 py-0.5 rounded text-[9px] font-mono text-brand-lime">
-          PADRÃO BIOMECÂNICO
-        </div>
+        <img id="detailExerciseImg" src="" alt="Demonstração" class="w-full h-full object-contain p-2" onerror="this.src='https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press/0.jpg'" />
       </div>
-
       <div class="text-xs text-slate-300 space-y-2 bg-slate-900/60 p-3.5 rounded-xl tactical-border">
-        <p><strong class="text-brand-lime font-mono">Foco Principal:</strong> <span id="detailMuscles">Peitoral Maior</span></p>
-        <p><strong class="text-brand-lime font-mono">Biomecânica:</strong> <span id="detailTips">Desça controlando a carga até a linha dos mamilos.</span></p>
+        <p><strong class="text-brand-lime font-mono">Foco:</strong> <span id="detailMuscles">Peitoral Maior</span></p>
+        <p><strong class="text-brand-lime font-mono">Dica:</strong> <span id="detailTips">Desça controlando a carga até o peitoral.</span></p>
       </div>
       <button onclick="closeExerciseDetailModal()" class="w-full py-2.5 bg-slate-800 text-white font-mono text-xs font-bold rounded-xl hover:bg-slate-700">Fechar</button>
     </div>
   </div>
 
-  <!-- ================= MODAL DE NOVA FICHA ================= -->
+  <!-- MODAL: NOVA FICHA -->
   <div id="modalNewTemplate" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-[#111620] tactical-border rounded-2xl w-full max-w-md p-5 space-y-4">
       <div class="flex justify-between items-center">
@@ -399,20 +356,14 @@
       </div>
       <input type="text" id="tplNameInput" placeholder="Ex: Treino C - Pernas Completo" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-brand-lime" />
       <input type="text" id="tplDivisionInput" placeholder="Divisão (Ex: C, Costas, Push)" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-brand-lime" />
-      
       <div class="space-y-2">
         <label class="text-[11px] font-mono text-slate-400 uppercase">Exercícios da Ficha</label>
         <div id="tplExerciseInputs" class="space-y-2 max-h-48 overflow-y-auto"></div>
         <div class="flex gap-2">
-          <button onclick="addTplExerciseRow()" class="flex-1 py-2 bg-slate-900 border border-dashed border-slate-700 text-slate-300 font-mono text-xs rounded-lg hover:border-brand-lime">
-            + Digitar Manual
-          </button>
-          <button onclick="openExerciseLibraryModal('template')" class="flex-1 py-2 bg-slate-900 border border-brand-lime/30 text-brand-lime font-mono text-xs rounded-lg hover:border-brand-lime">
-            + Do Arsenal
-          </button>
+          <button onclick="addTplExerciseRow()" class="flex-1 py-2 bg-slate-900 border border-dashed border-slate-700 text-slate-300 font-mono text-xs rounded-lg hover:border-brand-lime">+ Manual</button>
+          <button onclick="openExerciseLibraryModal('template')" class="flex-1 py-2 bg-slate-900 border border-brand-lime/30 text-brand-lime font-mono text-xs rounded-lg hover:border-brand-lime">+ Do Arsenal</button>
         </div>
       </div>
-
       <div class="flex gap-2 pt-2">
         <button onclick="closeCreateTemplateModal()" class="flex-1 py-2 bg-slate-900 text-slate-400 font-mono text-xs rounded-lg">Cancelar</button>
         <button onclick="saveNewTemplate()" class="flex-1 py-2 bg-brand-lime text-black font-mono font-bold text-xs rounded-lg">Salvar Ficha</button>
@@ -420,1290 +371,8 @@
     </div>
   </div>
 
-  <!-- ================= SCRIPTS EMBUTIDOS DIRETOS ================= -->
-  <script>
-    const BASE_IMG_URL = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/";
-
-    const EXERCISE_DATABASE = [
-      // PEITO
-      {
-        id: 'bench-press-barbell',
-        name: 'Supino Reto com Barra',
-        group: 'Peito',
-        equipment: 'Barra Olímpica',
-        muscles: 'Peitoral Maior (Fibras médias), Tríceps, Deltóide Anterior',
-        tips: 'Pés plantados no chão, escápulas em retração contínua e barra tocando a linha dos mamilos.',
-        img: BASE_IMG_URL + 'Barbell_Bench_Press/0.jpg'
-      },
-      {
-        id: 'bench-press-dumbbell',
-        name: 'Supino Reto com Halteres',
-        group: 'Peito',
-        equipment: 'Halteres & Banco Reto',
-        muscles: 'Peitoral Maior, Estabilizadores do Ombro',
-        tips: 'Permite maior amplitude de descida do que a barra; não bata os halteres no topo.',
-        img: BASE_IMG_URL + 'Dumbbell_Bench_Press/0.jpg'
-      },
-      {
-        id: 'incline-barbell-press',
-        name: 'Supino Inclinado com Barra',
-        group: 'Peito',
-        equipment: 'Barra Olímpica & Banco 30°',
-        muscles: 'Peitoral Superior (Porção Clavicular)',
-        tips: 'Desça a barra na região alta do peito, logo abaixo da clavícula.',
-        img: BASE_IMG_URL + 'Barbell_Incline_Bench_Press/0.jpg'
-      },
-      {
-        id: 'incline-dumbbell-press',
-        name: 'Supino Inclinado com Halteres',
-        group: 'Peito',
-        equipment: 'Halteres & Banco 30°/45°',
-        muscles: 'Peitoral Superior, Deltóide Anterior',
-        tips: 'Evite inclinação além de 45° para não transformar o exercício em desenvolvimento de ombros.',
-        img: BASE_IMG_URL + 'Incline_Dumbbell_Press/0.jpg'
-      },
-      {
-        id: 'decline-barbell-press',
-        name: 'Supino Declinado com Barra',
-        group: 'Peito',
-        equipment: 'Barra Olímpica & Banco Declinado',
-        muscles: 'Peitoral Inferior (Porção Costal)',
-        tips: 'Excelente ativação de peitoral inferior com menor sobrecarga na articulação do ombro.',
-        img: BASE_IMG_URL + 'Decline_Barbell_Bench_Press/0.jpg'
-      },
-      {
-        id: 'chest-dips',
-        name: 'Paralelas com Foco em Peitoral',
-        group: 'Peito',
-        equipment: 'Barras Paralelas / Graviton',
-        muscles: 'Peitoral Inferior, Tríceps, Core',
-        tips: 'Incline o tronco levemente para a frente e afaste ligeiramente os cotovelos.',
-        img: BASE_IMG_URL + 'Chest_Dips/0.jpg'
-      },
-      {
-        id: 'cable-crossover-high',
-        name: 'Crossover na Polia Alta',
-        group: 'Peito',
-        equipment: 'Polia Dupla',
-        muscles: 'Peitoral Maior (Foco Inferior/Esternal)',
-        tips: 'Cruze levemente as mãos à frente da cintura mantendo os cotovelos com ângulo fixo.',
-        img: BASE_IMG_URL + 'Cable_Crossover/0.jpg'
-      },
-      {
-        id: 'cable-crossover-low',
-        name: 'Crossover na Polia Baixa',
-        group: 'Peito',
-        equipment: 'Polia Baixa Dupla',
-        muscles: 'Peitoral Superior e Clavicular',
-        tips: 'Puxe as alças de baixo para cima convergindo na altura dos olhos.',
-        img: BASE_IMG_URL + 'Low_Cable_Crossover/0.jpg'
-      },
-      {
-        id: 'dumbbell-flys',
-        name: 'Crucifixo Reto com Halteres',
-        group: 'Peito',
-        equipment: 'Halteres',
-        muscles: 'Peitoral Maior (Alongamento Máximo)',
-        tips: 'Mantenha os cotovelos semi-flexionados em todo o arco de abertura.',
-        img: BASE_IMG_URL + 'Dumbbell_Flyes/0.jpg'
-      },
-      {
-        id: 'peck-deck',
-        name: 'Voador / Peck Deck Máquina',
-        group: 'Peito',
-        equipment: 'Máquina',
-        muscles: 'Peitoral Maior (Isolamento contínuo)',
-        tips: 'Mantenha o peito estufado e não deixe os ombros serem puxados para frente.',
-        img: BASE_IMG_URL + 'Butterfly/0.jpg'
-      },
-      {
-        id: 'pushups',
-        name: 'Flexão de Braços no Solo',
-        group: 'Peito',
-        equipment: 'Peso Corporal',
-        muscles: 'Peitoral, Core, Tríceps',
-        tips: 'Mantenha a prancha perfeita sem deixar o quadril cair.',
-        img: BASE_IMG_URL + 'Pushups/0.jpg'
-      },
-
-      // COSTAS
-      {
-        id: 'pull-ups',
-        name: 'Barra Fixa Pronada (Pull-Up)',
-        group: 'Costas',
-        equipment: 'Barra Fixa',
-        muscles: 'Grande Dorsal (Largura), Redondo Maior, Bíceps',
-        tips: 'Inicie a subida puxando com as dorsais e não com os braços; queixo acima da barra.',
-        img: BASE_IMG_URL + 'Pullups/0.jpg'
-      },
-      {
-        id: 'chin-ups',
-        name: 'Barra Fixa Supinada (Chin-Up)',
-        group: 'Costas',
-        equipment: 'Barra Fixa',
-        muscles: 'Grande Dorsal e Bíceps Braquial',
-        tips: 'Palmas voltadas para você; forte ativação de bíceps com carga corporal.',
-        img: BASE_IMG_URL + 'Chin-Ups/0.jpg'
-      },
-      {
-        id: 'lat-pulldown-wide',
-        name: 'Puxada Frontal Aberta na Polia',
-        group: 'Costas',
-        equipment: 'Polia Alta',
-        muscles: 'Grande Dorsal, Redondo Maior',
-        tips: 'Puxe a barra em direção à fúrcula esternal projetando o peito para cima.',
-        img: BASE_IMG_URL + 'Wide-Grip_Lat_Pulldown/0.jpg'
-      },
-      {
-        id: 'lat-pulldown-close',
-        name: 'Puxada Frontal com Triângulo',
-        group: 'Costas',
-        equipment: 'Polia Alta & Triângulo',
-        muscles: 'Grande Dorsal (Fibras inferiores) e Bíceps',
-        tips: 'Pegada neutra que protege o ombro e permite puxar com grande sobrecarga.',
-        img: BASE_IMG_URL + 'V-bar_Pulldown/0.jpg'
-      },
-      {
-        id: 'bent-over-row-barbell',
-        name: 'Remada Curvada com Barra',
-        group: 'Costas',
-        equipment: 'Barra Olímpica',
-        muscles: 'Dorsais, Rombóides, Trapézio, Lombar',
-        tips: 'Tronco a 45 graus, coluna alinhada e puxe a barra rente à coxa até o umbigo.',
-        img: BASE_IMG_URL + 'Bent_Over_Barbell_Row/0.jpg'
-      },
-      {
-        id: 'seated-cable-row',
-        name: 'Remada Baixa no Triângulo',
-        group: 'Costas',
-        equipment: 'Polia Baixa',
-        muscles: 'Dorsais, Trapézio Médio/Inferior',
-        tips: 'Alongue as escápulas na ida e aperte as costas na volta sem usar a lombar como pêndulo.',
-        img: BASE_IMG_URL + 'Seated_Cable_Rows/0.jpg'
-      },
-      {
-        id: 'dumbbell-single-row',
-        name: 'Remada Unilateral com Halter (Serrote)',
-        group: 'Costas',
-        equipment: 'Halter & Banco',
-        muscles: 'Grande Dorsal, Redondo Maior',
-        tips: 'Traga o halter em direção ao quadril criando uma curva de alavanca natural.',
-        img: BASE_IMG_URL + 'One-Arm_Dumbbell_Row/0.jpg'
-      },
-      {
-        id: 't-bar-row',
-        name: 'Remada Cavalinho (Barra T)',
-        group: 'Costas',
-        equipment: 'Barra T / Apoio',
-        muscles: 'Espessura de Costas, Rombóides',
-        tips: 'Mantenha os joelhos semi-flexionados para absorver a carga na cadeia posterior.',
-        img: BASE_IMG_URL + 'T-Bar_Row/0.jpg'
-      },
-      {
-        id: 'straight-arm-pulldown',
-        name: 'Pulldown na Polia com Barra/Corda',
-        group: 'Costas',
-        equipment: 'Polia Alta',
-        muscles: 'Grande Dorsal (Isolamento)',
-        tips: 'Cotovelos destravados mas imóveis; desça apenas pela extensão do ombro.',
-        img: BASE_IMG_URL + 'Straight-Arm_Pulldown/0.jpg'
-      },
-      {
-        id: 'deadlift',
-        name: 'Levantamento Terra Clássico',
-        group: 'Costas',
-        equipment: 'Barra Olímpica',
-        muscles: 'Eretores da Espinha, Glúteos, Isquiotibiais, Trapézio',
-        tips: 'A barra deve subir rente às canelas; trave o abdômen e empurre o chão.',
-        img: BASE_IMG_URL + 'Barbell_Deadlift/0.jpg'
-      },
-
-      // PERNAS
-      {
-        id: 'back-squat',
-        name: 'Agachamento Livre com Barra',
-        group: 'Pernas',
-        equipment: 'Barra Olímpica & Rack',
-        muscles: 'Quadríceps, Glúteos, Isquiotibiais, Core',
-        tips: 'Base na largura dos ombros, ponta dos pés para fora e quebre a paralela de 90°.',
-        img: BASE_IMG_URL + 'Barbell_Full_Squat/0.jpg'
-      },
-      {
-        id: 'front-squat',
-        name: 'Agachamento Frontal com Barra',
-        group: 'Pernas',
-        equipment: 'Barra Olímpica',
-        muscles: 'Foco Total em Quadríceps e Core',
-        tips: 'Barra apoiada nos deltóides anteriores; tronco muito mais ereto durante a descida.',
-        img: BASE_IMG_URL + 'Front_Barbell_Squat/0.jpg'
-      },
-      {
-        id: 'leg-press-45',
-        name: 'Leg Press 45°',
-        group: 'Pernas',
-        equipment: 'Máquina 45°',
-        muscles: 'Quadríceps e Glúteos',
-        tips: 'Nunca tire a lombar do encosto e não trave os joelhos em hiperextensão.',
-        img: BASE_IMG_URL + 'Leg_Press/0.jpg'
-      },
-      {
-        id: 'hack-squat',
-        name: 'Agachamento Hack',
-        group: 'Pernas',
-        equipment: 'Máquina Hack',
-        muscles: 'Vasto Lateral e Quadríceps Geral',
-        tips: 'Estabilidade guiada para descer com profundidade máxima sem risco lombar.',
-        img: BASE_IMG_URL + 'Hack_Squat/0.jpg'
-      },
-      {
-        id: 'bulgarian-squat',
-        name: 'Agachamento Búlgaro com Halteres',
-        group: 'Pernas',
-        equipment: 'Halteres & Banco',
-        muscles: 'Quadríceps, Glúteo Médio/Máximo',
-        tips: 'Pé de trás suspenso no banco; desça o joelho traseiro quase até tocar o piso.',
-        img: BASE_IMG_URL + 'Dumbbell_Split_Squat/0.jpg'
-      },
-      {
-        id: 'leg-extension',
-        name: 'Cadeira Extensora',
-        group: 'Pernas',
-        equipment: 'Máquina',
-        muscles: 'Quadríceps (Isolamento / Reto Femoral)',
-        tips: 'Pausa isométrica de 1 segundo no pico de contração antes de descer.',
-        img: BASE_IMG_URL + 'Leg_Extensions/0.jpg'
-      },
-      {
-        id: 'romanian-deadlift',
-        name: 'Stiff / RDL com Barra',
-        group: 'Pernas',
-        equipment: 'Barra Olímpica',
-        muscles: 'Isquiotibiais (Posterior de Coxa) e Glúteos',
-        tips: 'Mantenha os joelhos com microflexão fixa e jogue a bacia para trás.',
-        img: BASE_IMG_URL + 'Romanian_Deadlift/0.jpg'
-      },
-      {
-        id: 'lying-leg-curl',
-        name: 'Mesa Flexora',
-        group: 'Pernas',
-        equipment: 'Máquina',
-        muscles: 'Isquiotibiais (Bíceps Femoral)',
-        tips: 'Pressione o quadril contra o estofado durante toda a fase concêntrica.',
-        img: BASE_IMG_URL + 'Lying_Leg_Curls/0.jpg'
-      },
-      {
-        id: 'seated-leg-curl',
-        name: 'Cadeira Flexora',
-        group: 'Pernas',
-        equipment: 'Máquina',
-        muscles: 'Isquiotibiais (Em posição alongada)',
-        tips: 'O ângulo do quadril sentado gera maior hipertrofia na cabeça longa do posterior.',
-        img: BASE_IMG_URL + 'Seated_Leg_Curl/0.jpg'
-      },
-      {
-        id: 'hip-thrust',
-        name: 'Elevação Pélvica com Barra',
-        group: 'Pernas',
-        equipment: 'Barra & Banco',
-        muscles: 'Glúteo Máximo',
-        tips: 'Apoio na altura das escápulas; trave os glúteos no topo por 1 segundo.',
-        img: BASE_IMG_URL + 'Barbell_Hip_Thrust/0.jpg'
-      },
-      {
-        id: 'standing-calf-raise',
-        name: 'Panturrilha em Pé no Smith / Degrau',
-        group: 'Pernas',
-        equipment: 'Smith / Máquina',
-        muscles: 'Gastrocnêmio',
-        tips: 'Alongamento máximo na descida e subida explosiva na ponta dos pés.',
-        img: BASE_IMG_URL + 'Standing_Calf_Raises/0.jpg'
-      },
-      {
-        id: 'seated-calf-raise',
-        name: 'Panturrilha Sentado (Gêmeos)',
-        group: 'Pernas',
-        equipment: 'Máquina',
-        muscles: 'Sóleo',
-        tips: 'Com os joelhos flexionados a 90°, o sóleo é o músculo predominante.',
-        img: BASE_IMG_URL + 'Seated_Calf_Raise/0.jpg'
-      },
-
-      // OMBROS
-      {
-        id: 'overhead-press-barbell',
-        name: 'Desenvolvimento Militar com Barra',
-        group: 'Ombros',
-        equipment: 'Barra Olímpica',
-        muscles: 'Deltóide Anterior, Tríceps, Core',
-        tips: 'Feito em pé; contraia os glúteos para blindar a coluna enquanto empurra a barra.',
-        img: BASE_IMG_URL + 'Standing_Military_Press/0.jpg'
-      },
-      {
-        id: 'seated-dumbbell-shoulder-press',
-        name: 'Desenvolvimento com Halteres Sentado',
-        group: 'Ombros',
-        equipment: 'Halteres & Banco 90°',
-        muscles: 'Deltóide Anterior e Lateral',
-        tips: 'Desça os halteres na linha das orelhas sem bater no retorno superior.',
-        img: BASE_IMG_URL + 'Dumbbell_Shoulder_Press/0.jpg'
-      },
-      {
-        id: 'lateral-raise-dumbbell',
-        name: 'Elevação Lateral com Halteres',
-        group: 'Ombros',
-        equipment: 'Halteres',
-        muscles: 'Deltóide Lateral (Largura de Ombros)',
-        tips: 'Cotovelo lidera o movimento até a linha do ombro; não balance o tronco.',
-        img: BASE_IMG_URL + 'Side_Lateral_Raise/0.jpg'
-      },
-      {
-        id: 'lateral-raise-cable',
-        name: 'Elevação Lateral na Polia Baixa',
-        group: 'Ombros',
-        equipment: 'Polia Baixa',
-        muscles: 'Deltóide Lateral (Tensão Contínua)',
-        tips: 'A polia mantém a tensão uniforme mesmo no início do movimento.',
-        img: BASE_IMG_URL + 'Cable_One_Arm_Lateral_Raise/0.jpg'
-      },
-      {
-        id: 'front-raise-dumbbell',
-        name: 'Elevação Frontal com Halteres',
-        group: 'Ombros',
-        equipment: 'Halteres',
-        muscles: 'Deltóide Anterior',
-        tips: 'Levante o halter alternado até a altura dos olhos com controle de descida.',
-        img: BASE_IMG_URL + 'Front_Dumbbell_Raise/0.jpg'
-      },
-      {
-        id: 'face-pull',
-        name: 'Face Pull na Polia com Corda',
-        group: 'Ombros',
-        equipment: 'Polia Alta & Corda',
-        muscles: 'Deltóide Posterior, Trapézio, Manguito Rotador',
-        tips: 'Puxe a corda em direção aos olhos separando as mãos e rodando os ombros para trás.',
-        img: BASE_IMG_URL + 'Face_Pull/0.jpg'
-      },
-      {
-        id: 'rear-delt-fly-dumbbell',
-        name: 'Crucifixo Invertido com Halteres',
-        group: 'Ombros',
-        equipment: 'Halteres',
-        muscles: 'Deltóide Posterior',
-        tips: 'Tronco inclinado para a frente; abra os braços como asas sentindo as costas altas.',
-        img: BASE_IMG_URL + 'Bent-Over_Rear_Delt_Raise/0.jpg'
-      },
-      {
-        id: 'arnold-press',
-        name: 'Desenvolvimento Arnold',
-        group: 'Ombros',
-        equipment: 'Halteres',
-        muscles: 'Deltóide Anterior, Lateral e Manguito',
-        tips: 'Inicie com as palmas voltadas para você e rode os punhos enquanto sobe a carga.',
-        img: BASE_IMG_URL + 'Arnold_Dumbbell_Press/0.jpg'
-      },
-
-      // BÍCEPS
-      {
-        id: 'barbell-bicep-curl',
-        name: 'Rosca Direta com Barra W',
-        group: 'Bíceps',
-        equipment: 'Barra W',
-        muscles: 'Bíceps Braquial, Braquial',
-        tips: 'Cotovelos colados nas costelas sem avançá-los durante a flexão do braço.',
-        img: BASE_IMG_URL + 'Barbell_Curl/0.jpg'
-      },
-      {
-        id: 'dumbbell-alternate-bicep-curl',
-        name: 'Rosca Alternada com Halteres',
-        group: 'Bíceps',
-        equipment: 'Halteres',
-        muscles: 'Bíceps Braquial (Com Supinação)',
-        tips: 'Inicie neutro e faça a supinação (gire a palma para cima) no ápice do movimento.',
-        img: BASE_IMG_URL + 'Alternate_Incline_Dumbbell_Curl/0.jpg'
-      },
-      {
-        id: 'incline-dumbbell-curl',
-        name: 'Rosca no Banco Inclinado',
-        group: 'Bíceps',
-        equipment: 'Halteres & Banco 45°',
-        muscles: 'Cabeça Longa do Bíceps (Pico)',
-        tips: 'O estiramento com os braços para trás gera estímulo hipertrófico diferenciado.',
-        img: BASE_IMG_URL + 'Incline_Dumbbell_Curl/0.jpg'
-      },
-      {
-        id: 'preacher-curl',
-        name: 'Rosca Scott com Barra W / Máquina',
-        group: 'Bíceps',
-        equipment: 'Banco Scott',
-        muscles: 'Cabeça Curta do Bíceps (Isolamento puro)',
-        tips: 'Não tire as axilas do apoio; controle a descida para não lesionar o tendão distal.',
-        img: BASE_IMG_URL + 'Preacher_Curl/0.jpg'
-      },
-      {
-        id: 'hammer-curl',
-        name: 'Rosca Martelo com Halteres',
-        group: 'Bíceps',
-        equipment: 'Halteres',
-        muscles: 'Braquial Anterior e Braquiorradial',
-        tips: 'Pegada neutra constante para aumentar a espessura e densidade do braço.',
-        img: BASE_IMG_URL + 'Hammer_Curls/0.jpg'
-      },
-      {
-        id: 'cable-bicep-curl',
-        name: 'Rosca na Polia Baixa',
-        group: 'Bíceps',
-        equipment: 'Polia Baixa & Barra Reta',
-        muscles: 'Bíceps Braquial',
-        tips: 'Cabo garante tração angular contínua em todo o arco articular.',
-        img: BASE_IMG_URL + 'Cable_Curl/0.jpg'
-      },
-      {
-        id: 'concentration-curl',
-        name: 'Rosca Concentrada',
-        group: 'Bíceps',
-        equipment: 'Halter & Banco',
-        muscles: 'Pico de Bíceps',
-        tips: 'Cotovelo apoiado na parte interna da coxa; elimine qualquer inércia corporal.',
-        img: BASE_IMG_URL + 'Concentration_Curls/0.jpg'
-      },
-
-      // TRÍCEPS
-      {
-        id: 'triceps-pushdown-rope',
-        name: 'Tríceps Corda na Polia Alta',
-        group: 'Tríceps',
-        equipment: 'Polia Alta & Corda',
-        muscles: 'Tríceps (Cabeça Lateral)',
-        tips: 'Abra a corda no final da descida para contração em pico de 1 segundo.',
-        img: BASE_IMG_URL + 'Triceps_Pushdown_-_Rope_Attachment/0.jpg'
-      },
-      {
-        id: 'triceps-pushdown-bar',
-        name: 'Tríceps Barra Reta na Polia',
-        group: 'Tríceps',
-        equipment: 'Polia Alta & Barra',
-        muscles: 'Tríceps (Cabeça Medial e Lateral)',
-        tips: 'Permite o uso de cargas mais altas com grande estabilidade de punho.',
-        img: BASE_IMG_URL + 'Triceps_Pushdown/0.jpg'
-      },
-      {
-        id: 'skull-crushers',
-        name: 'Tríceps Testa com Barra W',
-        group: 'Tríceps',
-        equipment: 'Barra W & Banco Reto',
-        muscles: 'Cabeça Longa e Medial do Tríceps',
-        tips: 'Desça a barra controladamente em direção à testa ou atrás do topo da cabeça.',
-        img: BASE_IMG_URL + 'Lying_Triceps_Press/0.jpg'
-      },
-      {
-        id: 'overhead-cable-extension',
-        name: 'Tríceps Francês na Polia com Corda',
-        group: 'Tríceps',
-        equipment: 'Polia Média/Alta',
-        muscles: 'Cabeça Longa do Tríceps (Alongamento)',
-        tips: 'Braços estendidos acima da cabeça atacam a maior porção do tríceps.',
-        img: BASE_IMG_URL + 'Cable_Rope_Overhead_Triceps_Extension/0.jpg'
-      },
-      {
-        id: 'close-grip-bench-press',
-        name: 'Supino com Pegada Fechada',
-        group: 'Tríceps',
-        equipment: 'Barra Olímpica & Banco Reto',
-        muscles: 'Tríceps e Peitoral Central',
-        tips: 'Mãos na largura dos ombros; mantenha os cotovelos junto às costelas.',
-        img: BASE_IMG_URL + 'Close-Grip_Barbell_Bench_Press/0.jpg'
-      },
-      {
-        id: 'bench-dips',
-        name: 'Tríceps no Banco (Mergulho)',
-        group: 'Tríceps',
-        equipment: 'Banco',
-        muscles: 'Tríceps Geral',
-        tips: 'Mãos apoiadas no banco por trás; desça o corpo mantendo a coluna rente ao estofado.',
-        img: BASE_IMG_URL + 'Bench_Dips/0.jpg'
-      },
-      {
-        id: 'dumbbell-kickback',
-        name: 'Tríceps Coice com Halter',
-        group: 'Tríceps',
-        equipment: 'Halter',
-        muscles: 'Tríceps (Foco no encurtamento total)',
-        tips: 'Braço paralelo ao chão; estenda o antebraço travando o cotovelo no lugar.',
-        img: BASE_IMG_URL + 'Tricep_Dumbbell_Kickback/0.jpg'
-      },
-
-      // ABDÔMEN & CORE
-      {
-        id: 'hanging-leg-raise',
-        name: 'Elevação de Pernas na Barra Fixa',
-        group: 'Abdômen',
-        equipment: 'Barra Fixa',
-        muscles: 'Reto Abdominal (Porção Infra)',
-        tips: 'Enrole a pelve na subida em vez de apenas elevar as coxas pelos flexores.',
-        img: BASE_IMG_URL + 'Hanging_Leg_Raise/0.jpg'
-      },
-      {
-        id: 'cable-crunch',
-        name: 'Abdominal na Polia Alta (Cable Crunch)',
-        group: 'Abdômen',
-        equipment: 'Polia Alta & Corda',
-        muscles: 'Reto Abdominal Geral',
-        tips: 'Ajoelhe-se e flexione o tronco levando os cotovelos em direção aos joelhos.',
-        img: BASE_IMG_URL + 'Cable_Crunch/0.jpg'
-      },
-      {
-        id: 'plank',
-        name: 'Prancha Isométrica no Solo',
-        group: 'Abdômen',
-        equipment: 'Peso Corporal',
-        muscles: 'Transverso do Abdômen e Core',
-        tips: 'Alinhe calcanhares, quadril e ombros mantendo o abdômen contraído.',
-        img: BASE_IMG_URL + 'Plank/0.jpg'
-      },
-      {
-        id: 'ab-wheel-rollout',
-        name: 'Roda Abdominal (Ab Wheel)',
-        group: 'Abdômen',
-        equipment: 'Roda Abdominal',
-        muscles: 'Reto Abdominal, Oblíquos, Dorsal',
-        tips: 'Role para frente até quase encostar o peito no chão e puxe pelo abdômen.',
-        img: BASE_IMG_URL + 'Ab_Roller/0.jpg'
-      },
-      {
-        id: 'russian-twist',
-        name: 'Giro Russo (Russian Twist)',
-        group: 'Abdômen',
-        equipment: 'Anilha / Peso Corporal',
-        muscles: 'Oblíquos e Core Rotacional',
-        tips: 'Com os pés suspensos, gire o tronco controlando a inércia lateral.',
-        img: BASE_IMG_URL + 'Russian_Twist/0.jpg'
-      },
-
-      // TRAPÉZIO
-      {
-        id: 'barbell-shrug',
-        name: 'Encolhimento de Ombros com Barra',
-        group: 'Trapézio',
-        equipment: 'Barra Olímpica',
-        muscles: 'Trapézio Superior',
-        tips: 'Suba os ombros em direção às orelhas em linha reta; nunca gire os ombros.',
-        img: BASE_IMG_URL + 'Barbell_Shrug/0.jpg'
-      },
-      {
-        id: 'dumbbell-shrug',
-        name: 'Encolhimento com Halteres',
-        group: 'Trapézio',
-        equipment: 'Halteres',
-        muscles: 'Trapézio Superior',
-        tips: 'Segure os halteres ao lado do corpo para uma pegada mais anatômica e neutra.',
-        img: BASE_IMG_URL + 'Dumbbell_Shrug/0.jpg'
-      },
-
-      // ANTEBRAÇO
-      {
-        id: 'wrist-curl-barbell',
-        name: 'Rosca de Punho com Barra',
-        group: 'Antebraço',
-        equipment: 'Barra',
-        muscles: 'Flexores do Punho e Força de Pegada',
-        tips: 'Antebraços apoiados nas coxas ou no banco; flexione apenas os punhos.',
-        img: BASE_IMG_URL + 'Palms-Up_Barbell_Wrist_Curl/0.jpg'
-      },
-      {
-        id: 'reverse-wrist-curl',
-        name: 'Rosca de Punho Inversa',
-        group: 'Antebraço',
-        equipment: 'Barra ou Halteres',
-        muscles: 'Extensores do Punho',
-        tips: 'Fortalece os extensores, prevenindo dores e epicondilites no cotovelo.',
-        img: BASE_IMG_URL + 'Palms-Down_Barbell_Wrist_Curl/0.jpg'
-      }
-    ];
-
-    const SUPABASE_URL = "https://pzygeoqjdyvtfpxuytvg.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6eWdlb3FqZHl2dGZweHV5dHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNjczNzMsImV4cCI6MjEwODk0MzM3M30.lme2H9a6-QyI7Hf-7-tSIfr3DuvXMk03ZJoBnOemUYU";
-
-    let supabaseClient = null;
-    try {
-      supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (e) {
-      console.error("Falha ao inicializar o Supabase:", e);
-    }
-
-    const state = {
-      user: null,
-      authMode: 'login',
-      templates: [],
-      workouts: [],
-      activeWorkout: {
-        name: "Treino Personalizado",
-        exercises: []
-      },
-      restTimer: {
-        total: 60,
-        remaining: 60,
-        intervalId: null
-      },
-      libraryContext: 'workout',
-      activeGroupFilter: 'Todos'
-    };
-
-    let progressChartInstance = null;
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      checkSession();
-      renderWeeklyHeatmap();
-    });
-
-    async function checkSession() {
-      if (!supabaseClient) return;
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session && session.user) {
-        state.user = session.user;
-        onAuthSuccess();
-      } else {
-        document.getElementById("authGate").classList.remove("hidden");
-      }
-    }
-
-    function switchAuthMode(mode) {
-      state.authMode = mode;
-      const btnLogin = document.getElementById("btnTabLogin");
-      const btnRegister = document.getElementById("btnTabRegister");
-      const submitText = document.getElementById("authSubmitText");
-
-      if (mode === 'login') {
-        btnLogin.className = "flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all bg-brand-lime text-black";
-        btnRegister.className = "flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all text-slate-400 hover:text-white";
-        submitText.textContent = "ACESSAR MINHA CONTA";
-      } else {
-        btnRegister.className = "flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all bg-brand-lime text-black";
-        btnLogin.className = "flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all text-slate-400 hover:text-white";
-        submitText.textContent = "CRIAR CONTA NA FORJA";
-      }
-    }
-
-    async function handleAuthSubmit(e) {
-      e.preventDefault();
-      const email = document.getElementById("authEmail").value.trim();
-      const password = document.getElementById("authPassword").value;
-      const spinner = document.getElementById("authSpinner");
-      const submitBtn = document.getElementById("authSubmitBtn");
-
-      spinner.classList.remove("hidden");
-      submitBtn.disabled = true;
-
-      try {
-        if (state.authMode === 'login') {
-          const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-          if (error) throw error;
-          state.user = data.user;
-          onAuthSuccess();
-        } else {
-          const { data, error } = await supabaseClient.auth.signUp({ email, password });
-          if (error) throw error;
-          state.user = data.user;
-          alert("Conta criada com sucesso!");
-          onAuthSuccess();
-        }
-      } catch (err) {
-        alert("Erro de autenticação: " + (err.message || "Verifique os seus dados."));
-      } finally {
-        spinner.classList.add("hidden");
-        submitBtn.disabled = false;
-      }
-    }
-
-    async function onAuthSuccess() {
-      document.getElementById("authGate").classList.add("hidden");
-      document.getElementById("topUserEmail").textContent = state.user.email.split('@')[0];
-      document.getElementById("profileUserEmail").textContent = state.user.email;
-      await fetchUserData();
-      renderAll();
-    }
-
-    async function handleLogout() {
-      if (supabaseClient) {
-        await supabaseClient.auth.signOut();
-      }
-      state.user = null;
-      state.workouts = [];
-      state.templates = [];
-      document.getElementById("authGate").classList.remove("hidden");
-    }
-
-    async function fetchUserData() {
-      if (!supabaseClient || !state.user) return;
-
-      const { data: tpls } = await supabaseClient
-        .from('templates')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (tpls && tpls.length > 0) {
-        state.templates = tpls;
-      } else {
-        state.templates = [
-          {
-            id: 'mock-tpl-1',
-            title: 'Treino A - Peito, Ombros e Tríceps',
-            division: 'A',
-            exercises_config: [
-              { name: 'Supino Reto com Barra', sets: 4, reps: '8-10', rest: 90 },
-              { name: 'Desenvolvimento Militar com Barra', sets: 3, reps: '10-12', rest: 90 },
-              { name: 'Tríceps Corda na Polia Alta', sets: 3, reps: '12-15', rest: 60 }
-            ]
-          }
-        ];
-      }
-
-      const { data: wks } = await supabaseClient
-        .from('workouts')
-        .select('*')
-        .order('date', { ascending: false });
-
-      if (wks) {
-        state.workouts = wks;
-      }
-    }
-
-    function openExerciseLibraryModal(context = 'workout') {
-      state.libraryContext = context;
-      document.getElementById("modalExerciseLibrary").classList.remove("hidden");
-      renderExerciseLibraryList();
-    }
-
-    function closeExerciseLibraryModal() {
-      document.getElementById("modalExerciseLibrary").classList.add("hidden");
-    }
-
-    function filterByGroup(group) {
-      state.activeGroupFilter = group;
-      renderExerciseLibraryList();
-    }
-
-    function filterExerciseLibrary() {
-      renderExerciseLibraryList();
-    }
-
-    function renderExerciseLibraryList() {
-      const container = document.getElementById("libraryListContainer");
-      const searchTerm = document.getElementById("librarySearchInput").value.toLowerCase();
-      container.innerHTML = "";
-
-      const filtered = EXERCISE_DATABASE.filter(ex => {
-        const matchesGroup = (state.activeGroupFilter === 'Todos' || ex.group === state.activeGroupFilter);
-        const matchesSearch = ex.name.toLowerCase().includes(searchTerm) || 
-                              ex.muscles.toLowerCase().includes(searchTerm) ||
-                              ex.equipment.toLowerCase().includes(searchTerm);
-        return matchesGroup && matchesSearch;
-      });
-
-      if (filtered.length === 0) {
-        container.innerHTML = `<div class="p-6 text-center text-xs font-mono text-slate-500">Nenhum exercício encontrado.</div>`;
-        return;
-      }
-
-      filtered.forEach(ex => {
-        const div = document.createElement("div");
-        div.className = "bg-slate-900/80 p-3 rounded-xl tactical-border flex items-center justify-between gap-3 hover:border-slate-700 transition-all";
-        div.innerHTML = `
-          <div class="flex items-center gap-3">
-            <img src="${ex.img}" alt="${ex.name}" class="w-12 h-12 rounded-lg object-cover bg-slate-950 border border-slate-800 flex-shrink-0" onerror="this.src='https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press/0.jpg'" />
-            <div>
-              <div class="flex items-center gap-1.5">
-                <span class="text-[9px] font-mono text-brand-lime uppercase font-bold">${ex.group}</span>
-                <span class="text-[9px] text-slate-500 font-mono">• ${ex.equipment}</span>
-              </div>
-              <h4 class="text-xs font-bold text-white leading-tight mt-0.5">${ex.name}</h4>
-              <p class="text-[10px] text-slate-400 truncate max-w-[190px] mt-0.5">${ex.muscles}</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-1.5 flex-shrink-0">
-            <button onclick="showExerciseDetail('${ex.id}')" title="Ver biomecânica" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs">
-              👁️
-            </button>
-            <button onclick="selectExerciseFromLibrary('${ex.id}')" class="px-2.5 py-1.5 bg-brand-lime text-black font-mono font-bold text-xs rounded-lg hover:brightness-110">
-              + Usar
-            </button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function showExerciseDetail(exerciseId) {
-      const ex = EXERCISE_DATABASE.find(e => e.id === exerciseId);
-      if (!ex) return;
-
-      document.getElementById("detailGroupBadge").textContent = ex.group;
-      document.getElementById("detailExerciseName").textContent = ex.name;
-      document.getElementById("detailEquipment").textContent = "Equipamento: " + ex.equipment;
-      document.getElementById("detailMuscles").textContent = ex.muscles;
-      document.getElementById("detailTips").textContent = ex.tips;
-      document.getElementById("detailExerciseImg").src = ex.img;
-
-      document.getElementById("modalExerciseDetail").classList.remove("hidden");
-    }
-
-    function closeExerciseDetailModal() {
-      document.getElementById("modalExerciseDetail").classList.add("hidden");
-    }
-
-    function selectExerciseFromLibrary(exerciseId) {
-      const ex = EXERCISE_DATABASE.find(e => e.id === exerciseId);
-      if (!ex) return;
-
-      if (state.libraryContext === 'workout') {
-        state.activeWorkout.exercises.push({
-          name: ex.name,
-          rest: 60,
-          sets: [
-            { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false },
-            { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false },
-            { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false }
-          ]
-        });
-        renderActiveWorkout();
-        closeExerciseLibraryModal();
-      } else {
-        const container = document.getElementById("tplExerciseInputs");
-        const div = document.createElement("div");
-        div.className = "flex gap-2";
-        div.innerHTML = `
-          <input type="text" value="${ex.name}" class="flex-1 bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-white" />
-          <input type="number" value="3" class="w-16 bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-white text-center" />
-        `;
-        container.appendChild(div);
-        closeExerciseLibraryModal();
-      }
-    }
-
-    function startAutoRest(seconds = 60) {
-      const widget = document.getElementById("restTimerWidget");
-      const secondsDisplay = document.getElementById("restTimerSeconds");
-      const circle = document.getElementById("timerProgressCircle");
-
-      clearInterval(state.restTimer.intervalId);
-      state.restTimer.total = seconds;
-      state.restTimer.remaining = seconds;
-
-      widget.classList.remove("hidden");
-
-      const updateUI = () => {
-        secondsDisplay.textContent = state.restTimer.remaining;
-        const offset = 113 - (113 * state.restTimer.remaining) / state.restTimer.total;
-        circle.style.strokeDashoffset = offset;
-
-        if (state.restTimer.remaining <= 0) {
-          clearInterval(state.restTimer.intervalId);
-          playBeep();
-          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-          setTimeout(() => widget.classList.add("hidden"), 3000);
-        }
-        state.restTimer.remaining--;
-      };
-
-      updateUI();
-      state.restTimer.intervalId = setInterval(updateUI, 1000);
-    }
-
-    function addRestTime(seconds) {
-      state.restTimer.remaining += seconds;
-      state.restTimer.total += seconds;
-    }
-
-    function cancelRestTimer() {
-      clearInterval(state.restTimer.intervalId);
-      document.getElementById("restTimerWidget").classList.add("hidden");
-    }
-
-    function playBeep() {
-      try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.frequency.value = 880;
-        gain.gain.value = 0.2;
-        osc.start();
-        setTimeout(() => { osc.stop(); audioCtx.close(); }, 350);
-      } catch (e) {}
-    }
-
-    function loadTemplateIntoWorkout(templateId) {
-      const tpl = state.templates.find(t => t.id === templateId);
-      if (!tpl) return;
-
-      state.activeWorkout.name = tpl.title;
-      document.getElementById("activeWorkoutName").value = tpl.title;
-      state.activeWorkout.exercises = tpl.exercises_config.map(ex => ({
-        name: ex.name,
-        rest: ex.rest || 60,
-        sets: Array.from({ length: ex.sets || 3 }, () => ({
-          weight: getLastUsedWeight(ex.name) || 30,
-          reps: 10,
-          completed: false
-        }))
-      }));
-
-      renderActiveWorkout();
-    }
-
-    function getLastUsedWeight(exerciseName) {
-      for (const wk of state.workouts) {
-        if (!wk.exercises) continue;
-        const found = wk.exercises.find(e => e.name === exerciseName);
-        if (found && found.sets && found.sets.length > 0) {
-          return found.sets[0].weight;
-        }
-      }
-      return null;
-    }
-
-    function renderActiveWorkout() {
-      const list = document.getElementById("activeExercisesList");
-      list.innerHTML = "";
-
-      if (state.activeWorkout.exercises.length === 0) {
-        list.innerHTML = `<div class="p-8 text-center text-xs font-mono text-slate-500 border border-dashed border-slate-800 rounded-xl">Selecione uma ficha acima ou abra o Arsenal para adicionar exercícios.</div>`;
-        return;
-      }
-
-      state.activeWorkout.exercises.forEach((ex, exIdx) => {
-        const div = document.createElement("div");
-        div.className = "bg-[#111620] rounded-xl p-3.5 tactical-border space-y-3";
-        div.innerHTML = `
-          <div class="flex justify-between items-center">
-            <div class="flex items-center gap-2">
-              <h4 class="text-sm font-display font-bold text-white">${ex.name}</h4>
-              <button onclick="inspectExerciseByName('${ex.name}')" title="Ver postura" class="text-xs bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded text-slate-300 hover:text-white">👁️</button>
-            </div>
-            <span class="text-[10px] font-mono text-slate-400">Descanso: ${ex.rest}s</span>
-          </div>
-
-          <div class="space-y-1.5 font-mono text-xs">
-            <div class="grid grid-cols-12 gap-1 text-[10px] text-slate-500 uppercase pb-1 text-center">
-              <span class="col-span-2 text-left">Série</span>
-              <span class="col-span-4">Carga (kg)</span>
-              <span class="col-span-3">Reps</span>
-              <span class="col-span-3">Pronto</span>
-            </div>
-            ${ex.sets.map((s, sIdx) => `
-              <div class="grid grid-cols-12 gap-1 items-center ${s.completed ? 'opacity-40' : ''}">
-                <span class="col-span-2 text-slate-400">#${sIdx + 1}</span>
-                <div class="col-span-4 flex items-center gap-1">
-                  <input type="number" value="${s.weight}" onchange="updateSetVal(${exIdx}, ${sIdx}, 'weight', this.value)" class="w-full bg-slate-900 border border-slate-800 text-center rounded py-1 text-white focus:outline-none focus:border-brand-lime" />
-                </div>
-                <div class="col-span-3">
-                  <input type="number" value="${s.reps}" onchange="updateSetVal(${exIdx}, ${sIdx}, 'reps', this.value)" class="w-full bg-slate-900 border border-slate-800 text-center rounded py-1 text-white focus:outline-none focus:border-brand-lime" />
-                </div>
-                <div class="col-span-3 flex justify-center">
-                  <button onclick="toggleSetComplete(${exIdx}, ${sIdx})" class="w-7 h-7 rounded flex items-center justify-center font-bold text-xs ${s.completed ? 'bg-brand-lime text-black' : 'bg-slate-900 border border-slate-800 text-slate-400'}">
-                    ✓
-                  </button>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        `;
-        list.appendChild(div);
-      });
-    }
-
-    function inspectExerciseByName(name) {
-      const found = EXERCISE_DATABASE.find(e => e.name.toLowerCase() === name.toLowerCase());
-      if (found) {
-        showExerciseDetail(found.id);
-      } else {
-        alert("Exercício adicionado manualmente sem dados cadastrados no arsenal.");
-      }
-    }
-
-    function updateSetVal(exIdx, sIdx, field, val) {
-      state.activeWorkout.exercises[exIdx].sets[sIdx][field] = parseFloat(val) || 0;
-    }
-
-    function toggleSetComplete(exIdx, sIdx) {
-      const set = state.activeWorkout.exercises[exIdx].sets[sIdx];
-      set.completed = !set.completed;
-      if (set.completed) {
-        startAutoRest(state.activeWorkout.exercises[exIdx].rest || 60);
-      }
-      renderActiveWorkout();
-    }
-
-    async function finishAndSaveWorkout() {
-      if (state.activeWorkout.exercises.length === 0) {
-        alert("Adicione pelo menos um exercício antes de finalizar.");
-        return;
-      }
-
-      let totalVolume = 0;
-      state.activeWorkout.exercises.forEach(ex => {
-        ex.sets.forEach(s => {
-          totalVolume += (s.weight || 0) * (s.reps || 0);
-        });
-      });
-
-      const newWorkout = {
-        name: state.activeWorkout.name,
-        date: new Date().toISOString().split('T')[0],
-        total_volume_kg: totalVolume,
-        exercises: state.activeWorkout.exercises
-      };
-
-      if (supabaseClient && state.user) {
-        const { error } = await supabaseClient.from('workouts').insert([newWorkout]);
-        if (error) console.error("Erro ao guardar treino:", error);
-      }
-
-      state.workouts.unshift(newWorkout);
-      alert("Treino forjado e salvo com sucesso!");
-      switchTab('progress');
-      renderAll();
-    }
-
-    function quickStartTemplate() {
-      switchTab('workout');
-      if (state.templates.length > 0) {
-        loadTemplateIntoWorkout(state.templates[0].id);
-      }
-    }
-
-    function switchTab(tab) {
-      const screens = ['home', 'templates', 'workout', 'progress', 'profile'];
-      screens.forEach(s => {
-        document.getElementById(`screen-${s}`).classList.add('hidden');
-        const navBtn = document.getElementById(`tab-${s}`);
-        if (navBtn) {
-          navBtn.classList.remove('text-brand-lime');
-          navBtn.classList.add('text-slate-400');
-        }
-      });
-
-      document.getElementById(`screen-${tab}`).classList.remove('hidden');
-      const activeBtn = document.getElementById(`tab-${tab}`);
-      if (activeBtn) {
-        activeBtn.classList.add('text-brand-lime');
-        activeBtn.classList.remove('text-slate-400');
-      }
-
-      if (tab === 'progress') updateProgressChart();
-    }
-
-    function renderAll() {
-      renderTemplates();
-      renderHomeMetrics();
-      renderWorkoutsHistory();
-      renderProgressExercisesDropdown();
-      renderProfileStats();
-    }
-
-    function renderTemplates() {
-      const list = document.getElementById("templatesList");
-      const select = document.getElementById("workoutTemplateSelect");
-      list.innerHTML = "";
-      select.innerHTML = '<option value="">Carregar de uma Ficha...</option>';
-
-      state.templates.forEach(t => {
-        const opt = document.createElement("option");
-        opt.value = t.id;
-        opt.textContent = `${t.division || '•'} - ${t.title}`;
-        select.appendChild(opt);
-
-        const div = document.createElement("div");
-        div.className = "bg-[#111620] p-4 rounded-xl tactical-border flex justify-between items-center";
-        div.innerHTML = `
-          <div>
-            <span class="text-[10px] font-mono text-brand-lime font-bold">DIVISÃO ${t.division || 'A'}</span>
-            <h4 class="text-sm font-display font-bold text-white mt-0.5">${t.title}</h4>
-            <span class="text-xs text-slate-400">${t.exercises_config ? t.exercises_config.length : 0} exercícios</span>
-          </div>
-          <button onclick="switchTab('workout'); loadTemplateIntoWorkout('${t.id}')" class="px-3 py-1.5 bg-slate-900 border border-slate-800 text-xs font-mono text-brand-lime rounded-lg hover:border-brand-lime">
-            Treinar
-          </button>
-        `;
-        list.appendChild(div);
-      });
-    }
-
-    function renderHomeMetrics() {
-      document.getElementById("profileWorkoutsCount").textContent = state.workouts.length;
-      document.getElementById("profileTemplatesCount").textContent = state.templates.length;
-
-      let weeklyVol = 0;
-      state.workouts.forEach(w => weeklyVol += (w.total_volume_kg || 0));
-      document.getElementById("statWeeklyVolume").innerHTML = `${weeklyVol} <span class="text-xs text-slate-500">kg</span>`;
-      document.getElementById("weekSessionsCount").textContent = `${state.workouts.length} sessões`;
-    }
-
-    function renderWeeklyHeatmap() {
-      const container = document.getElementById("weeklyHeatmap");
-      const days = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
-      container.innerHTML = "";
-      days.forEach((d, idx) => {
-        const div = document.createElement("div");
-        div.className = "flex flex-col items-center gap-1";
-        div.innerHTML = `
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center font-mono text-xs ${idx === 1 || idx === 3 ? 'bg-brand-lime text-black font-bold' : 'bg-slate-900 text-slate-500 border border-slate-800'}">
-            ${d}
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function renderWorkoutsHistory() {
-      const list = document.getElementById("workoutsHistoryList");
-      list.innerHTML = "";
-
-      if (state.workouts.length === 0) {
-        list.innerHTML = `<div class="p-4 text-center text-xs font-mono text-slate-500">Nenhum treino registrado ainda.</div>`;
-        return;
-      }
-
-      state.workouts.forEach(w => {
-        const div = document.createElement("div");
-        div.className = "bg-[#111620] p-3 rounded-xl tactical-border flex justify-between items-center font-mono text-xs";
-        div.innerHTML = `
-          <div>
-            <p class="font-bold text-white">${w.name}</p>
-            <span class="text-[10px] text-slate-500">${w.date || 'Hoje'}</span>
-          </div>
-          <span class="text-brand-lime font-bold">${w.total_volume_kg || 0} kg</span>
-        `;
-        list.appendChild(div);
-      });
-    }
-
-    function renderProgressExercisesDropdown() {
-      const select = document.getElementById("progressExerciseSelect");
-      select.innerHTML = "";
-      const set = new Set();
-
-      state.workouts.forEach(w => {
-        if (w.exercises) {
-          w.exercises.forEach(e => set.add(e.name));
-        }
-      });
-
-      if (set.size === 0) {
-        select.innerHTML = `<option>Supino Reto com Barra</option>`;
-        return;
-      }
-
-      set.forEach(name => {
-        const opt = document.createElement("option");
-        opt.value = name;
-        opt.textContent = name;
-        select.appendChild(opt);
-      });
-    }
-
-    function updateProgressChart() {
-      const select = document.getElementById("progressExerciseSelect");
-      const exerciseName = select.value || "Supino Reto com Barra";
-      const ctx = document.getElementById("progressChart").getContext("2d");
-
-      const labels = [];
-      const dataWeights = [];
-
-      state.workouts.slice().reverse().forEach(w => {
-        if (!w.exercises) return;
-        const found = w.exercises.find(e => e.name === exerciseName);
-        if (found && found.sets) {
-          const maxWeight = Math.max(...found.sets.map(s => s.weight || 0));
-          labels.push(w.date || 'Sessão');
-          dataWeights.push(maxWeight);
-        }
-      });
-
-      if (progressChartInstance) {
-        progressChartInstance.destroy();
-      }
-
-      progressChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels.length ? labels : ['Treino 1', 'Treino 2', 'Treino 3'],
-          datasets: [{
-            label: 'Carga Máxima (kg)',
-            data: dataWeights.length ? dataWeights : [60, 65, 70],
-            borderColor: '#a3e635',
-            backgroundColor: 'rgba(163, 230, 53, 0.1)',
-            tension: 0.3,
-            fill: true,
-            pointBackgroundColor: '#a3e635'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { family: 'JetBrains Mono' } } },
-            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { family: 'JetBrains Mono' } } }
-          },
-          plugins: {
-            legend: { display: false }
-          }
-        }
-      });
-    }
-
-    function renderProfileStats() {
-      document.getElementById("profileWorkoutsCount").textContent = state.workouts.length;
-      document.getElementById("profileTemplatesCount").textContent = state.templates.length;
-    }
-
-    function openCreateTemplateModal() {
-      document.getElementById("modalNewTemplate").classList.remove("hidden");
-    }
-    function closeCreateTemplateModal() {
-      document.getElementById("modalNewTemplate").classList.add("hidden");
-    }
-    function addTplExerciseRow() {
-      const container = document.getElementById("tplExerciseInputs");
-      const div = document.createElement("div");
-      div.className = "flex gap-2";
-      div.innerHTML = `
-        <input type="text" placeholder="Nome do Exercício" class="flex-1 bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-white" />
-        <input type="number" placeholder="Séries" value="3" class="w-16 bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-white text-center" />
-      `;
-      container.appendChild(div);
-    }
-    async function saveNewTemplate() {
-      const title = document.getElementById("tplNameInput").value.trim();
-      const division = document.getElementById("tplDivisionInput").value.trim() || 'A';
-      if (!title) return;
-
-      const exercises = [];
-      const rows = document.querySelectorAll("#tplExerciseInputs > div");
-      rows.forEach(r => {
-        const inputs = r.querySelectorAll("input");
-        if (inputs[0].value.trim()) {
-          exercises.push({
-            name: inputs[0].value.trim(),
-            sets: parseInt(inputs[1].value) || 3,
-            rest: 60
-          });
-        }
-      });
-
-      const newTpl = {
-        title,
-        division,
-        exercises_config: exercises
-      };
-
-      if (supabaseClient && state.user) {
-        await supabaseClient.from('templates').insert([newTpl]);
-      }
-      state.templates.unshift(newTpl);
-      closeCreateTemplateModal();
-      renderTemplates();
-    }
-  </script>
+  <!-- IMPORTAÇÃO DOS SCRIPTS MODULARES -->
+  <script src="js/exercises-data.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
