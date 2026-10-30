@@ -29,6 +29,9 @@ const state = {
 
 let progressChartInstance = null;
 
+// Fallback universal SVG elegante em caso de imagem indisponível na CDN
+const DEFAULT_FALLBACK_IMG = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%23a3e635' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6.5 6.5h11M6.5 17.5h11M4 9.5h16M4 14.5h16M2 12h20'/%3E%3C/svg%3E";
+
 document.addEventListener("DOMContentLoaded", async () => {
   await checkSession();
   renderWeeklyHeatmap();
@@ -114,7 +117,6 @@ async function handleLogout() {
 async function fetchUserData() {
   if (!supabaseClient || !state.user) return;
 
-  // Carregar Fichas do Usuário
   const { data: tpls, error: tplErr } = await supabaseClient
     .from('templates')
     .select('*')
@@ -124,7 +126,6 @@ async function fetchUserData() {
   if (!tplErr && tpls && tpls.length > 0) {
     state.templates = tpls;
   } else {
-    // Template padrão se for primeiro acesso
     state.templates = [
       {
         id: 'mock-tpl-1',
@@ -139,7 +140,6 @@ async function fetchUserData() {
     ];
   }
 
-  // Carregar Histórico de Treinos do Usuário
   const { data: wks, error: wkErr } = await supabaseClient
     .from('workouts')
     .select('*')
@@ -196,7 +196,7 @@ function renderExerciseLibraryList() {
     div.className = "bg-slate-900/80 p-3 rounded-xl tactical-border flex items-center justify-between gap-3 hover:border-slate-700 transition-all";
     div.innerHTML = `
       <div class="flex items-center gap-3">
-        <img src="${ex.img}" alt="${ex.name}" class="w-12 h-12 rounded-lg object-cover bg-slate-950 border border-slate-800 flex-shrink-0" onerror="this.onerror=null; this.src='https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press/0.jpg';" />
+        <img src="${ex.img}" alt="${ex.name}" class="w-12 h-12 rounded-lg object-cover bg-slate-950 border border-slate-800 flex-shrink-0" onerror="this.onerror=null; this.src='${DEFAULT_FALLBACK_IMG}';" />
         <div>
           <div class="flex items-center gap-1.5">
             <span class="text-[9px] font-mono text-brand-lime uppercase font-bold">${ex.group}</span>
@@ -232,7 +232,7 @@ function showExerciseDetail(exerciseId) {
   const detailImg = document.getElementById("detailExerciseImg");
   detailImg.onerror = function() {
     this.onerror = null;
-    this.src = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press/0.jpg';
+    this.src = DEFAULT_FALLBACK_IMG;
   };
   detailImg.src = ex.img;
 
@@ -243,6 +243,7 @@ function closeExerciseDetailModal() {
   document.getElementById("modalExerciseDetail").classList.add("hidden");
 }
 
+// SELEÇÃO UNIFICADA E ROBUSTA DE EXERCÍCIOS
 function selectExerciseFromLibrary(exerciseId) {
   const ex = EXERCISE_DATABASE.find(e => e.id === exerciseId);
   if (!ex) return;
@@ -260,16 +261,98 @@ function selectExerciseFromLibrary(exerciseId) {
     renderActiveWorkout();
     closeExerciseLibraryModal();
   } else {
-    const container = document.getElementById("tplExerciseInputs");
-    const div = document.createElement("div");
-    div.className = "flex gap-2";
-    div.innerHTML = `
-      <input type="text" value="${ex.name}" class="flex-1 bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-white" />
-      <input type="number" value="3" class="w-16 bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-white text-center" />
-    `;
-    container.appendChild(div);
+    // Contexto de criação de Ficha (Template)
+    appendExerciseRowToTemplateForm(ex.name, 3);
     closeExerciseLibraryModal();
   }
+}
+
+function appendExerciseRowToTemplateForm(name = "", sets = 3) {
+  const container = document.getElementById("tplExerciseInputs");
+  const rowId = "tpl-row-" + Date.now() + Math.floor(Math.random() * 1000);
+  const div = document.createElement("div");
+  div.id = rowId;
+  div.className = "tpl-exercise-row flex items-center gap-2 bg-slate-950/60 p-2 rounded-xl tactical-border";
+  div.innerHTML = `
+    <div class="flex-1">
+      <input type="text" value="${name}" placeholder="Nome do Exercício" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-brand-lime" />
+    </div>
+    <div class="w-16">
+      <input type="number" value="${sets}" min="1" max="10" title="Número de Séries" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white text-center focus:outline-none focus:border-brand-lime" />
+    </div>
+    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="p-1.5 text-slate-500 hover:text-red-400 text-sm font-bold">&times;</button>
+  `;
+  container.appendChild(div);
+}
+
+function addTplExerciseRow() {
+  appendExerciseRowToTemplateForm("", 3);
+}
+
+function openCreateTemplateModal() {
+  document.getElementById("tplNameInput").value = "";
+  document.getElementById("tplDivisionInput").value = "";
+  document.getElementById("tplExerciseInputs").innerHTML = "";
+  // Inicia com 1 linha vazia por conveniência
+  appendExerciseRowToTemplateForm("", 3);
+  document.getElementById("modalNewTemplate").classList.remove("hidden");
+}
+
+function closeCreateTemplateModal() {
+  document.getElementById("modalNewTemplate").classList.add("hidden");
+}
+
+// SALVAMENTO COM PERSISTÊNCIA CORRETA NO POSTGRES
+async function saveNewTemplate() {
+  const title = document.getElementById("tplNameInput").value.trim();
+  const division = document.getElementById("tplDivisionInput").value.trim() || 'A';
+  if (!title) {
+    alert("Dê um nome para a sua ficha!");
+    return;
+  }
+
+  const exercises = [];
+  const rows = document.querySelectorAll(".tpl-exercise-row");
+  rows.forEach(r => {
+    const inputs = r.querySelectorAll("input");
+    if (inputs[0] && inputs[0].value.trim()) {
+      exercises.push({
+        name: inputs[0].value.trim(),
+        sets: parseInt(inputs[1].value) || 3,
+        rest: 60
+      });
+    }
+  });
+
+  if (exercises.length === 0) {
+    alert("Adicione ao menos 1 exercício na lista antes de salvar!");
+    return;
+  }
+
+  const newTpl = {
+    user_id: state.user ? state.user.id : null,
+    title,
+    division,
+    exercises_config: exercises
+  };
+
+  if (supabaseClient && state.user) {
+    const { data, error } = await supabaseClient.from('templates').insert([newTpl]).select();
+    if (error) {
+      console.error("Erro ao salvar ficha no Supabase:", error);
+      alert("Erro ao salvar no banco: " + error.message);
+      return;
+    }
+    if (data && data.length > 0) {
+      newTpl.id = data[0].id;
+    }
+  }
+
+  state.templates.unshift(newTpl);
+  closeCreateTemplateModal();
+  renderTemplates();
+  renderProfileStats();
+  alert("Ficha forjada e salva permanentemente na sua conta!");
 }
 
 /* -------------------------------------------------------------
@@ -658,75 +741,4 @@ function updateProgressChart() {
 function renderProfileStats() {
   document.getElementById("profileWorkoutsCount").textContent = state.workouts.length;
   document.getElementById("profileTemplatesCount").textContent = state.templates.length;
-}
-
-/* Modais de Fichas */
-function openCreateTemplateModal() {
-  document.getElementById("modalNewTemplate").classList.remove("hidden");
-}
-function closeCreateTemplateModal() {
-  document.getElementById("modalNewTemplate").classList.add("hidden");
-}
-function addTplExerciseRow() {
-  const container = document.getElementById("tplExerciseInputs");
-  const div = document.createElement("div");
-  div.className = "flex gap-2";
-  div.innerHTML = `
-    <input type="text" placeholder="Nome do Exercício" class="flex-1 bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-white" />
-    <input type="number" placeholder="Séries" value="3" class="w-16 bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-white text-center" />
-  `;
-  container.appendChild(div);
-}
-
-// SALVAMENTO SEGURO COM VÍNCULO DO USUÁRIO NO SUPABASE
-async function saveNewTemplate() {
-  const title = document.getElementById("tplNameInput").value.trim();
-  const division = document.getElementById("tplDivisionInput").value.trim() || 'A';
-  if (!title) {
-    alert("Dê um nome para a sua ficha!");
-    return;
-  }
-
-  const exercises = [];
-  const rows = document.querySelectorAll("#tplExerciseInputs > div");
-  rows.forEach(r => {
-    const inputs = r.querySelectorAll("input");
-    if (inputs[0] && inputs[0].value.trim()) {
-      exercises.push({
-        name: inputs[0].value.trim(),
-        sets: parseInt(inputs[1].value) || 3,
-        rest: 60
-      });
-    }
-  });
-
-  if (exercises.length === 0) {
-    alert("Adicione pelo menos um exercício na ficha!");
-    return;
-  }
-
-  const newTpl = {
-    user_id: state.user ? state.user.id : null,
-    title,
-    division,
-    exercises_config: exercises
-  };
-
-  if (supabaseClient && state.user) {
-    const { data, error } = await supabaseClient.from('templates').insert([newTpl]).select();
-    if (error) {
-      console.error("Erro ao salvar ficha no Supabase:", error);
-      alert("Erro ao salvar no banco: " + error.message);
-      return;
-    }
-    if (data && data.length > 0) {
-      newTpl.id = data[0].id;
-    }
-  }
-
-  state.templates.unshift(newTpl);
-  closeCreateTemplateModal();
-  renderTemplates();
-  renderProfileStats();
-  alert("Ficha forjada e salva permanentemente na sua conta!");
 }
