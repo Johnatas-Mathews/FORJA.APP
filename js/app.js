@@ -29,13 +29,24 @@ const state = {
 
 let progressChartInstance = null;
 
-// Fallback universal SVG elegante em caso de imagem indisponível na CDN
 const DEFAULT_FALLBACK_IMG = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%23a3e635' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6.5 6.5h11M6.5 17.5h11M4 9.5h16M4 14.5h16M2 12h20'/%3E%3C/svg%3E";
 
 document.addEventListener("DOMContentLoaded", async () => {
+  populateExerciseSuggestions();
   await checkSession();
   renderWeeklyHeatmap();
 });
+
+function populateExerciseSuggestions() {
+  const datalist = document.getElementById("exerciseSuggestionsList");
+  if (!datalist || typeof EXERCISE_DATABASE === 'undefined') return;
+  datalist.innerHTML = "";
+  EXERCISE_DATABASE.forEach(ex => {
+    const opt = document.createElement("option");
+    opt.value = ex.name;
+    datalist.appendChild(opt);
+  });
+}
 
 async function checkSession() {
   if (!supabaseClient) return;
@@ -124,7 +135,10 @@ async function fetchUserData() {
     .order('created_at', { ascending: false });
 
   if (!tplErr && tpls && tpls.length > 0) {
-    state.templates = tpls;
+    state.templates = tpls.map(t => ({
+      ...t,
+      title: t.title || t.name || 'Sem título'
+    }));
   } else {
     state.templates = [
       {
@@ -207,10 +221,10 @@ function renderExerciseLibraryList() {
         </div>
       </div>
       <div class="flex items-center gap-1.5 flex-shrink-0">
-        <button onclick="showExerciseDetail('${ex.id}')" title="Ver biomecânica" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs">
+        <button type="button" onclick="showExerciseDetail('${ex.id}')" title="Ver biomecânica" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs">
           👁️
         </button>
-        <button onclick="selectExerciseFromLibrary('${ex.id}')" class="px-2.5 py-1.5 bg-brand-lime text-black font-mono font-bold text-xs rounded-lg hover:brightness-110">
+        <button type="button" onclick="selectExerciseFromLibrary('${ex.id}')" class="px-2.5 py-1.5 bg-brand-lime text-black font-mono font-bold text-xs rounded-lg hover:brightness-110">
           + Usar
         </button>
       </div>
@@ -243,7 +257,6 @@ function closeExerciseDetailModal() {
   document.getElementById("modalExerciseDetail").classList.add("hidden");
 }
 
-// SELEÇÃO UNIFICADA E ROBUSTA DE EXERCÍCIOS
 function selectExerciseFromLibrary(exerciseId) {
   const ex = EXERCISE_DATABASE.find(e => e.id === exerciseId);
   if (!ex) return;
@@ -261,40 +274,48 @@ function selectExerciseFromLibrary(exerciseId) {
     renderActiveWorkout();
     closeExerciseLibraryModal();
   } else {
-    // Contexto de criação de Ficha (Template)
-    appendExerciseRowToTemplateForm(ex.name, 3);
+    appendExerciseRowToTemplateForm(ex.name, 3, 60);
     closeExerciseLibraryModal();
   }
 }
 
-function appendExerciseRowToTemplateForm(name = "", sets = 3) {
+// INSERÇÃO DE LINHA NA CRIAÇÃO COM SELETOR DE DESCANSO (45s, 60s, 90s, 120s, 180s)
+function appendExerciseRowToTemplateForm(name = "", sets = 3, rest = 60) {
   const container = document.getElementById("tplExerciseInputs");
   const rowId = "tpl-row-" + Date.now() + Math.floor(Math.random() * 1000);
   const div = document.createElement("div");
   div.id = rowId;
-  div.className = "tpl-exercise-row flex items-center gap-2 bg-slate-950/60 p-2 rounded-xl tactical-border";
+  div.className = "tpl-exercise-row flex items-center gap-1.5 bg-slate-950/60 p-2 rounded-xl tactical-border";
   div.innerHTML = `
     <div class="flex-1">
-      <input type="text" value="${name}" placeholder="Nome do Exercício" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-brand-lime" />
+      <input type="text" list="exerciseSuggestionsList" value="${name}" placeholder="Nome do exercício..." class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-brand-lime" />
     </div>
-    <div class="w-16">
-      <input type="number" value="${sets}" min="1" max="10" title="Número de Séries" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white text-center focus:outline-none focus:border-brand-lime" />
+    <div class="w-14">
+      <input type="number" value="${sets}" min="1" max="10" title="Séries" placeholder="Sets" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-1.5 py-1.5 text-xs text-white text-center focus:outline-none focus:border-brand-lime" />
     </div>
-    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="p-1.5 text-slate-500 hover:text-red-400 text-sm font-bold">&times;</button>
+    <div class="w-20">
+      <select title="Descanso" class="tpl-rest-select w-full bg-slate-900 border border-slate-800 rounded-lg px-1 py-1.5 text-[11px] font-mono text-brand-lime focus:outline-none focus:border-brand-lime">
+        <option value="45" ${rest == 45 ? 'selected' : ''}>45s</option>
+        <option value="60" ${rest == 60 ? 'selected' : ''}>60s</option>
+        <option value="90" ${rest == 90 ? 'selected' : ''}>90s</option>
+        <option value="120" ${rest == 120 ? 'selected' : ''}>120s</option>
+        <option value="180" ${rest == 180 ? 'selected' : ''}>180s</option>
+      </select>
+    </div>
+    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="p-1 text-slate-500 hover:text-red-400 text-sm font-bold">&times;</button>
   `;
   container.appendChild(div);
 }
 
 function addTplExerciseRow() {
-  appendExerciseRowToTemplateForm("", 3);
+  appendExerciseRowToTemplateForm("", 3, 60);
 }
 
 function openCreateTemplateModal() {
   document.getElementById("tplNameInput").value = "";
   document.getElementById("tplDivisionInput").value = "";
   document.getElementById("tplExerciseInputs").innerHTML = "";
-  // Inicia com 1 linha vazia por conveniência
-  appendExerciseRowToTemplateForm("", 3);
+  appendExerciseRowToTemplateForm("", 3, 60);
   document.getElementById("modalNewTemplate").classList.remove("hidden");
 }
 
@@ -302,7 +323,6 @@ function closeCreateTemplateModal() {
   document.getElementById("modalNewTemplate").classList.add("hidden");
 }
 
-// SALVAMENTO COM PERSISTÊNCIA CORRETA NO POSTGRES
 async function saveNewTemplate() {
   const title = document.getElementById("tplNameInput").value.trim();
   const division = document.getElementById("tplDivisionInput").value.trim() || 'A';
@@ -315,11 +335,12 @@ async function saveNewTemplate() {
   const rows = document.querySelectorAll(".tpl-exercise-row");
   rows.forEach(r => {
     const inputs = r.querySelectorAll("input");
+    const restSelect = r.querySelector(".tpl-rest-select");
     if (inputs[0] && inputs[0].value.trim()) {
       exercises.push({
         name: inputs[0].value.trim(),
         sets: parseInt(inputs[1].value) || 3,
-        rest: 60
+        rest: parseInt(restSelect ? restSelect.value : 60) || 60
       });
     }
   });
@@ -331,8 +352,8 @@ async function saveNewTemplate() {
 
   const newTpl = {
     user_id: state.user ? state.user.id : null,
-    name: title,        // Adicionado para satisfazer a coluna 'name' antiga
-    title: title,       // Mantido para o padrão da aplicação
+    name: title,
+    title: title,
     division,
     exercises_config: exercises
   };
@@ -413,7 +434,7 @@ function playBeep() {
 }
 
 /* -------------------------------------------------------------
-   EXECUÇÃO DO TREINO
+   EXECUÇÃO DO TREINO (COM EDIÇÃO DE DESCANSO DINÂMICA)
 -------------------------------------------------------------- */
 function loadTemplateIntoWorkout(templateId) {
   const tpl = state.templates.find(t => t.id === templateId);
@@ -445,6 +466,11 @@ function getLastUsedWeight(exerciseName) {
   return null;
 }
 
+// ATUALIZAÇÃO DO DESCANSO EM TEMPO REAL NO TREINO
+function updateExerciseRest(exIdx, newRestVal) {
+  state.activeWorkout.exercises[exIdx].rest = parseInt(newRestVal) || 60;
+}
+
 function renderActiveWorkout() {
   const list = document.getElementById("activeExercisesList");
   list.innerHTML = "";
@@ -461,9 +487,18 @@ function renderActiveWorkout() {
       <div class="flex justify-between items-center">
         <div class="flex items-center gap-2">
           <h4 class="text-sm font-display font-bold text-white">${ex.name}</h4>
-          <button onclick="inspectExerciseByName('${ex.name}')" title="Ver postura" class="text-xs bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded text-slate-300 hover:text-white">👁️</button>
+          <button type="button" onclick="inspectExerciseByName('${ex.name}')" title="Ver postura" class="text-xs bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded text-slate-300 hover:text-white">👁️</button>
         </div>
-        <span class="text-[10px] font-mono text-slate-400">Descanso: ${ex.rest}s</span>
+        <div class="flex items-center gap-1.5">
+          <span class="text-[10px] font-mono text-slate-400">Descanso:</span>
+          <select onchange="updateExerciseRest(${exIdx}, this.value)" class="bg-slate-900 border border-slate-800 text-[11px] font-mono text-brand-lime rounded px-1.5 py-0.5 focus:outline-none focus:border-brand-lime">
+            <option value="45" ${ex.rest == 45 ? 'selected' : ''}>45s</option>
+            <option value="60" ${ex.rest == 60 ? 'selected' : ''}>60s</option>
+            <option value="90" ${ex.rest == 90 ? 'selected' : ''}>90s</option>
+            <option value="120" ${ex.rest == 120 ? 'selected' : ''}>120s</option>
+            <option value="180" ${ex.rest == 180 ? 'selected' : ''}>180s</option>
+          </select>
+        </div>
       </div>
 
       <div class="space-y-1.5 font-mono text-xs">
@@ -483,7 +518,7 @@ function renderActiveWorkout() {
               <input type="number" value="${s.reps}" onchange="updateSetVal(${exIdx}, ${sIdx}, 'reps', this.value)" class="w-full bg-slate-900 border border-slate-800 text-center rounded py-1 text-white focus:outline-none focus:border-brand-lime" />
             </div>
             <div class="col-span-3 flex justify-center">
-              <button onclick="toggleSetComplete(${exIdx}, ${sIdx})" class="w-7 h-7 rounded flex items-center justify-center font-bold text-xs ${s.completed ? 'bg-brand-lime text-black' : 'bg-slate-900 border border-slate-800 text-slate-400'}">
+              <button type="button" onclick="toggleSetComplete(${exIdx}, ${sIdx})" class="w-7 h-7 rounded flex items-center justify-center font-bold text-xs ${s.completed ? 'bg-brand-lime text-black' : 'bg-slate-900 border border-slate-800 text-slate-400'}">
                 ✓
               </button>
             </div>
@@ -608,7 +643,7 @@ function renderTemplates() {
         <h4 class="text-sm font-display font-bold text-white mt-0.5">${t.title}</h4>
         <span class="text-xs text-slate-400">${t.exercises_config ? t.exercises_config.length : 0} exercícios</span>
       </div>
-      <button onclick="switchTab('workout'); loadTemplateIntoWorkout('${t.id}')" class="px-3 py-1.5 bg-slate-900 border border-slate-800 text-xs font-mono text-brand-lime rounded-lg hover:border-brand-lime">
+      <button type="button" onclick="switchTab('workout'); loadTemplateIntoWorkout('${t.id}')" class="px-3 py-1.5 bg-slate-900 border border-slate-800 text-xs font-mono text-brand-lime rounded-lg hover:border-brand-lime">
         Treinar
       </button>
     `;
