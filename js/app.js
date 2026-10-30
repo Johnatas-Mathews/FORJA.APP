@@ -14,6 +14,7 @@ const state = {
   authMode: 'login',
   templates: [],
   workouts: [],
+  editingTemplateId: null, // Guarda o ID quando estiver editando uma ficha existente
   activeWorkout: {
     name: "Treino Personalizado",
     exercises: []
@@ -279,7 +280,9 @@ function selectExerciseFromLibrary(exerciseId) {
   }
 }
 
-// INSERÇÃO DE LINHA NA CRIAÇÃO COM SELETOR DE DESCANSO (45s, 60s, 90s, 120s, 180s)
+/* -------------------------------------------------------------
+   GERENCIAMENTO DE FICHAS (CRIAÇÃO, EDIÇÃO & EXCLUSÃO)
+-------------------------------------------------------------- */
 function appendExerciseRowToTemplateForm(name = "", sets = 3, rest = 60) {
   const container = document.getElementById("tplExerciseInputs");
   const rowId = "tpl-row-" + Date.now() + Math.floor(Math.random() * 1000);
@@ -302,7 +305,7 @@ function appendExerciseRowToTemplateForm(name = "", sets = 3, rest = 60) {
         <option value="180" ${rest == 180 ? 'selected' : ''}>180s</option>
       </select>
     </div>
-    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="p-1 text-slate-500 hover:text-red-400 text-sm font-bold">&times;</button>
+    <button type="button" onclick="document.getElementById('${rowId}').remove()" title="Remover este exercício" class="p-1 text-slate-500 hover:text-red-400 text-sm font-bold">&times;</button>
   `;
   container.appendChild(div);
 }
@@ -312,6 +315,10 @@ function addTplExerciseRow() {
 }
 
 function openCreateTemplateModal() {
+  state.editingTemplateId = null;
+  const modalTitle = document.getElementById("tplModalTitle");
+  if (modalTitle) modalTitle.textContent = "Criar Nova Ficha";
+
   document.getElementById("tplNameInput").value = "";
   document.getElementById("tplDivisionInput").value = "";
   document.getElementById("tplExerciseInputs").innerHTML = "";
@@ -319,7 +326,32 @@ function openCreateTemplateModal() {
   document.getElementById("modalNewTemplate").classList.remove("hidden");
 }
 
+function openEditTemplateModal(templateId) {
+  const tpl = state.templates.find(t => t.id === templateId);
+  if (!tpl) return;
+
+  state.editingTemplateId = templateId;
+  const modalTitle = document.getElementById("tplModalTitle");
+  if (modalTitle) modalTitle.textContent = "Editar Ficha";
+
+  document.getElementById("tplNameInput").value = tpl.title || tpl.name || "";
+  document.getElementById("tplDivisionInput").value = tpl.division || "A";
+  document.getElementById("tplExerciseInputs").innerHTML = "";
+
+  const exercises = tpl.exercises_config || [];
+  if (exercises.length === 0) {
+    appendExerciseRowToTemplateForm("", 3, 60);
+  } else {
+    exercises.forEach(ex => {
+      appendExerciseRowToTemplateForm(ex.name, ex.sets || 3, ex.rest || 60);
+    });
+  }
+
+  document.getElementById("modalNewTemplate").classList.remove("hidden");
+}
+
 function closeCreateTemplateModal() {
+  state.editingTemplateId = null;
   document.getElementById("modalNewTemplate").classList.add("hidden");
 }
 
@@ -350,7 +382,7 @@ async function saveNewTemplate() {
     return;
   }
 
-  const newTpl = {
+  const tplPayload = {
     user_id: state.user ? state.user.id : null,
     name: title,
     title: title,
@@ -358,23 +390,74 @@ async function saveNewTemplate() {
     exercises_config: exercises
   };
 
-  if (supabaseClient && state.user) {
-    const { data, error } = await supabaseClient.from('templates').insert([newTpl]).select();
-    if (error) {
-      console.error("Erro ao salvar ficha no Supabase:", error);
-      alert("Erro ao salvar no banco: " + error.message);
-      return;
+  // MODO EDIÇÃO (UPDATE)
+  if (state.editingTemplateId) {
+    if (supabaseClient && state.user) {
+      const { error } = await supabaseClient
+        .from('templates')
+        .update(tplPayload)
+        .eq('id', state.editingTemplateId);
+
+      if (error) {
+        console.error("Erro ao atualizar ficha no Supabase:", error);
+        alert("Erro ao atualizar no banco: " + error.message);
+        return;
+      }
     }
-    if (data && data.length > 0) {
-      newTpl.id = data[0].id;
+
+    const index = state.templates.findIndex(t => t.id === state.editingTemplateId);
+    if (index !== -1) {
+      state.templates[index] = { ...state.templates[index], ...tplPayload };
     }
+    alert("Ficha atualizada com sucesso!");
+  } 
+  // MODO CRIAÇÃO (INSERT)
+  else {
+    if (supabaseClient && state.user) {
+      const { data, error } = await supabaseClient.from('templates').insert([tplPayload]).select();
+      if (error) {
+        console.error("Erro ao salvar ficha no Supabase:", error);
+        alert("Erro ao salvar no banco: " + error.message);
+        return;
+      }
+      if (data && data.length > 0) {
+        tplPayload.id = data[0].id;
+      }
+    }
+    state.templates.unshift(tplPayload);
+    alert("Ficha forjada e salva permanentemente na sua conta!");
   }
 
-  state.templates.unshift(newTpl);
   closeCreateTemplateModal();
   renderTemplates();
   renderProfileStats();
-  alert("Ficha forjada e salva permanentemente na sua conta!");
+}
+
+async function deleteTemplate(templateId) {
+  const tpl = state.templates.find(t => t.id === templateId);
+  const tplName = tpl ? (tpl.title || tpl.name) : "esta ficha";
+
+  if (!confirm(`Deseja realmente apagar a ficha "${tplName}"? Essa ação não pode ser desfeita.`)) {
+    return;
+  }
+
+  if (supabaseClient && state.user) {
+    const { error } = await supabaseClient
+      .from('templates')
+      .delete()
+      .eq('id', templateId);
+
+    if (error) {
+      console.error("Erro ao excluir ficha no Supabase:", error);
+      alert("Erro ao excluir do banco: " + error.message);
+      return;
+    }
+  }
+
+  state.templates = state.templates.filter(t => t.id !== templateId);
+  renderTemplates();
+  renderProfileStats();
+  alert("Ficha removida com sucesso!");
 }
 
 /* -------------------------------------------------------------
@@ -434,7 +517,7 @@ function playBeep() {
 }
 
 /* -------------------------------------------------------------
-   EXECUÇÃO DO TREINO (COM EDIÇÃO DE DESCANSO DINÂMICA)
+   EXECUÇÃO DO TREINO
 -------------------------------------------------------------- */
 function loadTemplateIntoWorkout(templateId) {
   const tpl = state.templates.find(t => t.id === templateId);
@@ -466,7 +549,6 @@ function getLastUsedWeight(exerciseName) {
   return null;
 }
 
-// ATUALIZAÇÃO DO DESCANSO EM TEMPO REAL NO TREINO
 function updateExerciseRest(exIdx, newRestVal) {
   state.activeWorkout.exercises[exIdx].rest = parseInt(newRestVal) || 60;
 }
@@ -643,9 +725,17 @@ function renderTemplates() {
         <h4 class="text-sm font-display font-bold text-white mt-0.5">${t.title}</h4>
         <span class="text-xs text-slate-400">${t.exercises_config ? t.exercises_config.length : 0} exercícios</span>
       </div>
-      <button type="button" onclick="switchTab('workout'); loadTemplateIntoWorkout('${t.id}')" class="px-3 py-1.5 bg-slate-900 border border-slate-800 text-xs font-mono text-brand-lime rounded-lg hover:border-brand-lime">
-        Treinar
-      </button>
+      <div class="flex items-center gap-1.5">
+        <button type="button" onclick="openEditTemplateModal('${t.id}')" title="Editar Ficha" class="p-2 bg-slate-900 border border-slate-800 text-slate-300 hover:text-brand-lime hover:border-brand-lime/40 rounded-lg text-xs transition-all">
+          ✏️
+        </button>
+        <button type="button" onclick="deleteTemplate('${t.id}')" title="Apagar Ficha" class="p-2 bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/40 rounded-lg text-xs transition-all">
+          🗑️
+        </button>
+        <button type="button" onclick="switchTab('workout'); loadTemplateIntoWorkout('${t.id}')" class="px-3 py-1.5 bg-slate-900 border border-slate-800 text-xs font-mono text-brand-lime rounded-lg hover:border-brand-lime transition-all">
+          Treinar
+        </button>
+      </div>
     `;
     list.appendChild(div);
   });
