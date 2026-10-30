@@ -331,7 +331,8 @@ async function saveNewTemplate() {
 
   const newTpl = {
     user_id: state.user ? state.user.id : null,
-    title,
+    name: title,        // Adicionado para satisfazer a coluna 'name' antiga
+    title: title,       // Mantido para o padrão da aplicação
     division,
     exercises_config: exercises
   };
