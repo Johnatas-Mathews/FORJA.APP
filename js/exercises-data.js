@@ -2,7 +2,7 @@
 const BASE_IMG_URL = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/";
 
 const EXERCISE_DATABASE = [
-  // PEITO
+  // ================= PEITO =================
   {
     id: 'bench-press-barbell',
     name: 'Supino Reto com Barra',
@@ -73,7 +73,7 @@ const EXERCISE_DATABASE = [
     equipment: 'Polia Baixa Dupla',
     muscles: 'Peitoral Superior e Clavicular',
     tips: 'Puxe as alças de baixo para cima convergindo na altura dos olhos.',
-    img: BASE_IMG_URL + 'Low_Cable_Crossover/0.jpg'
+    img: BASE_IMG_URL + 'Cable_Crossover/1.jpg'
   },
   {
     id: 'dumbbell-flys',
@@ -103,7 +103,7 @@ const EXERCISE_DATABASE = [
     img: BASE_IMG_URL + 'Pushups/0.jpg'
   },
 
-  // COSTAS
+  // ================= COSTAS =================
   {
     id: 'pull-ups',
     name: 'Barra Fixa Pronada (Pull-Up)',
@@ -195,7 +195,7 @@ const EXERCISE_DATABASE = [
     img: BASE_IMG_URL + 'Barbell_Deadlift/0.jpg'
   },
 
-  // PERNAS
+  // ================= PERNAS =================
   {
     id: 'back-squat',
     name: 'Agachamento Livre com Barra',
@@ -305,7 +305,7 @@ const EXERCISE_DATABASE = [
     img: BASE_IMG_URL + 'Seated_Calf_Raise/0.jpg'
   },
 
-  // OMBROS
+  // ================= OMBROS =================
   {
     id: 'overhead-press-barbell',
     name: 'Desenvolvimento Militar com Barra',
@@ -379,7 +379,7 @@ const EXERCISE_DATABASE = [
     img: BASE_IMG_URL + 'Arnold_Dumbbell_Press/0.jpg'
   },
 
-  // BÍCEPS
+  // ================= BÍCEPS =================
   {
     id: 'barbell-bicep-curl',
     name: 'Rosca Direta com Barra W',
@@ -444,7 +444,7 @@ const EXERCISE_DATABASE = [
     img: BASE_IMG_URL + 'Concentration_Curls/0.jpg'
   },
 
-  // TRÍCEPS
+  // ================= TRÍCEPS =================
   {
     id: 'triceps-pushdown-rope',
     name: 'Tríceps Corda na Polia Alta',
@@ -452,7 +452,7 @@ const EXERCISE_DATABASE = [
     equipment: 'Polia Alta & Corda',
     muscles: 'Tríceps (Cabeça Lateral)',
     tips: 'Abra a corda no final da descida para contração em pico de 1 segundo.',
-    img: BASE_IMG_URL + 'Triceps_Pushdown_-_Rope_Attachment/0.jpg'
+    img: BASE_IMG_URL + 'Triceps_Pushdown/0.jpg'
   },
   {
     id: 'triceps-pushdown-bar',
@@ -461,7 +461,7 @@ const EXERCISE_DATABASE = [
     equipment: 'Polia Alta & Barra',
     muscles: 'Tríceps (Cabeça Medial e Lateral)',
     tips: 'Permite o uso de cargas mais altas com grande estabilidade de punho.',
-    img: BASE_IMG_URL + 'Triceps_Pushdown/0.jpg'
+    img: BASE_IMG_URL + 'Triceps_Pushdown/1.jpg'
   },
   {
     id: 'skull-crushers',
@@ -509,7 +509,7 @@ const EXERCISE_DATABASE = [
     img: BASE_IMG_URL + 'Tricep_Dumbbell_Kickback/0.jpg'
   },
 
-  // ABDÔMEN & CORE
+  // ================= ABDÔMEN & CORE =================
   {
     id: 'hanging-leg-raise',
     name: 'Elevação de Pernas na Barra Fixa',
@@ -556,7 +556,7 @@ const EXERCISE_DATABASE = [
     img: BASE_IMG_URL + 'Russian_Twist/0.jpg'
   },
 
-  // TRAPÉZIO
+  // ================= TRAPÉZIO =================
   {
     id: 'barbell-shrug',
     name: 'Encolhimento de Ombros com Barra',
@@ -576,7 +576,7 @@ const EXERCISE_DATABASE = [
     img: BASE_IMG_URL + 'Dumbbell_Shrug/0.jpg'
   },
 
-  // ANTEBRAÇO
+  // ================= ANTEBRAÇO =================
   {
     id: 'wrist-curl-barbell',
     name: 'Rosca de Punho com Barra',
