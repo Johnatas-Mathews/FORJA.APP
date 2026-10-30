@@ -1,4 +1,4 @@
-// js/app.js
+// js/app.js (ou js/apps.js)
 const SUPABASE_URL = "https://pzygeoqjdyvtfpxuytvg.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6eWdlb3FqZHl2dGZweHV5dHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNjczNzMsImV4cCI6MjEwODk0MzM3M30.lme2H9a6-QyI7Hf-7-tSIfr3DuvXMk03ZJoBnOemUYU";
 
@@ -30,7 +30,7 @@ const state = {
 let progressChartInstance = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
-  checkSession();
+  await checkSession();
   renderWeeklyHeatmap();
 });
 
@@ -39,7 +39,7 @@ async function checkSession() {
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (session && session.user) {
     state.user = session.user;
-    onAuthSuccess();
+    await onAuthSuccess();
   } else {
     document.getElementById("authGate").classList.remove("hidden");
   }
@@ -77,13 +77,13 @@ async function handleAuthSubmit(e) {
       const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
       if (error) throw error;
       state.user = data.user;
-      onAuthSuccess();
+      await onAuthSuccess();
     } else {
       const { data, error } = await supabaseClient.auth.signUp({ email, password });
       if (error) throw error;
       state.user = data.user;
-      alert("Conta criada com sucesso!");
-      onAuthSuccess();
+      alert("Conta forjada com sucesso! Bem-vindo à FORJA.");
+      await onAuthSuccess();
     }
   } catch (err) {
     alert("Erro de autenticação: " + (err.message || "Verifique os seus dados."));
@@ -114,14 +114,17 @@ async function handleLogout() {
 async function fetchUserData() {
   if (!supabaseClient || !state.user) return;
 
-  const { data: tpls } = await supabaseClient
+  // Carregar Fichas do Usuário
+  const { data: tpls, error: tplErr } = await supabaseClient
     .from('templates')
     .select('*')
+    .eq('user_id', state.user.id)
     .order('created_at', { ascending: false });
 
-  if (tpls && tpls.length > 0) {
+  if (!tplErr && tpls && tpls.length > 0) {
     state.templates = tpls;
   } else {
+    // Template padrão se for primeiro acesso
     state.templates = [
       {
         id: 'mock-tpl-1',
@@ -136,16 +139,21 @@ async function fetchUserData() {
     ];
   }
 
-  const { data: wks } = await supabaseClient
+  // Carregar Histórico de Treinos do Usuário
+  const { data: wks, error: wkErr } = await supabaseClient
     .from('workouts')
     .select('*')
+    .eq('user_id', state.user.id)
     .order('date', { ascending: false });
 
-  if (wks) {
+  if (!wkErr && wks) {
     state.workouts = wks;
   }
 }
 
+/* -------------------------------------------------------------
+   ARSENAL DE EXERCÍCIOS & MODAIS
+-------------------------------------------------------------- */
 function openExerciseLibraryModal(context = 'workout') {
   state.libraryContext = context;
   document.getElementById("modalExerciseLibrary").classList.remove("hidden");
@@ -188,7 +196,7 @@ function renderExerciseLibraryList() {
     div.className = "bg-slate-900/80 p-3 rounded-xl tactical-border flex items-center justify-between gap-3 hover:border-slate-700 transition-all";
     div.innerHTML = `
       <div class="flex items-center gap-3">
-        <img src="${ex.img}" alt="${ex.name}" class="w-12 h-12 rounded-lg object-cover bg-slate-950 border border-slate-800 flex-shrink-0" onerror="this.src='https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press/0.jpg'" />
+        <img src="${ex.img}" alt="${ex.name}" class="w-12 h-12 rounded-lg object-cover bg-slate-950 border border-slate-800 flex-shrink-0" onerror="this.onerror=null; this.src='https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press/0.jpg';" />
         <div>
           <div class="flex items-center gap-1.5">
             <span class="text-[9px] font-mono text-brand-lime uppercase font-bold">${ex.group}</span>
@@ -220,7 +228,13 @@ function showExerciseDetail(exerciseId) {
   document.getElementById("detailEquipment").textContent = "Equipamento: " + ex.equipment;
   document.getElementById("detailMuscles").textContent = ex.muscles;
   document.getElementById("detailTips").textContent = ex.tips;
-  document.getElementById("detailExerciseImg").src = ex.img;
+
+  const detailImg = document.getElementById("detailExerciseImg");
+  detailImg.onerror = function() {
+    this.onerror = null;
+    this.src = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press/0.jpg';
+  };
+  detailImg.src = ex.img;
 
   document.getElementById("modalExerciseDetail").classList.remove("hidden");
 }
@@ -258,6 +272,9 @@ function selectExerciseFromLibrary(exerciseId) {
   }
 }
 
+/* -------------------------------------------------------------
+   CRONÔMETRO DE DESCANSO AUTOMÁTICO (AUTO-REST)
+-------------------------------------------------------------- */
 function startAutoRest(seconds = 60) {
   const widget = document.getElementById("restTimerWidget");
   const secondsDisplay = document.getElementById("restTimerSeconds");
@@ -311,6 +328,9 @@ function playBeep() {
   } catch (e) {}
 }
 
+/* -------------------------------------------------------------
+   EXECUÇÃO DO TREINO
+-------------------------------------------------------------- */
 function loadTemplateIntoWorkout(templateId) {
   const tpl = state.templates.find(t => t.id === templateId);
   if (!tpl) return;
@@ -427,6 +447,7 @@ async function finishAndSaveWorkout() {
   });
 
   const newWorkout = {
+    user_id: state.user ? state.user.id : null,
     name: state.activeWorkout.name,
     date: new Date().toISOString().split('T')[0],
     total_volume_kg: totalVolume,
@@ -435,7 +456,7 @@ async function finishAndSaveWorkout() {
 
   if (supabaseClient && state.user) {
     const { error } = await supabaseClient.from('workouts').insert([newWorkout]);
-    if (error) console.error("Erro ao guardar treino:", error);
+    if (error) console.error("Erro ao salvar treino no Supabase:", error);
   }
 
   state.workouts.unshift(newWorkout);
@@ -451,6 +472,9 @@ function quickStartTemplate() {
   }
 }
 
+/* -------------------------------------------------------------
+   INTERFACE & NAVEGAÇÃO
+-------------------------------------------------------------- */
 function switchTab(tab) {
   const screens = ['home', 'templates', 'workout', 'progress', 'profile'];
   screens.forEach(s => {
@@ -636,6 +660,7 @@ function renderProfileStats() {
   document.getElementById("profileTemplatesCount").textContent = state.templates.length;
 }
 
+/* Modais de Fichas */
 function openCreateTemplateModal() {
   document.getElementById("modalNewTemplate").classList.remove("hidden");
 }
@@ -652,16 +677,21 @@ function addTplExerciseRow() {
   `;
   container.appendChild(div);
 }
+
+// SALVAMENTO SEGURO COM VÍNCULO DO USUÁRIO NO SUPABASE
 async function saveNewTemplate() {
   const title = document.getElementById("tplNameInput").value.trim();
   const division = document.getElementById("tplDivisionInput").value.trim() || 'A';
-  if (!title) return;
+  if (!title) {
+    alert("Dê um nome para a sua ficha!");
+    return;
+  }
 
   const exercises = [];
   const rows = document.querySelectorAll("#tplExerciseInputs > div");
   rows.forEach(r => {
     const inputs = r.querySelectorAll("input");
-    if (inputs[0].value.trim()) {
+    if (inputs[0] && inputs[0].value.trim()) {
       exercises.push({
         name: inputs[0].value.trim(),
         sets: parseInt(inputs[1].value) || 3,
@@ -670,16 +700,33 @@ async function saveNewTemplate() {
     }
   });
 
+  if (exercises.length === 0) {
+    alert("Adicione pelo menos um exercício na ficha!");
+    return;
+  }
+
   const newTpl = {
+    user_id: state.user ? state.user.id : null,
     title,
     division,
     exercises_config: exercises
   };
 
   if (supabaseClient && state.user) {
-    await supabaseClient.from('templates').insert([newTpl]);
+    const { data, error } = await supabaseClient.from('templates').insert([newTpl]).select();
+    if (error) {
+      console.error("Erro ao salvar ficha no Supabase:", error);
+      alert("Erro ao salvar no banco: " + error.message);
+      return;
+    }
+    if (data && data.length > 0) {
+      newTpl.id = data[0].id;
+    }
   }
+
   state.templates.unshift(newTpl);
   closeCreateTemplateModal();
   renderTemplates();
+  renderProfileStats();
+  alert("Ficha forjada e salva permanentemente na sua conta!");
 }
