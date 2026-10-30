@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IronTrack - Registro & Evolução de Treinos</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              500: '#10b981', // emerald/neon green
+              accent: '#22c55e',
+              glow: 'rgba(34, 197, 94, 0.25)',
+              dark: '#0f172a',
+              card: '#1e293b',
+              cardHover: '#26354a',
+              border: '#334155'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Estilização suave para scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-brand-500 selection:text-slate-950">
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-lime-400 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-emerald-500/20">
+          <i class="fa-solid fa-dumbbell"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+            IRON<span class="text-emerald-400">TRACK</span>
+            <span class="text-[10px] uppercase tracking-wider bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 font-semibold">Pro</span>
+          </h1>
+        </div>
+      </div>
+
+      <!-- Quick Actions / Navigation Pills -->
+  <nav class="flex items-center gap-1 sm:gap-2">
+    <button onclick="switchTab('register')" id="nav-register" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-150 flex items-center gap-2 bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20">
+      <i class="fa-solid fa-plus-circle"></i>
+      <span class="hidden sm:inline">Novo Treino</span>
+    </button>
+    <button onclick="switchTab('templates')" id="nav-templates" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-150 flex items-center gap-2">
+      <i class="fa-solid fa-folder-open"></i>
+      <span class="hidden sm:inline">Fichas / Templates</span>
+    </button>
+    <button onclick="switchTab('history')" id="nav-history" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-150 flex items-center gap-2">
+      <i class="fa-solid fa-clock-rotate-left"></i>
+      <span class="hidden sm:inline">Histórico</span>
+    </button>
+    <button onclick="switchTab('evolution')" id="nav-evolution" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-150 flex items-center gap-2">
+      <i class="fa-solid fa-chart-line"></i>
+      <span class="hidden sm:inline">Evolução</span>
+    </button>
+    <!-- Botão de Conexão Nuvem / Supabase -->
+    <button onclick="openCloudModal()" id="nav-cloud-btn" class="px-3 py-2 rounded-lg text-xs font-semibold bg-slate-800 border border-slate-700 text-slate-300 hover:border-emerald-500 hover:text-emerald-400 transition flex items-center gap-1.5" title="Sincronização Nuvem">
+      <span id="cloud-status-dot" class="w-2 h-2 rounded-full bg-slate-500 inline-block"></span>
+      <i class="fa-solid fa-cloud"></i>
+      <span id="cloud-btn-label" class="hidden sm:inline">Nuvem</span>
+    </button>
+  </nav>
+</div>
+</header>
+
+<!-- Global Notification Toast Container -->
+<div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+<!-- Modal de Conexão com Supabase & Autenticação -->
+<div id="cloud-modal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+      <h3 class="text-base font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-cloud-arrow-up text-emerald-400"></i> Sincronização Supabase
+      </h3>
+      <button onclick="closeCloudModal()" class="text-slate-400 hover:text-white p-1">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Seção de Configuração de Chaves -->
+    <div id="supabase-config-section" class="space-y-3 mb-4">
+      <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-400 space-y-1">
+        <p class="font-semibold text-slate-300 flex items-center gap-1.5">
+          <i class="fa-solid fa-shield-halved text-emerald-400"></i> Conexão Direta
+        </p>
+        <p>Insira a URL e a Anon Key do seu projeto Supabase (Project Settings &rarr; API):</p>
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Project URL</label>
+        <input type="text" id="sb-url-input" placeholder="https://xyzcompany.supabase.co" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Anon Public Key</label>
+        <input type="password" id="sb-key-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..." class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+      </div>
+      <button onclick="saveSupabaseConfig()" class="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl transition">
+        Salvar & Conectar
+      </button>
+    </div>
+
+    <!-- Seção de Login / Cadastro quando conectado -->
+    <div id="supabase-auth-section" class="hidden space-y-3 border-t border-slate-800 pt-4">
+      <div id="auth-logged-out" class="space-y-3">
+        <div class="flex items-center justify-between">
+          <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Login / Cadastro</label>
+          <span class="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Supabase Conectado</span>
+        </div>
+        <input type="email" id="sb-email-input" placeholder="seu-email@exemplo.com" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        <input type="password" id="sb-pass-input" placeholder="Sua senha (mínimo 6 caracteres)" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="handleSupabaseLogin()" class="py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl transition">
+            Entrar
+          </button>
+          <button onclick="handleSupabaseSignUp()" class="py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition">
+            Cadastrar
+          </button>
+        </div>
+      </div>
+
+      <div id="auth-logged-in" class="hidden space-y-3">
+        <div class="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl flex items-center justify-between">
+          <div class="overflow-hidden">
+            <span class="text-[10px] text-emerald-400 uppercase font-bold block">Autenticado</span>
+            <span id="sb-current-user-email" class="text-xs font-semibold text-white truncate block">email@exemplo.com</span>
+          </div>
+          <button onclick="handleSupabaseSignOut()" class="px-2.5 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 text-xs font-semibold rounded-lg transition">
+            Sair
+          </button>
+        </div>
+        <button onclick="syncAllLocalDataToSupabase()" class="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-arrows-rotate"></i> Forçar Sincronização
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating Rest Timer Widget -->
+<div id="floating-rest-timer" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-slate-900/95 border border-emerald-500/50 shadow-2xl shadow-emerald-500/20 rounded-2xl px-4 py-3 text-white backdrop-blur-md flex items-center gap-4 transition-all duration-300 hidden">
+  <div class="relative w-11 h-11 flex items-center justify-center">
+    <svg class="w-11 h-11 -rotate-90" viewBox="0 0 36 36">
+      <path class="text-slate-800" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+      <path id="timer-progress-ring" class="text-emerald-400 transition-all duration-300" stroke-dasharray="100, 100" stroke-dashoffset="0" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+    </svg>
+    <i class="fa-solid fa-stopwatch absolute text-emerald-400 text-xs"></i>
+  </div>
+  <div>
+    <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Descanso</div>
+    <div id="timer-display" class="font-mono text-xl font-black text-emerald-400">01:30</div>
+  </div>
+  <div class="flex items-center gap-1.5 ml-2">
+    <button onclick="adjustRestTimer(30)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs font-semibold" title="+30 segundos">+30s</button>
+    <button id="timer-pause-btn" onclick="togglePauseRestTimer()" class="w-8 h-8 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs" title="Pausar / Retomar">
+      <i class="fa-solid fa-pause"></i>
+    </button>
+    <button onclick="stopRestTimer()" class="w-8 h-8 flex items-center justify-center bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 rounded-lg text-xs" title="Finalizar descanso">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Main Workspace -->
+<main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+  <!-- TAB 1: REGISTRAR TREINO -->
+  <section id="tab-register" class="space-y-6">
+    <!-- Barra de Ações Rápidas: Templates -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
+      <div class="flex items-center gap-3 w-full sm:w-auto">
+        <div class="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+        <div>
+          <span class="text-sm font-bold text-white block">Carregar Ficha Pronta</span>
+          <span class="text-xs text-slate-400">Poupe tempo iniciando com sua rotina de exercícios pré-definida.</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <select id="quick-template-select" class="bg-slate-800 text-slate-200 text-xs sm:text-sm border border-slate-700 rounded-xl px-3 py-2 flex-1 sm:w-56 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <option value="">Selecione uma Ficha...</option>
+        </select>
+        <button onclick="loadSelectedTemplateToForm()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm whitespace-nowrap transition">
+          Carregar
+        </button>
+      </div>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl relative overflow-hidden">
+      <div class="absolute -right-16 -top-16 w-56 h-56 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+      
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800 gap-4">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-file-pen text-emerald-400"></i> Sessão de Treino
+          </h2>
+          <p class="text-slate-400 text-xs sm:text-sm mt-0.5">Preencha cargas e repetições. Toque no cronômetro da série para descansar.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Data da Sessão</label>
+            <input type="date" id="session-date" class="bg-slate-800 text-slate-200 text-sm border border-slate-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Nome/Foco</label>
+            <input type="text" id="session-name" placeholder="Ex: Treino A - Peito e Tríceps" class="bg-slate-800 text-slate-200 text-sm border border-slate-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 w-44 sm:w-56">
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de Exercícios na Sessão Atual -->
+      <div id="exercises-container" class="space-y-5 my-6">
+        <!-- Gerado dinamicamente -->
+      </div>
+
+      <!-- Botões de Ação do Registro -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-800">
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button type="button" onclick="addExerciseCard()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-dashed border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 font-medium text-xs sm:text-sm flex items-center justify-center gap-2 transition">
+            <i class="fa-solid fa-circle-plus"></i> Adicionar Exercício
+          </button>
+          <button type="button" onclick="saveCurrentWorkoutAsTemplate()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-700 hover:border-slate-600 text-slate-300 hover:bg-slate-800 font-medium text-xs sm:text-sm flex items-center justify-center gap-2 transition" title="Gera um template para uso futuro">
+            <i class="fa-regular fa-bookmark"></i> Salvar como Ficha
+          </button>
+        </div>
+        
+        <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+          <button type="button" onclick="clearWorkoutForm()" class="px-4 py-2.5 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-slate-800 text-xs sm:text-sm font-medium transition">
+            Limpar
+          </button>
+          <button type="button" onclick="saveWorkoutSession()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-lime-500 hover:from-emerald-400 hover:to-lime-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/25 transition active:scale-95 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-floppy-disk"></i> Finalizar & Salvar Treino
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 2: FICHAS / TEMPLATES -->
+  <section id="tab-templates" class="hidden space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-folder-open text-emerald-400"></i> Minhas Fichas de Treino
+        </h2>
+        <p class="text-slate-400 text-xs sm:text-sm">Monte suas rotinas pré-definidas (A/B/C, Push/Pull/Legs) e inicie treinos com 1 clique.</p>
+      </div>
+      <button onclick="openCreateTemplateModal()" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm flex items-center gap-2 transition shadow-md shadow-emerald-500/20">
+        <i class="fa-solid fa-plus"></i> Criar Nova Ficha
+      </button>
+    </div>
+
+    <!-- Lista de Fichas -->
+    <div id="templates-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- Inserido dinamicamente -->
+    </div>
+  </section>
+
+  <!-- MODAL: CRIAR / EDITAR FICHA PRÉVIA -->
+  <div id="template-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-folder-plus text-emerald-400"></i> Cadastrar Ficha de Treino
+        </h3>
+        <button onclick="closeTemplateModal()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-400 mt-2">
+        Monte sua ficha uma única vez. Sempre que for treinar, você carrega essa lista com 1 clique e apenas preenche os pesos e repetições realizados.
+      </p>
+
+      <div class="space-y-3 mt-4 overflow-y-auto pr-1 flex-1">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Nome da Ficha *</label>
+            <input type="text" id="tpl-modal-name" placeholder="Ex: Treino A - Peito & Tríceps" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Foco / Divisão</label>
+            <input type="text" id="tpl-modal-focus" placeholder="Ex: Push / Peito e Tríceps" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Exercícios & Séries Estimadas</label>
+            <button type="button" onclick="addTemplateModalExerciseRow()" class="text-xs text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-plus text-[10px]"></i> Adicionar Exercício
+            </button>
+          </div>
+          <div id="tpl-modal-exercises-list" class="space-y-2">
+            <!-- Linhas dinâmicas -->
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-4 border-t border-slate-800 mt-4">
+        <button type="button" onclick="closeTemplateModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 text-xs sm:text-sm font-medium transition">
+          Cancelar
+        </button>
+        <button type="button" onclick="saveTemplateFromModal()" class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm transition flex items-center gap-2">
+          <i class="fa-solid fa-check"></i> Salvar Ficha
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: HISTÓRICO -->
+  <section id="tab-history" class="hidden space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-calendar-days text-emerald-400"></i> Histórico de Atividades
+          </h2>
+          <p class="text-slate-400 text-xs sm:text-sm">Consulte suas sessões passadas e detalhes de cada série.</p>
+        </div>
+
+        <!-- Filtros do Histórico -->
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="relative">
+            <i class="fa-solid fa-search absolute left-3 top-2.5 text-xs text-slate-400"></i>
+            <input type="text" id="history-search" oninput="renderHistoryList()" placeholder="Buscar exercício ou treino..." class="bg-slate-900 border border-slate-800 text-slate-200 text-sm rounded-xl pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <select id="history-filter-muscle" onchange="renderHistoryList()" class="bg-slate-900 border border-slate-800 text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <option value="ALL">Todos os Grupos</option>
+            <option value="Peito">Peito</option>
+            <option value="Costas">Costas</option>
+            <option value="Pernas">Pernas</option>
+            <option value="Ombros">Ombros</option>
+            <option value="Braços">Braços</option>
+            <option value="Core">Core / Abdômen</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Feed do Histórico -->
+      <div id="history-feed" class="space-y-4">
+        <!-- Preenchido via Javascript -->
+      </div>
+    </section>
+
+    <!-- TAB 3: EVOLUÇÃO & DASHBOARD -->
+    <section id="tab-evolution" class="hidden space-y-6">
+      <!-- Cards de Métricas Principais -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl border border-emerald-500/20">
+            <i class="fa-solid fa-weight-hanging"></i>
+          </div>
+          <div>
+            <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Volume Total (Geral)</p>
+            <h3 id="stat-total-volume" class="text-xl font-bold text-white">0 kg</h3>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-lime-500/10 text-lime-400 flex items-center justify-center text-xl border border-lime-500/20">
+            <i class="fa-solid fa-calendar-check"></i>
+          </div>
+          <div>
+            <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Treinos Registrados</p>
+            <h3 id="stat-total-workouts" class="text-xl font-bold text-white">0</h3>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-xl border border-cyan-500/20">
+            <i class="fa-solid fa-trophy"></i>
+          </div>
+          <div>
+            <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Recorde (PR Atual)</p>
+            <h3 id="stat-exercise-pr" class="text-xl font-bold text-white">0 kg</h3>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center text-xl border border-violet-500/20">
+            <i class="fa-solid fa-layer-group"></i>
+          </div>
+          <div>
+            <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Séries Totais</p>
+            <h3 id="stat-total-sets" class="text-xl font-bold text-white">0</h3>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seção do Gráfico Interativo -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-4 shadow-xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-800">
+          <div>
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-arrow-trend-up text-emerald-400"></i> Progresso ao Longo do Tempo
+            </h3>
+            <p class="text-xs text-slate-400">Analise o avanço de carga ou volume por exercício específico.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="chart-exercise-select" onchange="updateEvolutionChart()" class="bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+              <!-- Preenchido via Javascript -->
+            </select>
+            <select id="chart-metric-select" onchange="updateEvolutionChart()" class="bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+              <option value="maxWeight">Carga Máxima (kg)</option>
+              <option value="totalVolume">Volume da Sessão (kg × reps)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Container do Canvas -->
+        <div class="w-full h-72 sm:h-96 relative">
+          <canvas id="progressChart"></canvas>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // --- INTEGRAÇÃO SUPABASE ---
+    let supabaseClient = null;
+    let currentUser = null;
+
+    function initSupabase() {
+      // 1. Prioriza variáveis injetadas em ambiente Vercel (window.__ENV__) se existirem
+      const envUrl = window.__ENV__?.SUPABASE_URL || localStorage.getItem('irontrack_sb_url');
+      const envKey = window.__ENV__?.SUPABASE_ANON_KEY || localStorage.getItem('irontrack_sb_key');
+
+      if (envUrl && envKey && window.supabase) {
+        try {
+          supabaseClient = window.supabase.createClient(envUrl, envKey);
+          updateCloudIndicator(true, false);
+          checkSupabaseAuth();
+        } catch (err) {
+          console.error("Falha ao inicializar Supabase:", err);
+          updateCloudIndicator(false, false);
+        }
+      } else {
+        updateCloudIndicator(false, false);
+      }
+    }
+
+    function openCloudModal() {
+      const urlInput = document.getElementById('sb-url-input');
+      const keyInput = document.getElementById('sb-key-input');
+      if (urlInput) urlInput.value = localStorage.getItem('irontrack_sb_url') || '';
+      if (keyInput) keyInput.value = localStorage.getItem('irontrack_sb_key') || '';
+      document.getElementById('cloud-modal').classList.remove('hidden');
+    }
+
+    function closeCloudModal() {
+      document.getElementById('cloud-modal').classList.add('hidden');
+    }
+
+    function saveSupabaseConfig() {
+      const url = document.getElementById('sb-url-input').value.trim();
+      const key = document.getElementById('sb-key-input').value.trim();
+
+      if (!url || !key) {
+        showToast("Preencha a URL e a Anon Key do Supabase.", "error");
+        return;
+      }
+
+      localStorage.setItem('irontrack_sb_url', url);
+      localStorage.setItem('irontrack_sb_key', key);
+      initSupabase();
+      showToast("Configurações do Supabase salvas com sucesso!", "success");
+    }
+
+    async function checkSupabaseAuth() {
+      if (!supabaseClient) return;
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      
+      const authSection = document.getElementById('supabase-auth-section');
+      const loggedOutDiv = document.getElementById('auth-logged-out');
+      const loggedInDiv = document.getElementById('auth-logged-in');
+      const emailDisplay = document.getElementById('sb-current-user-email');
+
+      if (authSection) authSection.classList.remove('hidden');
+
+      if (session?.user) {
+        currentUser = session.user;
+        if (loggedOutDiv) loggedOutDiv.classList.add('hidden');
+        if (loggedInDiv) loggedInDiv.classList.remove('hidden');
+        if (emailDisplay) emailDisplay.innerText = currentUser.email;
+        updateCloudIndicator(true, true);
+        await fetchRemoteDataFromSupabase();
+      } else {
+        currentUser = null;
+        if (loggedOutDiv) loggedOutDiv.classList.remove('hidden');
+        if (loggedInDiv) loggedInDiv.classList.add('hidden');
+        updateCloudIndicator(true, false);
+      }
+
+      // Listener de alteração de estado
+      supabaseClient.auth.onAuthStateChange(async (event, currentSession) => {
+        if (currentSession?.user) {
+          currentUser = currentSession.user;
+          if (loggedOutDiv) loggedOutDiv.classList.add('hidden');
+          if (loggedInDiv) loggedInDiv.classList.remove('hidden');
+          if (emailDisplay) emailDisplay.innerText = currentUser.email;
+          updateCloudIndicator(true, true);
+        } else {
+          currentUser = null;
+          if (loggedOutDiv) loggedOutDiv.classList.remove('hidden');
+          if (loggedInDiv) loggedInDiv.classList.add('hidden');
+          updateCloudIndicator(true, false);
+        }
+      });
+    }
+
+    async function handleSupabaseSignUp() {
+      if (!supabaseClient) return;
+      const email = document.getElementById('sb-email-input').value.trim();
+      const password = document.getElementById('sb-pass-input').value.trim();
+
+      if (!email || password.length < 6) {
+        showToast("Insira um e-mail válido e senha com no mínimo 6 caracteres.", "error");
+        return;
+      }
+
+      const { data, error } = await supabaseClient.auth.signUp({ email, password });
+      if (error) {
+        showToast("Erro no cadastro: " + error.message, "error");
+      } else {
+        showToast("Cadastro realizado com sucesso!", "success");
+        checkSupabaseAuth();
+      }
+    }
+
+    async function handleSupabaseLogin() {
+      if (!supabaseClient) return;
+      const email = document.getElementById('sb-email-input').value.trim();
+      const password = document.getElementById('sb-pass-input').value.trim();
+
+      if (!email || !password) {
+        showToast("Preencha e-mail e senha para logar.", "error");
+        return;
+      }
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) {
+        showToast("Falha no login: " + error.message, "error");
+      } else {
+        showToast("Bem-vindo de volta!", "success");
+        checkSupabaseAuth();
+        closeCloudModal();
+      }
+    }
+
+    async function handleSupabaseSignOut() {
+      if (!supabaseClient) return;
+      await supabaseClient.auth.signOut();
+      currentUser = null;
+      checkSupabaseAuth();
+      showToast("Desconectado da conta.", "info");
+    }
+
+    function updateCloudIndicator(connected, loggedIn) {
+      const dot = document.getElementById('cloud-status-dot');
+      const label = document.getElementById('cloud-btn-label');
+      if (!dot || !label) return;
+
+      if (loggedIn) {
+        dot.className = "w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse";
+        label.innerText = "Sincronizado";
+      } else if (connected) {
+        dot.className = "w-2 h-2 rounded-full bg-amber-400 inline-block";
+        label.innerText = "Conectar Login";
+      } else {
+        dot.className = "w-2 h-2 rounded-full bg-slate-500 inline-block";
+        label.innerText = "Offline (Local)";
+      }
+    }
+
+    // Sincronização bidirecional de dados
+    async function syncWorkoutToSupabase(session) {
+      if (!supabaseClient || !currentUser) return;
+      try {
+        await supabaseClient.from('workouts').upsert({
+          id: session.id,
+          user_id: currentUser.id,
+          date: session.date,
+          name: session.name,
+          exercises: session.exercises,
+          updated_at: new Date().toISOString()
+        });
+      } catch (err) {
+        console.warn("Erro ao sincronizar treino remoto:", err);
+      }
+    }
+
+    async function syncTemplateToSupabase(tpl) {
+      if (!supabaseClient || !currentUser) return;
+      try {
+        await supabaseClient.from('templates').upsert({
+          id: tpl.id,
+          user_id: currentUser.id,
+          name: tpl.name,
+          focus: tpl.focus,
+          exercises: tpl.exercises,
+          updated_at: new Date().toISOString()
+        });
+      } catch (err) {
+        console.warn("Erro ao sincronizar ficha remota:", err);
+      }
+    }
+
+    async function deleteWorkoutFromSupabase(id) {
+      if (!supabaseClient || !currentUser) return;
+      await supabaseClient.from('workouts').delete().eq('id', id);
+    }
+
+    async function deleteTemplateFromSupabase(id) {
+      if (!supabaseClient || !currentUser) return;
+      await supabaseClient.from('templates').delete().eq('id', id);
+    }
+
+    async function fetchRemoteDataFromSupabase() {
+      if (!supabaseClient || !currentUser) return;
+      try {
+        const { data: remoteWorkouts } = await supabaseClient.from('workouts').select('*').order('date', { ascending: false });
+        if (remoteWorkouts && remoteWorkouts.length > 0) {
+          workouts = remoteWorkouts;
+          saveToLocalStorage();
+          renderHistoryList();
+          populateExerciseSelectOptions();
+        }
+
+        const { data: remoteTemplates } = await supabaseClient.from('templates').select('*');
+        if (remoteTemplates && remoteTemplates.length > 0) {
+          templates = remoteTemplates;
+          saveTemplatesToLocalStorage();
+          refreshTemplateSelectors();
+          renderTemplatesList();
+        }
+        showToast("Dados sincronizados com o Supabase!", "success");
+      } catch (err) {
+        console.warn("Falha ao buscar dados remotos:", err);
+      }
+    }
+
+    async function syncAllLocalDataToSupabase() {
+      if (!supabaseClient || !currentUser) {
+        showToast("Faça login antes de sincronizar.", "error");
+        return;
+      }
+      showToast("Sincronizando dados locais com a nuvem...", "info");
+      for (let w of workouts) {
+        await syncWorkoutToSupabase(w);
+      }
+      for (let t of templates) {
+        await syncTemplateToSupabase(t);
+      }
+      showToast("Tudo atualizado no Supabase!", "success");
+    }
+
+    // --- BANCO PREDEFINIDO DE EXERCÍCIOS ---
+    const PREDEFINED_EXERCISES = [
+      { name: "Supino Reto com Barra", group: "Peito" },
+      { name: "Supino Inclinado com Halteres", group: "Peito" },
+      { name: "Crucifixo na Polia", group: "Peito" },
+      { name: "Puxada Frontal", group: "Costas" },
+      { name: "Remada Curvada com Barra", group: "Costas" },
+      { name: "Remada Baixa Triângulo", group: "Costas" },
+      { name: "Agachamento Livre", group: "Pernas" },
+      { name: "Leg Press 45°", group: "Pernas" },
+      { name: "Cadeira Extensora", group: "Pernas" },
+      { name: "Mesa Flexora", group: "Pernas" },
+      { name: "Desenvolvimento com Halteres", group: "Ombros" },
+      { name: "Elevação Lateral na Polia", group: "Ombros" },
+      { name: "Rosca Direta com Barra W", group: "Braços" },
+      { name: "Tríceps Corda no Cross", group: "Braços" },
+      { name: "Prancha Abdominal", group: "Core" },
+      { name: "Abdominal Supra na Polia", group: "Core" }
+    ];
+
+    // Dados Mock caso o LocalStorage esteja vazio
+    const MOCK_WORKOUTS = [
+      {
+        id: "mock_1",
+        date: "2026-10-15",
+        name: "Treino A - Peito & Tríceps",
+        exercises: [
+          {
+            name: "Supino Reto com Barra",
+            group: "Peito",
+            notes: "RPE 8, aquecimento prévio",
+            sets: [
+              { weight: 60, reps: 10 },
+              { weight: 70, reps: 8 },
+              { weight: 75, reps: 6 }
+            ]
+          },
+          {
+            name: "Tríceps Corda no Cross",
+            group: "Braços",
+            notes: "Cadência 3-1",
+            sets: [
+              { weight: 25, reps: 12 },
+              { weight: 30, reps: 10 }
+            ]
+          }
+        ]
+      },
+      {
+        id: "mock_2",
+        date: "2026-10-22",
+        name: "Treino A - Peito & Tríceps",
+        exercises: [
+          {
+            name: "Supino Reto com Barra",
+            group: "Peito",
+            notes: "RPE 8.5, boa técnica",
+            sets: [
+              { weight: 65, reps: 10 },
+              { weight: 75, reps: 8 },
+              { weight: 80, reps: 6 }
+            ]
+          }
+        ]
+      },
+      {
+        id: "mock_3",
+        date: "2026-10-29",
+        name: "Treino A - Peito & Tríceps",
+        exercises: [
+          {
+            name: "Supino Reto com Barra",
+            group: "Peito",
+            notes: "PR batido com auxílio!",
+            sets: [
+              { weight: 70, reps: 10 },
+              { weight: 80, reps: 7 },
+              { weight: 85, reps: 5 }
+            ]
+          }
+        ]
+      }
+    ];
+
+    // Estado da Aplicação
+    let workouts = [];
+    let progressChartInstance = null;
+
+    // Inicialização da Aplicação
+    window.addEventListener('DOMContentLoaded', () => {
+      loadWorkouts();
+      setDefaultSessionDate();
+      addExerciseCard(); // Adiciona 1 exercício inicial no formulário
+      populateExerciseSelectOptions();
+    });
+
+    // Funções de Armazenamento Local
+    function loadWorkouts() {
+      const stored = localStorage.getItem('irontrack_workouts');
+      if (stored) {
+        try {
+          workouts = JSON.parse(stored);
+        } catch (e) {
+          workouts = [...MOCK_WORKOUTS];
+        }
+      } else {
+        workouts = [...MOCK_WORKOUTS];
+        saveToLocalStorage();
+      }
+    }
+
+    function saveToLocalStorage() {
+      localStorage.setItem('irontrack_workouts', JSON.stringify(workouts));
+    }
+
+    function setDefaultSessionDate() {
+      const today = new Date().toISOString().split('T')[0];
+      const dateEl = document.getElementById('session-date');
+      if (dateEl) dateEl.value = today;
+    }
+
+    // Alternador de Abas
+    function switchTab(tabName) {
+      const tabs = ['register', 'history', 'evolution'];
+      tabs.forEach(t => {
+        const section = document.getElementById(`tab-${t}`);
+        const navBtn = document.getElementById(`nav-${t}`);
+        if (t === tabName) {
+          section.classList.remove('hidden');
+          navBtn.classList.remove('text-slate-400', 'hover:bg-slate-800');
+          navBtn.classList.add('bg-emerald-500', 'text-slate-950', 'shadow-md', 'shadow-emerald-500/20');
+        } else {
+          section.classList.add('hidden');
+          navBtn.classList.add('text-slate-400', 'hover:bg-slate-800');
+          navBtn.classList.remove('bg-emerald-500', 'text-slate-950', 'shadow-md', 'shadow-emerald-500/20');
+        }
+      });
+
+      if (tabName === 'history') {
+        renderHistoryList();
+      } else if (tabName === 'evolution') {
+        renderEvolutionDashboard();
+      }
+    }
+
+    // --- FORMULÁRIO DE REGISTRO DINÂMICO ---
+    let exerciseCounter = 0;
+
+    function addExerciseCard(initialData = null) {
+      exerciseCounter++;
+      const id = `exercise-${exerciseCounter}`;
+      const container = document.getElementById('exercises-container');
+
+      const card = document.createElement('div');
+      card.id = id;
+      card.className = "bg-slate-950/60 border border-slate-800 rounded-xl p-4 sm:p-5 relative transition hover:border-slate-700";
+
+      let optionsHtml = PREDEFINED_EXERCISES.map(ex => 
+        `<option value="${ex.name}" data-group="${ex.group}">${ex.name} (${ex.group})</option>`
+      ).join('');
+
+      card.innerHTML = `
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div class="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div class="w-full sm:w-1/2">
+              <label class="block text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">Exercício</label>
+              <input type="text" list="exercise-datalist-${id}" placeholder="Selecione ou digite..." class="exercise-name-input bg-slate-800 text-white text-sm rounded-lg px-3 py-2 w-full border border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <datalist id="exercise-datalist-${id}">
+                ${optionsHtml}
+              </datalist>
+            </div>
+            <div class="w-full sm:w-1/4">
+              <label class="block text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">Grupo Muscular</label>
+              <select class="exercise-group-select bg-slate-800 text-slate-200 text-sm rounded-lg px-3 py-2 w-full border border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <option value="Peito">Peito</option>
+                <option value="Costas">Costas</option>
+                <option value="Pernas">Pernas</option>
+                <option value="Ombros">Ombros</option>
+                <option value="Braços">Braços</option>
+                <option value="Core">Core</option>
+                <option value="Outro">Outro</option>
+              </select>
+            </div>
+            <div class="w-full sm:w-1/4">
+              <label class="block text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">Notas / RPE</label>
+              <input type="text" placeholder="Ex: RPE 8, pausa 90s" class="exercise-notes-input bg-slate-800 text-slate-300 text-sm rounded-lg px-3 py-2 w-full border border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+          </div>
+          <button type="button" onclick="removeExerciseCard('${id}')" class="text-slate-500 hover:text-rose-400 p-2 self-end sm:self-center transition" title="Remover Exercício">
+            <i class="fa-solid fa-trash-can text-sm"></i>
+          </button>
+        </div>
+
+        <!-- Tabela de Séries -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead>
+              <tr class="text-slate-400 border-b border-slate-800/80">
+                <th class="py-2 px-3 w-16">SÉRIE</th>
+                <th class="py-2 px-3">PESO / CARGA (KG)</th>
+                <th class="py-2 px-3">REPETIÇÕES</th>
+                <th class="py-2 px-3 text-center">DESCANSO</th>
+                <th class="py-2 px-3 w-16 text-center">AÇÃO</th>
+              </tr>
+            </thead>
+            <tbody id="sets-tbody-${id}">
+              <!-- Séries inseridas aqui -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-3">
+          <button type="button" onclick="addSetRow('${id}')" class="text-xs text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1.5 py-1 px-2 rounded hover:bg-emerald-500/10 transition">
+            <i class="fa-solid fa-plus text-[10px]"></i> Adicionar Série
+          </button>
+        </div>
+      `;
+
+      container.appendChild(card);
+
+      // Preenchimento de dados iniciais caso venha de um template
+      if (initialData) {
+        card.querySelector('.exercise-name-input').value = initialData.name || '';
+        card.querySelector('.exercise-group-select').value = initialData.group || 'Peito';
+        const setsCount = initialData.setsCount || 3;
+        for (let i = 0; i < setsCount; i++) {
+          addSetRow(id, initialData.suggestedWeight || '', '');
+        }
+      } else {
+        // Adiciona 1 série padrão caso seja vazio
+        addSetRow(id, 60, 10);
+      }
+
+      // Adiciona listener para preenchimento inteligente de grupo muscular
+      const nameInput = card.querySelector('.exercise-name-input');
+      const groupSelect = card.querySelector('.exercise-group-select');
+      nameInput.addEventListener('change', (e) => {
+        const found = PREDEFINED_EXERCISES.find(ex => ex.name.toLowerCase() === e.target.value.trim().toLowerCase());
+        if (found) {
+          groupSelect.value = found.group;
+        }
+      });
+    }
+
+    function removeExerciseCard(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+
+    function addSetRow(exerciseId, defaultWeight = '', defaultReps = '') {
+      const tbody = document.getElementById(`sets-tbody-${exerciseId}`);
+      if (!tbody) return;
+
+      const setIndex = tbody.children.length + 1;
+      const row = document.createElement('tr');
+      row.className = "border-b border-slate-800/40 hover:bg-slate-900/40";
+      row.innerHTML = `
+        <td class="py-2 px-3 font-mono font-bold text-slate-400">${setIndex}</td>
+        <td class="py-2 px-3">
+          <div class="flex items-center gap-1">
+            <input type="number" step="0.5" min="0" placeholder="0" value="${defaultWeight}" class="set-weight bg-slate-900 border border-slate-700 text-white rounded-lg px-2.5 py-1.5 w-24 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
+            <span class="text-slate-400 text-xs">kg</span>
+          </div>
+        </td>
+        <td class="py-2 px-3">
+          <div class="flex items-center gap-1">
+            <input type="number" step="1" min="1" placeholder="reps" value="${defaultReps}" class="set-reps bg-slate-900 border border-slate-700 text-white rounded-lg px-2.5 py-1.5 w-24 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
+            <span class="text-slate-400 text-xs">reps</span>
+          </div>
+        </td>
+        <td class="py-2 px-3 text-center">
+          <div class="flex items-center justify-center gap-1">
+            <button type="button" onclick="startRestTimer(60)" class="px-1.5 py-1 bg-slate-800 hover:bg-emerald-500/20 hover:text-emerald-400 text-[11px] font-mono rounded text-slate-400 transition" title="Descanso de 60s">60s</button>
+            <button type="button" onclick="startRestTimer(90)" class="px-1.5 py-1 bg-slate-800 hover:bg-emerald-500/20 hover:text-emerald-400 text-[11px] font-mono rounded text-slate-400 transition" title="Descanso de 90s">90s</button>
+            <button type="button" onclick="startRestTimer(120)" class="px-1.5 py-1 bg-slate-800 hover:bg-emerald-500/20 hover:text-emerald-400 text-[11px] font-mono rounded text-slate-400 transition" title="Descanso de 120s">120s</button>
+          </div>
+        </td>
+        <td class="py-2 px-3 text-center">
+          <button type="button" onclick="this.closest('tr').remove(); renumberSets('${exerciseId}')" class="text-slate-500 hover:text-rose-400 p-1">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    }
+
+    function renumberSets(exerciseId) {
+      const tbody = document.getElementById(`sets-tbody-${exerciseId}`);
+      if (!tbody) return;
+      Array.from(tbody.children).forEach((tr, index) => {
+        tr.children[0].innerText = index + 1;
+      });
+    }
+
+    function clearWorkoutForm() {
+      document.getElementById('exercises-container').innerHTML = '';
+      document.getElementById('session-name').value = '';
+      setDefaultSessionDate();
+      addExerciseCard();
+    }
+
+    function saveWorkoutSession() {
+      const date = document.getElementById('session-date').value;
+      const sessionName = document.getElementById('session-name').value.trim() || "Treino Geral";
+
+      if (!date) {
+        showToast("Por favor, selecione uma data para o treino.", "error");
+        return;
+      }
+
+      const exerciseCards = document.querySelectorAll('#exercises-container > div');
+      if (exerciseCards.length === 0) {
+        showToast("Adicione pelo menos um exercício ao treino.", "error");
+        return;
+      }
+
+      const exercisesList = [];
+
+      for (let card of exerciseCards) {
+        const name = card.querySelector('.exercise-name-input').value.trim();
+        const group = card.querySelector('.exercise-group-select').value;
+        const notes = card.querySelector('.exercise-notes-input').value.trim();
+
+        if (!name) {
+          showToast("Informe o nome de todos os exercícios registrados.", "error");
+          return;
+        }
+
+        const sets = [];
+        const rows = card.querySelectorAll('tbody tr');
+        rows.forEach(tr => {
+          const weight = parseFloat(tr.querySelector('.set-weight').value) || 0;
+          const reps = parseInt(tr.querySelector('.set-reps').value, 10) || 0;
+          if (reps > 0) {
+            sets.push({ weight, reps });
+          }
+        });
+
+        if (sets.length === 0) {
+          showToast(`Adicione ao menos uma série válida para o exercício: ${name}`, "error");
+          return;
+        }
+
+        exercisesList.push({
+          name,
+          group,
+          notes,
+          sets
+        });
+      }
+
+      const newSession = {
+        id: "workout_" + Date.now(),
+        date,
+        name: sessionName,
+        exercises: exercisesList
+      };
+
+      workouts.unshift(newSession);
+      saveToLocalStorage();
+      syncWorkoutToSupabase(newSession); // Nuvem Supabase
+      showToast("Treino registrado com sucesso!", "success");
+
+      clearWorkoutForm();
+      populateExerciseSelectOptions();
+      switchTab('history');
+    }
+
+    // --- HISTÓRICO DE TREINOS ---
+    function renderHistoryList() {
+      const feed = document.getElementById('history-feed');
+      const searchTerm = document.getElementById('history-search').value.toLowerCase().trim();
+      const muscleFilter = document.getElementById('history-filter-muscle').value;
+
+      feed.innerHTML = '';
+
+      // Ordenar decrescente por data
+      const sorted = [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      const filtered = sorted.filter(session => {
+        const matchesSearch = session.name.toLowerCase().includes(searchTerm) ||
+          session.exercises.some(ex => ex.name.toLowerCase().includes(searchTerm));
+
+        const matchesMuscle = muscleFilter === 'ALL' ||
+          session.exercises.some(ex => ex.group === muscleFilter);
+
+        return matchesSearch && matchesMuscle;
+      });
+
+      if (filtered.length === 0) {
+        feed.innerHTML = `
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
+            <i class="fa-solid fa-clipboard-question text-3xl mb-3 text-slate-600"></i>
+            <p class="font-medium">Nenhum treino encontrado com os filtros selecionados.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(session => {
+        // Cálculo do volume da sessão
+        let sessionVolume = 0;
+        let totalReps = 0;
+        session.exercises.forEach(ex => {
+          ex.sets.forEach(s => {
+            sessionVolume += (s.weight * s.reps);
+            totalReps += s.reps;
+          });
+        });
+
+        const card = document.createElement('div');
+        card.className = "bg-slate-900 border border-slate-800 rounded-2xl p-5 transition hover:border-slate-700 shadow-lg";
+
+        // Formatação de data
+        const dateParts = session.date.split('-');
+        const formattedDate = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}` : session.date;
+
+        card.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-800 gap-3">
+            <div>
+              <div class="flex items-center gap-3">
+                <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-md">
+                  <i class="fa-regular fa-calendar mr-1"></i>${formattedDate}
+                </span>
+                <h3 class="text-base font-bold text-white">${session.name}</h3>
+              </div>
+              <p class="text-xs text-slate-400 mt-1">
+                Volume: <strong class="text-slate-200">${sessionVolume.toLocaleString()} kg</strong> | ${session.exercises.length} Exercícios | ${totalReps} Repetições totais
+              </p>
+            </div>
+            <div>
+              <button onclick="deleteWorkoutSession('${session.id}')" class="text-slate-500 hover:text-rose-400 hover:bg-slate-800 p-2 rounded-lg text-sm transition" title="Excluir Treino">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+            ${session.exercises.map(ex => `
+              <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3.5 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <span class="font-semibold text-slate-200 text-sm flex items-center gap-1.5">
+                      <i class="fa-solid fa-angle-right text-emerald-400 text-xs"></i> ${ex.name}
+                    </span>
+                    <span class="text-[10px] uppercase font-bold text-slate-400 bg-slate-800 px-2 py-0.5 rounded">${ex.group}</span>
+                  </div>
+                  ${ex.notes ? `<p class="text-[11px] text-slate-400 italic mb-2">Nota: ${ex.notes}</p>` : ''}
+                </div>
+                <div class="flex flex-wrap gap-1.5 mt-2">
+                  ${ex.sets.map((s, idx) => `
+                    <span class="text-xs bg-slate-900 border border-slate-800 text-slate-300 px-2 py-1 rounded font-mono">
+                      #${idx + 1}: <span class="text-emerald-400 font-bold">${s.weight}kg</span> × ${s.reps}
+                    </span>
+                  `).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        feed.appendChild(card);
+      });
+    }
+
+    function deleteWorkoutSession(id) {
+      workouts = workouts.filter(w => w.id !== id);
+      saveToLocalStorage();
+      deleteWorkoutFromSupabase(id); // Nuvem Supabase
+      renderHistoryList();
+      populateExerciseSelectOptions();
+      showToast("Registro de treino removido.", "info");
+    }
+
+    // --- EVOLUÇÃO, DASHBOARD & GRÁFICOS ---
+    function getAllUniqueExercises() {
+      const set = new Set();
+      workouts.forEach(w => {
+        w.exercises.forEach(ex => set.add(ex.name));
+      });
+      return Array.from(set).sort();
+    }
+
+    function populateExerciseSelectOptions() {
+      const select = document.getElementById('chart-exercise-select');
+      if (!select) return;
+
+      const exercises = getAllUniqueExercises();
+      select.innerHTML = '';
+
+      if (exercises.length === 0) {
+        select.innerHTML = '<option value="">Sem exercícios registrados</option>';
+        return;
+      }
+
+      exercises.forEach(exName => {
+        const option = document.createElement('option');
+        option.value = exName;
+        option.innerText = exName;
+        select.appendChild(option);
+      });
+    }
+
+    function renderEvolutionDashboard() {
+      let totalVolumeGlobal = 0;
+      let totalSetsGlobal = 0;
+
+      workouts.forEach(w => {
+        w.exercises.forEach(ex => {
+          ex.sets.forEach(s => {
+            totalVolumeGlobal += (s.weight * s.reps);
+            totalSetsGlobal++;
+          });
+        });
+      });
+
+      document.getElementById('stat-total-volume').innerText = `${totalVolumeGlobal.toLocaleString()} kg`;
+      document.getElementById('stat-total-workouts').innerText = workouts.length;
+      document.getElementById('stat-total-sets').innerText = totalSetsGlobal;
+
+      const select = document.getElementById('chart-exercise-select');
+      if (!select.value && select.options.length > 0) {
+        select.selectedIndex = 0;
+      }
+
+      updateEvolutionChart();
+    }
+
+    function updateEvolutionChart() {
+      const exerciseSelect = document.getElementById('chart-exercise-select');
+      const metricSelect = document.getElementById('chart-metric-select');
+      const prDisplay = document.getElementById('stat-exercise-pr');
+
+      const selectedExercise = exerciseSelect.value;
+      const selectedMetric = metricSelect.value;
+
+      if (!selectedExercise) {
+        prDisplay.innerText = "0 kg";
+        return;
+      }
+
+      const sortedWorkouts = [...workouts].sort((a, b) => new Date(a.date) - new Date(b.date));
+      
+      const labels = [];
+      const dataPoints = [];
+      let maxWeightGlobal = 0;
+
+      sortedWorkouts.forEach(session => {
+        const matched = session.exercises.find(ex => ex.name.toLowerCase() === selectedExercise.toLowerCase());
+        if (matched && matched.sets.length > 0) {
+          const dateParts = session.date.split('-');
+          labels.push(`${dateParts[2]}/${dateParts[1]}`);
+
+          let sessionMax = 0;
+          let sessionVolume = 0;
+
+          matched.sets.forEach(s => {
+            if (s.weight > sessionMax) sessionMax = s.weight;
+            if (s.weight > maxWeightGlobal) maxWeightGlobal = s.weight;
+            sessionVolume += (s.weight * s.reps);
+          });
+
+          if (selectedMetric === 'maxWeight') {
+            dataPoints.push(sessionMax);
+          } else {
+            dataPoints.push(sessionVolume);
+          }
+        }
+      });
+
+      prDisplay.innerText = `${maxWeightGlobal} kg`;
+
+      const ctx = document.getElementById('progressChart').getContext('2d');
+      if (progressChartInstance) {
+        progressChartInstance.destroy();
+      }
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+      gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+      gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+      const metricLabel = selectedMetric === 'maxWeight' ? 'Carga Máxima (kg)' : 'Volume Total (kg × reps)';
+
+      progressChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: metricLabel,
+            data: dataPoints,
+            borderColor: '#10b981',
+            backgroundColor: gradient,
+            borderWidth: 3,
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#22c55e',
+            pointBorderColor: '#0f172a',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#94a3b8',
+                font: { family: 'sans-serif', size: 12 }
+              }
+            },
+            tooltip: {
+              backgroundColor: '#1e293b',
+              titleColor: '#f8fafc',
+              bodyColor: '#34d399',
+              borderColor: '#334155',
+              borderWidth: 1,
+              padding: 10,
+              displayColors: false
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(51, 65, 85, 0.3)' },
+              ticks: { color: '#94a3b8' }
+            },
+            y: {
+              grid: { color: 'rgba(51, 65, 85, 0.3)' },
+              ticks: { color: '#94a3b8' },
+              beginAtZero: false
+            }
+          }
+        }
+      });
+    }
+
+    // --- CRONÔMETRO DE DESCANSO (REST TIMER) ---
+    let restTimerInterval = null;
+    let restTimerTotal = 90;
+    let restTimerRemaining = 90;
+    let isTimerPaused = false;
+
+    function startRestTimer(seconds = 90) {
+      clearInterval(restTimerInterval);
+      restTimerTotal = seconds;
+      restTimerRemaining = seconds;
+      isTimerPaused = false;
+
+      const timerWidget = document.getElementById('floating-rest-timer');
+      timerWidget.classList.remove('hidden');
+
+      updateTimerDisplay();
+      updateTimerPauseButton();
+
+      restTimerInterval = setInterval(() => {
+        if (!isTimerPaused) {
+          restTimerRemaining--;
+          updateTimerDisplay();
+
+          if (restTimerRemaining <= 0) {
+            clearInterval(restTimerInterval);
+            playTimerBeep();
+            showToast("Tempo de descanso finalizado! Hora da próxima série.", "success");
+            if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+            setTimeout(() => {
+              stopRestTimer();
+            }, 3500);
+          }
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(restTimerRemaining / 60);
+      const secs = restTimerRemaining % 60;
+      const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      document.getElementById('timer-display').innerText = formatted;
+
+      const progressRing = document.getElementById('timer-progress-ring');
+      const progressPercent = Math.max(0, (restTimerRemaining / restTimerTotal) * 100);
+      progressRing.setAttribute('stroke-dasharray', `${progressPercent}, 100`);
+    }
+
+    function adjustRestTimer(seconds) {
+      restTimerRemaining = Math.max(0, restTimerRemaining + seconds);
+      restTimerTotal = Math.max(restTimerTotal, restTimerRemaining);
+      updateTimerDisplay();
+    }
+
+    function togglePauseRestTimer() {
+      isTimerPaused = !isTimerPaused;
+      updateTimerPauseButton();
+    }
+
+    function updateTimerPauseButton() {
+      const btn = document.getElementById('timer-pause-btn');
+      btn.innerHTML = isTimerPaused ? '<i class="fa-solid fa-play"></i>' : '<i class="fa-solid fa-pause"></i>';
+    }
+
+    function stopRestTimer() {
+      clearInterval(restTimerInterval);
+      document.getElementById('floating-rest-timer').classList.add('hidden');
+    }
+
+    function playTimerBeep() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1320, audioCtx.currentTime + 0.3);
+
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.35);
+      } catch (e) {
+        console.warn("Áudio não suportado ou bloqueado pelo navegador.");
+      }
+    }
+
+    // --- GERENCIAMENTO DE FICHAS / TEMPLATES ---
+    const DEFAULT_TEMPLATES = [
+      {
+        id: "tpl_a",
+        name: "Treino A - Peito, Ombros e Tríceps",
+        focus: "Push / Empurrar",
+        exercises: [
+          { name: "Supino Reto com Barra", group: "Peito", defaultSets: 4 },
+          { name: "Supino Inclinado com Halteres", group: "Peito", defaultSets: 3 },
+          { name: "Desenvolvimento com Halteres", group: "Ombros", defaultSets: 3 },
+          { name: "Elevação Lateral na Polia", group: "Ombros", defaultSets: 4 },
+          { name: "Tríceps Corda no Cross", group: "Braços", defaultSets: 3 }
+        ]
+      },
+      {
+        id: "tpl_b",
+        name: "Treino B - Costas e Bíceps",
+        focus: "Pull / Puxar",
+        exercises: [
+          { name: "Puxada Frontal", group: "Costas", defaultSets: 4 },
+          { name: "Remada Curvada com Barra", group: "Costas", defaultSets: 4 },
+          { name: "Remada Baixa Triângulo", group: "Costas", defaultSets: 3 },
+          { name: "Rosca Direta com Barra W", group: "Braços", defaultSets: 3 }
+        ]
+      },
+      {
+        id: "tpl_c",
+        name: "Treino C - Pernas Completo",
+        focus: "Legs / Inferiores",
+        exercises: [
+          { name: "Agachamento Livre", group: "Pernas", defaultSets: 4 },
+          { name: "Leg Press 45°", group: "Pernas", defaultSets: 4 },
+          { name: "Cadeira Extensora", group: "Pernas", defaultSets: 3 },
+          { name: "Mesa Flexora", group: "Pernas", defaultSets: 3 }
+        ]
+      }
+    ];
+
+    let templates = [];
+
+    function loadTemplates() {
+      const stored = localStorage.getItem('irontrack_templates');
+      if (stored) {
+        try { templates = JSON.parse(stored); } catch (e) { templates = [...DEFAULT_TEMPLATES]; }
+      } else {
+        templates = [...DEFAULT_TEMPLATES];
+        saveTemplatesToLocalStorage();
+      }
+    }
+
+    function saveTemplatesToLocalStorage() {
+      localStorage.setItem('irontrack_templates', JSON.stringify(templates));
+    }
+
+    function refreshTemplateSelectors() {
+      const select = document.getElementById('quick-template-select');
+      if (!select) return;
+      select.innerHTML = '<option value="">Selecione uma Ficha...</option>';
+      templates.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.innerText = t.name;
+        select.appendChild(opt);
+      });
+    }
+
+    function renderTemplatesList() {
+      const grid = document.getElementById('templates-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      if (templates.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
+            <i class="fa-regular fa-folder-open text-3xl mb-3 text-slate-600"></i>
+            <p class="font-medium">Nenhuma ficha cadastrada ainda. Crie sua primeira rotina!</p>
+          </div>
+        `;
+        return;
+      }
+
+      templates.forEach(tpl => {
+        const card = document.createElement('div');
+        card.className = "bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition shadow-lg";
+        card.innerHTML = `
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <div>
+                <h3 class="text-base font-bold text-white">${tpl.name}</h3>
+                <span class="text-xs text-emerald-400 font-semibold">${tpl.focus || 'Geral'}</span>
+              </div>
+              <button onclick="deleteTemplate('${tpl.id}')" class="text-slate-500 hover:text-rose-400 p-1 transition" title="Excluir Ficha">
+                <i class="fa-solid fa-trash-can text-sm"></i>
+              </button>
+            </div>
+            <p class="text-xs text-slate-400 mb-3">${tpl.exercises.length} exercícios configurados</p>
+            <ul class="text-xs text-slate-300 space-y-1.5 mb-4 border-t border-slate-800 pt-3">
+              ${tpl.exercises.map(e => `
+                <li class="flex items-center justify-between">
+                  <span class="truncate pr-2"><i class="fa-solid fa-dumbbell text-slate-500 text-[10px] mr-1.5"></i>${e.name}</span>
+                  <span class="text-slate-400 font-mono">${e.defaultSets || 3} séries</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+          <button onclick="applyTemplateToWorkout('${tpl.id}')" class="w-full py-2 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 font-bold text-xs rounded-xl border border-emerald-500/30 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-play"></i> Iniciar com Esta Ficha
+          </button>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function applyTemplateToWorkout(templateId) {
+      const tpl = templates.find(t => t.id === templateId);
+      if (!tpl) return;
+
+      document.getElementById('exercises-container').innerHTML = '';
+      document.getElementById('session-name').value = tpl.name;
+      setDefaultSessionDate();
+
+      tpl.exercises.forEach(ex => {
+        let lastWeight = '';
+        for (let session of workouts) {
+          const found = session.exercises.find(e => e.name.toLowerCase() === ex.name.toLowerCase());
+          if (found && found.sets.length > 0) {
+            lastWeight = found.sets[found.sets.length - 1].weight || '';
+            break;
+          }
+        }
+
+        addExerciseCard({
+          name: ex.name,
+          group: ex.group,
+          setsCount: ex.defaultSets || 3,
+          suggestedWeight: lastWeight
+        });
+      });
+
+      switchTab('register');
+      showToast(`Ficha "${tpl.name}" carregada! Ajuste as cargas e repetições.`, "success");
+    }
+
+    function loadSelectedTemplateToForm() {
+      const templateId = document.getElementById('quick-template-select').value;
+      if (!templateId) {
+        showToast("Selecione uma ficha para carregar.", "error");
+        return;
+      }
+      applyTemplateToWorkout(templateId);
+    }
+
+    function deleteTemplate(id) {
+      templates = templates.filter(t => t.id !== id);
+      saveTemplatesToLocalStorage();
+      deleteTemplateFromSupabase(id); // Nuvem Supabase
+      renderTemplatesList();
+      refreshTemplateSelectors();
+      showToast("Ficha excluída com sucesso.", "info");
+    }
+
+    function saveCurrentWorkoutAsTemplate() {
+      const sessionName = document.getElementById('session-name').value.trim() || "Minha Nova Ficha";
+      const cards = document.querySelectorAll('#exercises-container > div');
+      if (cards.length === 0) {
+        showToast("Adicione pelo menos um exercício para salvar como ficha.", "error");
+        return;
+      }
+
+      const tplExercises = [];
+      cards.forEach(card => {
+        const name = card.querySelector('.exercise-name-input').value.trim();
+        const group = card.querySelector('.exercise-group-select').value;
+        const setsCount = card.querySelectorAll('tbody tr').length || 3;
+        if (name) {
+          tplExercises.push({ name, group, defaultSets: setsCount });
+        }
+      });
+
+      if (tplExercises.length === 0) {
+        showToast("Preencha o nome dos exercícios antes de salvar.", "error");
+        return;
+      }
+
+      const newTemplate = {
+        id: "tpl_" + Date.now(),
+        name: sessionName,
+        focus: tplExercises[0].group || "Personalizado",
+        exercises: tplExercises
+      };
+
+      templates.push(newTemplate);
+      saveTemplatesToLocalStorage();
+      syncTemplateToSupabase(newTemplate); // Nuvem Supabase
+      refreshTemplateSelectors();
+      renderTemplatesList();
+      showToast(`Ficha "${sessionName}" salva com sucesso!`, "success");
+    }
+
+    function openCreateTemplateModal() {
+      document.getElementById('tpl-modal-name').value = '';
+      document.getElementById('tpl-modal-focus').value = '';
+      const list = document.getElementById('tpl-modal-exercises-list');
+      list.innerHTML = '';
+      addTemplateModalExerciseRow();
+      addTemplateModalExerciseRow();
+      document.getElementById('template-modal').classList.remove('hidden');
+    }
+
+    function closeTemplateModal() {
+      document.getElementById('template-modal').classList.add('hidden');
+    }
+
+    function addTemplateModalExerciseRow() {
+      const list = document.getElementById('tpl-modal-exercises-list');
+      const row = document.createElement('div');
+      row.className = "flex items-center gap-2 bg-slate-950 p-2.5 rounded-xl border border-slate-800";
+      
+      let optionsHtml = PREDEFINED_EXERCISES.map(ex => `<option value="${ex.name}">${ex.name}</option>`).join('');
+
+      row.innerHTML = `
+        <input type="text" list="modal-exercises-list" placeholder="Exercício..." class="tpl-row-name bg-slate-800 text-white text-xs sm:text-sm rounded-lg px-2.5 py-1.5 flex-1 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+        <datalist id="modal-exercises-list">${optionsHtml}</datalist>
+        <input type="number" min="1" max="10" value="3" placeholder="Séries" class="tpl-row-sets bg-slate-800 text-white text-xs sm:text-sm rounded-lg px-2 py-1.5 w-16 border border-slate-700 text-center" title="Qtd. de séries">
+        <button type="button" onclick="this.closest('div').remove()" class="text-slate-500 hover:text-rose-400 p-1">
+          <i class="fa-solid fa-trash-can text-xs"></i>
+        </button>
+      `;
+      list.appendChild(row);
+    }
+
+    function saveTemplateFromModal() {
+      const name = document.getElementById('tpl-modal-name').value.trim();
+      const focus = document.getElementById('tpl-modal-focus').value.trim() || "Geral";
+      if (!name) {
+        showToast("Informe o nome da ficha.", "error");
+        return;
+      }
+
+      const rows = document.querySelectorAll('#tpl-modal-exercises-list > div');
+      const exercises = [];
+      rows.forEach(r => {
+        const exName = r.querySelector('.tpl-row-name').value.trim();
+        const setsCount = parseInt(r.querySelector('.tpl-row-sets').value, 10) || 3;
+        if (exName) {
+          const found = PREDEFINED_EXERCISES.find(e => e.name.toLowerCase() === exName.toLowerCase());
+          exercises.push({
+            name: exName,
+            group: found ? found.group : "Personalizado",
+            defaultSets: setsCount
+          });
+        }
+      });
+
+      if (exercises.length === 0) {
+        showToast("Adicione pelo menos um exercício à ficha.", "error");
+        return;
+      }
+
+      templates.push({
+        id: "tpl_" + Date.now(),
+        name,
+        focus,
+        exercises
+      });
+
+      saveTemplatesToLocalStorage();
+      syncTemplateToSupabase(templates[templates.length - 1]); // Nuvem Supabase
+      refreshTemplateSelectors();
+      renderTemplatesList();
+      closeTemplateModal();
+      showToast("Nova ficha criada com sucesso!", "success");
+    }
+
+    // Inicialização ajustada
+    const originalInit = window.onload;
+    window.onload = function() {
+      if (typeof originalInit === 'function') originalInit();
+      loadTemplates();
+      refreshTemplateSelectors();
+      renderTemplatesList();
+      initSupabase(); // Inicializa Conexão Supabase
+    };
+
+    // --- SISTEMA DE TOAST / NOTIFICAÇÃO ---
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+
+      let icon = 'fa-circle-info';
+      let border = 'border-slate-700';
+      let accent = 'text-sky-400';
+
+      if (type === 'success') {
+        icon = 'fa-circle-check';
+        border = 'border-emerald-500/40';
+        accent = 'text-emerald-400';
+      } else if (type === 'error') {
+        icon = 'fa-circle-exclamation';
+        border = 'border-rose-500/40';
+        accent = 'text-rose-400';
+      }
+
+      toast.className = `pointer-events-auto flex items-center gap-3 bg-slate-900/95 text-white text-sm px-4 py-3 rounded-xl border ${border} shadow-2xl backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0`;
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} ${accent} text-lg"></i>
+        <span class="flex-1 text-slate-200 text-xs sm:text-sm">${message}</span>
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
