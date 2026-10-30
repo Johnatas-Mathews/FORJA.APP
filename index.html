@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>FORJA — Construa sua evolução</title>
   
-  <!-- Google Fonts: Syne (Display/Bold), Inter (UI), JetBrains Mono (Dados/Cargas/Timer) -->
+  <!-- Google Fonts: Syne (Display), Inter (UI), JetBrains Mono (Dados/Cargas/Timer) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700;800&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
@@ -57,11 +57,10 @@
     ::-webkit-scrollbar-thumb { background: #1b2434; border-radius: 9999px; }
     ::-webkit-scrollbar-thumb:hover { background: #a3e635; }
 
-    /* Efeitos de Luz Táticos */
+    /* Efeitos Visuais */
     .neon-glow { box-shadow: 0 0 20px -3px rgba(163, 230, 53, 0.25); }
-    .neon-border-glow { border-color: #a3e635; box-shadow: 0 0 12px -2px rgba(163, 230, 53, 0.35); }
 
-    /* Remove arrows do input number */
+    /* Remove spinners do input number */
     input[type=number]::-webkit-inner-spin-button, 
     input[type=number]::-webkit-outer-spin-button { 
       -webkit-appearance: none; 
@@ -72,11 +71,11 @@
 </head>
 <body class="bg-forja-black text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-forja-neon selection:text-black">
 
-  <!-- CONTAINER DE TOASTS FLUTUANTES -->
+  <!-- CONTAINER DE TOASTS -->
   <div id="toast-container" class="fixed top-5 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
 
   <!-- ============================================================== -->
-  <!-- TELA DE AUTENTICAÇÃO OBRIGATÓRIA (AUTH GATEWAY)                 -->
+  <!-- TELA DE AUTENTICAÇÃO LIMPA E PROFISSIONAL                      -->
   <!-- ============================================================== -->
   <div id="auth-screen" class="fixed inset-0 z-50 bg-forja-black flex items-center justify-center p-4 overflow-y-auto">
     <div class="w-full max-w-md my-auto relative">
@@ -96,10 +95,10 @@
 
         <!-- Seletor Entrar / Cadastrar -->
         <div class="grid grid-cols-2 p-1 bg-forja-dark border border-forja-border rounded-xl mb-5">
-          <button id="auth-mode-login" onclick="setAuthMode('login')" class="py-2 text-xs font-mono font-bold rounded-lg transition bg-forja-neon text-black">
+          <button id="auth-mode-login" onclick="setAuthMode('login')" class="py-2.5 text-xs font-mono font-bold rounded-lg transition bg-forja-neon text-black">
             ENTRAR
           </button>
-          <button id="auth-mode-signup" onclick="setAuthMode('signup')" class="py-2 text-xs font-mono font-bold rounded-lg transition text-zinc-400 hover:text-white">
+          <button id="auth-mode-signup" onclick="setAuthMode('signup')" class="py-2.5 text-xs font-mono font-bold rounded-lg transition text-zinc-400 hover:text-white">
             CRIAR CONTA
           </button>
         </div>
@@ -126,70 +125,25 @@
             </div>
           </div>
 
-          <button type="submit" id="auth-submit-btn" class="w-full py-3 bg-gradient-to-r from-forja-neon to-lime-500 hover:from-forja-neonHover hover:to-lime-400 text-black font-display font-black text-xs tracking-wider rounded-xl transition neon-glow shadow-xl active:scale-95 flex items-center justify-center gap-2">
+          <button type="submit" id="auth-submit-btn" class="w-full py-3.5 bg-gradient-to-r from-forja-neon to-lime-500 hover:from-forja-neonHover hover:to-lime-400 text-black font-display font-black text-xs tracking-wider rounded-xl transition neon-glow shadow-xl active:scale-95 flex items-center justify-center gap-2">
             <span id="auth-submit-text">ACESSAR MINHA CONTA</span>
             <i class="fa-solid fa-arrow-right text-xs"></i>
           </button>
         </form>
 
-        <!-- Divisor -->
-        <div class="relative my-5">
-          <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-forja-border"></div></div>
-          <div class="relative flex justify-center text-[10px] uppercase font-mono"><span class="bg-forja-card px-2 text-zinc-500">Configuração & Offline</span></div>
-        </div>
-
-        <!-- Opções Avançadas e Modo Offline -->
-        <div class="space-y-2">
-          <button onclick="toggleSupabaseCredentialsModal()" class="w-full py-2 bg-forja-dark hover:bg-zinc-800 text-zinc-300 border border-forja-border rounded-xl text-xs font-mono flex items-center justify-center gap-2 transition">
-            <i class="fa-solid fa-gear text-zinc-400 text-xs"></i> Configurar Chaves Supabase
-          </button>
-
-          <button onclick="continueOfflineGuest()" class="w-full py-2 text-zinc-500 hover:text-zinc-300 text-[11px] font-mono hover:underline flex items-center justify-center gap-1.5 transition">
-            <i class="fa-solid fa-mobile-screen"></i> Continuar offline no navegador (Modo Convidado)
-          </button>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL PARA CHAVES DO SUPABASE -->
-  <div id="sp-keys-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-forja-card border border-forja-border rounded-3xl w-full max-w-md p-6 space-y-4">
-      <div class="flex items-center justify-between pb-2 border-b border-forja-border">
-        <h3 class="font-display font-bold text-white text-base flex items-center gap-2">
-          <i class="fa-solid fa-cloud text-sky-400"></i> Credenciais Supabase
-        </h3>
-        <button onclick="toggleSupabaseCredentialsModal()" class="text-zinc-400 hover:text-white p-1">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-      <p class="text-xs text-zinc-400">Insira a <strong>Project URL</strong> e a <strong>anon/public Key</strong> que constam no painel do seu projeto Supabase (Project Settings &rarr; API).</p>
-      
-      <div class="space-y-3">
-        <div>
-          <label class="block text-[11px] font-mono uppercase text-zinc-400 mb-1">Project URL</label>
-          <input type="text" id="cfg-supabase-url" placeholder="https://seu-projeto.supabase.co" class="w-full bg-forja-dark border border-forja-border rounded-xl px-3 py-2 text-xs font-mono text-zinc-200 focus:outline-none focus:ring-1 focus:ring-forja-neon">
-        </div>
-        <div>
-          <label class="block text-[11px] font-mono uppercase text-zinc-400 mb-1">Anon / Public API Key</label>
-          <input type="password" id="cfg-supabase-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." class="w-full bg-forja-dark border border-forja-border rounded-xl px-3 py-2 text-xs font-mono text-zinc-200 focus:outline-none focus:ring-1 focus:ring-forja-neon">
-        </div>
-      </div>
-
-      <div class="flex justify-end gap-2 pt-2">
-        <button onclick="toggleSupabaseCredentialsModal()" class="px-4 py-2 text-xs font-mono text-zinc-400 hover:text-white">Cancelar</button>
-        <button onclick="saveSupabaseCredentials()" class="px-5 py-2 bg-forja-neon text-black font-mono font-bold text-xs rounded-xl hover:bg-forja-neonHover transition">Salvar Chaves</button>
+        <p class="text-[11px] font-mono text-zinc-500 text-center mt-5">
+          Ambiente seguro com criptografia de ponta a ponta.
+        </p>
       </div>
     </div>
   </div>
 
   <!-- ============================================================== -->
-  <!-- APLICAÇÃO PRINCIPAL (EXIBIDA APÓS O LOGIN)                      -->
+  <!-- APLICAÇÃO PRINCIPAL                                            -->
   <!-- ============================================================== -->
   <div id="main-app" class="hidden flex-1 flex flex-col pb-24 md:pb-6">
     
-    <!-- TOP BRANDING BAR -->
+    <!-- TOP BAR -->
     <header class="sticky top-0 z-40 bg-forja-dark/90 backdrop-blur-xl border-b border-forja-border">
       <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         
@@ -221,7 +175,7 @@
       </div>
     </header>
 
-    <!-- PERSISTENT FLOATING REST TIMER (AUTO-REST WIDGET) -->
+    <!-- CRONÔMETRO PERSISTENTE FLUTUANTE (AUTO-REST) -->
     <div id="floating-rest-timer" class="fixed bottom-24 md:bottom-8 right-4 md:right-8 z-40 bg-forja-card/95 border border-forja-neon/60 rounded-2xl p-4 text-white backdrop-blur-xl shadow-2xl neon-glow flex items-center gap-4 transition-all duration-300 hidden">
       <div class="relative w-12 h-12 flex items-center justify-center">
         <svg class="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
@@ -250,15 +204,11 @@
       </div>
     </div>
 
-    <!-- CONTAINER DE TELAS -->
+    <!-- CONTEÚDO PRINCIPAL -->
     <main class="flex-1 max-w-6xl w-full mx-auto px-4 pt-6">
 
-      <!-- ============================================== -->
-      <!-- ABA 1: INÍCIO (DASHBOARD TÁTICO)               -->
-      <!-- ============================================== -->
+      <!-- ABA 1: INÍCIO -->
       <section id="view-home" class="space-y-6">
-        
-        <!-- Hero & Próximo Treino -->
         <div class="bg-gradient-to-r from-forja-card to-forja-dark border border-forja-border rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-2xl">
           <div class="absolute -right-16 -top-16 w-64 h-64 bg-forja-neon/10 rounded-full blur-3xl pointer-events-none"></div>
           <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -268,7 +218,6 @@
               <p class="text-zinc-400 text-sm max-w-lg">Supere a última sessão. Cada repetição registrada é forjada com sobrecarga progressiva.</p>
             </div>
 
-            <!-- Card de Próximo Treino -->
             <div id="home-next-routine-card" class="bg-forja-black/80 border border-forja-border rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 min-w-[300px]">
               <div>
                 <span class="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block mb-1">Próxima Ficha Sugerida</span>
@@ -282,7 +231,6 @@
           </div>
         </div>
 
-        <!-- Frequência Semanal (Heatmap) -->
         <div class="bg-forja-card border border-forja-border rounded-2xl p-5 shadow-lg">
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2">
@@ -294,7 +242,6 @@
           <div id="weekly-heatmap" class="grid grid-cols-7 gap-2"></div>
         </div>
 
-        <!-- Métricas Rápidas -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div class="bg-forja-card border border-forja-border rounded-2xl p-4">
             <span class="text-[11px] font-mono uppercase text-zinc-500 font-semibold block">Volume Semana</span>
@@ -333,7 +280,6 @@
           </div>
         </div>
 
-        <!-- Treinos Recentes -->
         <div class="bg-forja-card border border-forja-border rounded-2xl p-5 shadow-lg">
           <div class="flex items-center justify-between mb-4">
             <h3 class="font-bold text-white text-sm flex items-center gap-2">
@@ -345,9 +291,7 @@
         </div>
       </section>
 
-      <!-- ============================================== -->
-      <!-- ABA 2: MINHAS FICHAS (ROTINAS A, B, C...)      -->
-      <!-- ============================================== -->
+      <!-- ABA 2: MINHAS FICHAS -->
       <section id="view-routines" class="hidden space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -365,11 +309,8 @@
         <div id="routines-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </section>
 
-      <!-- ============================================== -->
-      <!-- ABA 3: TREINAR (EXECUÇÃO DE SESSÃO ATIVA)      -->
-      <!-- ============================================== -->
+      <!-- ABA 3: TREINAR -->
       <section id="view-workout" class="hidden space-y-6">
-        <!-- Header da Sessão Ativa -->
         <div class="bg-forja-card border border-forja-border rounded-2xl p-4 sm:p-5 shadow-xl">
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-forja-border">
             <div>
@@ -397,10 +338,8 @@
           </div>
         </div>
 
-        <!-- Lista Dinâmica de Exercícios -->
         <div id="active-exercises-container" class="space-y-4"></div>
 
-        <!-- Ações do Treino -->
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-forja-border">
           <button onclick="addExerciseToActiveWorkout()" class="w-full sm:w-auto px-4 py-3 rounded-xl border border-dashed border-forja-neon/50 text-forja-neon hover:bg-forja-neon/10 font-bold text-xs font-display tracking-wider flex items-center justify-center gap-2 transition">
             <i class="fa-solid fa-plus-circle"></i> ADICIONAR EXERCÍCIO
@@ -417,9 +356,7 @@
         </div>
       </section>
 
-      <!-- ============================================== -->
-      <!-- ABA 4: EVOLUÇÃO (GRÁFICOS, PRS & HISTÓRICO)    -->
-      <!-- ============================================== -->
+      <!-- ABA 4: EVOLUÇÃO -->
       <section id="view-evolution" class="hidden space-y-6">
         <div>
           <h2 class="text-xl sm:text-2xl font-display font-extrabold text-white flex items-center gap-2">
@@ -428,7 +365,6 @@
           <p class="text-xs sm:text-sm text-zinc-400">Analise seu ganho de força, recordes pessoais (PRs) e histórico detalhado.</p>
         </div>
 
-        <!-- Gráfico de Evolução -->
         <div class="bg-forja-card border border-forja-border rounded-2xl p-4 sm:p-6 shadow-xl">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-forja-border">
             <div>
@@ -451,7 +387,6 @@
           </div>
         </div>
 
-        <!-- Vitrine de Recordes Pessoais (PRs) -->
         <div class="bg-forja-card border border-forja-border rounded-2xl p-5 shadow-lg">
           <div class="flex items-center justify-between mb-4">
             <h3 class="font-bold text-white text-sm flex items-center gap-2">
@@ -462,7 +397,6 @@
           <div id="prs-showcase-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
         </div>
 
-        <!-- Histórico Detalhado -->
         <div class="bg-forja-card border border-forja-border rounded-2xl p-5 shadow-lg">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <h3 class="font-bold text-white text-sm flex items-center gap-2">
@@ -474,9 +408,7 @@
         </div>
       </section>
 
-      <!-- ============================================== -->
-      <!-- ABA 5: PERFIL (CONTA, SUPABASE & BACKUP)       -->
-      <!-- ============================================== -->
+      <!-- ABA 5: PERFIL -->
       <section id="view-profile" class="hidden space-y-6">
         <div>
           <h2 class="text-xl sm:text-2xl font-display font-extrabold text-white flex items-center gap-2">
@@ -485,7 +417,6 @@
           <p class="text-xs sm:text-sm text-zinc-400">Informações da sua conta e integridade dos dados.</p>
         </div>
 
-        <!-- Card do Atleta -->
         <div class="bg-forja-card border border-forja-border rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div class="flex items-center gap-4">
             <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-forja-neon to-lime-500 flex items-center justify-center text-black font-display font-black text-2xl shadow-lg shadow-forja-neon/20">
@@ -501,7 +432,6 @@
           </button>
         </div>
 
-        <!-- Status do Banco & Sincronização -->
         <div class="bg-forja-card border border-forja-border rounded-2xl p-5 space-y-4">
           <div class="flex items-center justify-between pb-3 border-b border-forja-border">
             <div>
@@ -517,18 +447,14 @@
             <button onclick="manualSyncUserData()" class="px-4 py-2 bg-sky-500/15 text-sky-400 border border-sky-500/30 hover:bg-sky-500/25 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2">
               <i class="fa-solid fa-rotate"></i> Forçar Sincronização Agora
             </button>
-            <button onclick="toggleSupabaseCredentialsModal()" class="px-4 py-2 bg-forja-dark hover:bg-zinc-800 text-zinc-300 border border-forja-border rounded-xl text-xs font-mono font-semibold transition flex items-center gap-2">
-              <i class="fa-solid fa-sliders"></i> Alterar Chaves API
-            </button>
           </div>
         </div>
 
-        <!-- Backup Local (JSON) -->
         <div class="bg-forja-card border border-forja-border rounded-2xl p-5 space-y-3">
           <h4 class="font-bold text-white text-sm flex items-center gap-2">
             <i class="fa-solid fa-database text-forja-neon"></i> Exportação e Backup
           </h4>
-          <p class="text-xs text-zinc-400">Baixe um arquivo seguro com todos os seus dados ou importe de outro dispositivo.</p>
+          <p class="text-xs text-zinc-400">Baixe uma cópia segura dos seus treinos em JSON ou restaure quando quiser.</p>
           
           <div class="flex flex-wrap items-center gap-3 pt-1">
             <button onclick="exportDataJSON()" class="px-4 py-2.5 bg-forja-dark hover:bg-zinc-800 border border-forja-border text-zinc-200 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2">
@@ -544,9 +470,7 @@
 
     </main>
 
-    <!-- ============================================== -->
-    <!-- BARRA DE NAVEGAÇÃO INFERIOR TÁTICA             -->
-    <!-- ============================================== -->
+    <!-- NAVEGAÇÃO INFERIOR DOCK -->
     <nav class="fixed bottom-0 left-0 right-0 z-40 bg-forja-dark/95 backdrop-blur-xl border-t border-forja-border">
       <div class="max-w-md mx-auto px-4 h-16 flex items-center justify-around">
         <button onclick="navigateTab('home')" id="tab-btn-home" class="flex flex-col items-center gap-1 text-forja-neon transition">
@@ -559,7 +483,6 @@
           <span class="text-[10px] font-mono font-bold">Fichas</span>
         </button>
 
-        <!-- Botão Central Destacado "Treinar" -->
         <button onclick="navigateTab('workout')" id="tab-btn-workout" class="relative -top-2 flex flex-col items-center">
           <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-forja-neon to-lime-400 flex items-center justify-center text-black font-black text-xl shadow-lg shadow-forja-neon/30 active:scale-95 transition">
             <i class="fa-solid fa-dumbbell"></i>
@@ -581,7 +504,7 @@
 
   </div>
 
-  <!-- MODAL: CRIAR / EDITAR FICHA DE TREINO -->
+  <!-- MODAL: CRIAR / EDITAR FICHA -->
   <div id="routine-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-forja-card border border-forja-border rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
       <div class="p-5 border-b border-forja-border flex items-center justify-between">
@@ -637,10 +560,18 @@
   </div>
 
   <!-- ============================================================== -->
-  <!-- JAVASCRIPT PRINCIPAL DO FORJA (ENGINE COM SUPABASE RLS)        -->
+  <!-- JAVASCRIPT: SUPABASE DIRETO NO CÓDIGO (PRODUÇÃO)                -->
   <!-- ============================================================== -->
   <script>
-    // --- EXERCÍCIOS BASE SUGERIDOS ---
+    // ====================================================================
+    // CREDENCIAIS DO SUPABASE (COLE AQUI OS DADOS DO SEU PROJETO)
+    // ====================================================================
+    // Pegue no seu painel em: Project Settings -> API
+    const SUPABASE_URL = "https://SEU-PROJETO.supabase.co"; 
+    const SUPABASE_ANON_KEY = "sua-chave-anon-public-aqui";
+    // ====================================================================
+
+    // --- BANCO DE EXERCÍCIOS BASE SUGERIDOS ---
     const STANDARD_EXERCISES = [
       { name: "Supino Reto com Barra", group: "Peito", rest: 90 },
       { name: "Supino Inclinado com Halteres", group: "Peito", rest: 90 },
@@ -664,70 +595,48 @@
       { name: "Prancha Isométrica", group: "Core", rest: 45 }
     ];
 
-    // --- ESTADO GLOBAL DO APLICATIVO ---
+    // --- ESTADO GLOBAL ---
     let state = {
-      user: null,             // Usuário logado
-      isGuest: false,         // Flag modo offline
-      workouts: [],           // Treinos do usuário conectado
-      routines: [],           // Fichas do usuário conectado
-      supabase: null,         // Cliente Supabase
+      user: null,
+      workouts: [],
+      routines: [],
+      supabase: null,
       chartInstance: null
     };
 
-    let authMode = 'login'; // 'login' | 'signup'
+    let authMode = 'login';
     let timerInterval = null;
     let timerTotal = 90;
     let timerRemaining = 90;
     let isTimerPaused = false;
     let activeExerciseCounter = 0;
 
-    // --- CICLO DE VIDA INICIAL ---
+    // --- INICIALIZAÇÃO ---
     window.addEventListener('DOMContentLoaded', async () => {
       initSupabaseClient();
       await checkAuthSession();
     });
 
-    // --- CONFIGURAÇÃO E INSTANCIAÇÃO DO SUPABASE ---
     function initSupabaseClient() {
-      // Carrega chaves salvas ou usa credenciais padrão se preenchidas
-      const url = localStorage.getItem('forja_supabase_url') || '';
-      const key = localStorage.getItem('forja_supabase_key') || '';
-
-      document.getElementById('cfg-supabase-url').value = url;
-      document.getElementById('cfg-supabase-key').value = key;
+      // Usa a credencial fixa se configurada, ou busca do localStorage (fallback)
+      const url = (SUPABASE_URL && !SUPABASE_URL.includes("SEU-PROJETO")) 
+        ? SUPABASE_URL 
+        : (localStorage.getItem('forja_supabase_url') || '');
+        
+      const key = (SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes("sua-chave-anon")) 
+        ? SUPABASE_ANON_KEY 
+        : (localStorage.getItem('forja_supabase_key') || '');
 
       if (url && key && typeof supabase !== 'undefined') {
         try {
           state.supabase = supabase.createClient(url, key);
         } catch (e) {
-          console.warn("Erro ao instanciar Supabase:", e);
+          console.error("Falha ao inicializar o Supabase:", e);
         }
       }
     }
 
-    function toggleSupabaseCredentialsModal() {
-      document.getElementById('sp-keys-modal').classList.toggle('hidden');
-    }
-
-    function saveSupabaseCredentials() {
-      const url = document.getElementById('cfg-supabase-url').value.trim();
-      const key = document.getElementById('cfg-supabase-key').value.trim();
-
-      if (!url || !key) {
-        showToast("Preencha a URL e a Anon Key.", "error");
-        return;
-      }
-
-      localStorage.setItem('forja_supabase_url', url);
-      localStorage.setItem('forja_supabase_key', key);
-      initSupabaseClient();
-      toggleSupabaseCredentialsModal();
-      showToast("Credenciais salvas com sucesso!", "success");
-    }
-
-    // --- VERIFICAÇÃO AUTOMÁTICA DE SESSÃO ---
     async function checkAuthSession() {
-      // 1. Verifica se há sessão ativa salva no Supabase
       if (state.supabase) {
         try {
           const { data: { session }, error } = await state.supabase.auth.getSession();
@@ -736,17 +645,9 @@
             return;
           }
         } catch (e) {
-          console.warn("Erro ao buscar sessão ativa:", e);
+          console.warn("Nenhuma sessão ativa:", e);
         }
       }
-
-      // 2. Se era convidado local previamente
-      if (localStorage.getItem('forja_guest_active') === 'true') {
-        continueOfflineGuest(false);
-        return;
-      }
-
-      // 3. Caso contrário, mantém na tela de autenticação
       showAuthScreen();
     }
 
@@ -760,7 +661,6 @@
       document.getElementById('main-app').classList.remove('hidden');
     }
 
-    // --- CONTROLE DE MODO DE AUTH (ENTRAR / CRIAR CONTA) ---
     function setAuthMode(mode) {
       authMode = mode;
       const loginBtn = document.getElementById('auth-mode-login');
@@ -768,12 +668,12 @@
       const submitText = document.getElementById('auth-submit-text');
 
       if (mode === 'login') {
-        loginBtn.className = "py-2 text-xs font-mono font-bold rounded-lg transition bg-forja-neon text-black";
-        signupBtn.className = "py-2 text-xs font-mono font-bold rounded-lg transition text-zinc-400 hover:text-white";
+        loginBtn.className = "py-2.5 text-xs font-mono font-bold rounded-lg transition bg-forja-neon text-black";
+        signupBtn.className = "py-2.5 text-xs font-mono font-bold rounded-lg transition text-zinc-400 hover:text-white";
         submitText.innerText = "ACESSAR MINHA CONTA";
       } else {
-        signupBtn.className = "py-2 text-xs font-mono font-bold rounded-lg transition bg-forja-neon text-black";
-        loginBtn.className = "py-2 text-xs font-mono font-bold rounded-lg transition text-zinc-400 hover:text-white";
+        signupBtn.className = "py-2.5 text-xs font-mono font-bold rounded-lg transition bg-forja-neon text-black";
+        loginBtn.className = "py-2.5 text-xs font-mono font-bold rounded-lg transition text-zinc-400 hover:text-white";
         submitText.innerText = "CRIAR NOVA CONTA";
       }
     }
@@ -784,8 +684,7 @@
       const password = document.getElementById('auth-password').value.trim();
 
       if (!state.supabase) {
-        showToast("Configure a URL e Anon Key do Supabase primeiro no botão abaixo.", "error");
-        toggleSupabaseCredentialsModal();
+        showToast("Insira as credenciais do Supabase no código do app.", "error");
         return;
       }
 
@@ -797,21 +696,21 @@
         if (authMode === 'login') {
           const { data, error } = await state.supabase.auth.signInWithPassword({ email, password });
           if (error) throw error;
-          showToast(`Bem-vindo de volta! Carregando seus dados...`, "success");
+          showToast("Acesso autorizado! Carregando dados...", "success");
           setupAuthenticatedUser(data.user);
         } else {
           const { data, error } = await state.supabase.auth.signUp({ email, password });
           if (error) throw error;
           
           if (data.session) {
-            showToast("Conta criada e autenticada com sucesso!", "success");
+            showToast("Conta criada com sucesso!", "success");
             setupAuthenticatedUser(data.user);
           } else {
-            showToast("Conta criada! Se a confirmação por e-mail estiver ativa, cheque sua caixa de entrada.", "info");
+            showToast("Conta criada! Caso necessário, confirme no seu e-mail.", "info");
           }
         }
       } catch (err) {
-        showToast(err.message || "Falha na autenticação.", "error");
+        showToast(err.message || "Erro na autenticação.", "error");
       } finally {
         submitBtn.disabled = false;
         submitBtn.classList.remove('opacity-70');
@@ -820,9 +719,6 @@
 
     async function setupAuthenticatedUser(user) {
       state.user = user;
-      state.isGuest = false;
-      localStorage.removeItem('forja_guest_active');
-
       document.getElementById('header-user-email').innerText = user.email;
       document.getElementById('profile-user-email-label').innerText = user.email;
       document.getElementById('profile-user-mode-label').innerText = `ID: ${user.id.substring(0, 8)}... (Nuvem Ativa)`;
@@ -832,44 +728,23 @@
       renderAllScreens();
     }
 
-    function continueOfflineGuest(showNotification = true) {
-      state.user = { id: 'guest_local', email: 'atleta.offline@forja.app' };
-      state.isGuest = true;
-      localStorage.setItem('forja_guest_active', 'true');
-
-      document.getElementById('header-user-email').innerText = 'Modo Local / Convidado';
-      document.getElementById('profile-user-email-label').innerText = 'Atleta Local (Offline)';
-      document.getElementById('profile-user-mode-label').innerText = 'Salvo apenas no navegador atual';
-
-      hideAuthScreen();
-      loadGuestDataFromLocalStorage();
-      renderAllScreens();
-
-      if (showNotification) {
-        showToast("Operando no modo local. Dados salvos neste navegador.", "info");
-      }
-    }
-
     async function handleLogout() {
-      if (state.supabase && !state.isGuest) {
+      if (state.supabase) {
         await state.supabase.auth.signOut();
       }
       state.user = null;
-      state.isGuest = false;
       state.workouts = [];
       state.routines = [];
-      localStorage.removeItem('forja_guest_active');
-
       showToast("Sessão finalizada com sucesso.", "info");
       showAuthScreen();
     }
 
-    // --- SINCRONIZAÇÃO DE DADOS (SUPABASE RLS) ---
+    // --- SINCRONIZAÇÃO SUPABASE (RLS PROTEGIDO) ---
     async function fetchUserDataFromSupabase() {
       if (!state.supabase || !state.user) return;
 
       try {
-        // 1. Busca treinos do usuário (RLS aplica auth.uid() = user_id)
+        // Treinos filtrados pelo RLS do Postgres
         const { data: workoutsData, error: wError } = await state.supabase
           .from('workouts')
           .select('*')
@@ -878,7 +753,7 @@
         if (wError) throw wError;
         state.workouts = workoutsData || [];
 
-        // 2. Busca fichas do usuário
+        // Fichas filtradas pelo RLS do Postgres
         const { data: templatesData, error: tError } = await state.supabase
           .from('templates')
           .select('*')
@@ -886,7 +761,6 @@
 
         if (tError) throw tError;
 
-        // Se for primeiro acesso e não tiver fichas, inicializa rotinas padrão para ele
         if (!templatesData || templatesData.length === 0) {
           await seedDefaultRoutinesForNewUser();
         } else {
@@ -902,9 +776,9 @@
         document.getElementById('profile-cloud-badge').innerText = "Sincronizado";
         document.getElementById('profile-cloud-badge').className = "text-[10px] font-mono px-2.5 py-1 rounded-full bg-forja-neon/15 text-forja-neon border border-forja-neon/40";
       } catch (err) {
-        console.error("Erro ao sincronizar com Supabase:", err);
-        showToast("Erro ao sincronizar com o banco: " + err.message, "error");
-        document.getElementById('profile-cloud-badge').innerText = "Erro ao Sincronizar";
+        console.error("Erro na sincronização:", err);
+        showToast("Erro ao sincronizar com banco: " + err.message, "error");
+        document.getElementById('profile-cloud-badge').innerText = "Falha de Conexão";
         document.getElementById('profile-cloud-badge').className = "text-[10px] font-mono px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/40";
       }
     }
@@ -936,7 +810,7 @@
         ]
       };
 
-      if (state.supabase && state.user && !state.isGuest) {
+      if (state.supabase && state.user) {
         await state.supabase.from('templates').insert([
           { ...defaultA, user_id: state.user.id },
           { ...defaultB, user_id: state.user.id }
@@ -960,33 +834,6 @@
       showToast("Dados atualizados com sucesso!", "success");
     }
 
-    function loadGuestDataFromLocalStorage() {
-      const storedW = localStorage.getItem('forja_guest_workouts');
-      const storedR = localStorage.getItem('forja_guest_routines');
-
-      state.workouts = storedW ? JSON.parse(storedW) : [];
-      state.routines = storedR ? JSON.parse(storedR) : [
-        {
-          id: "rot_1",
-          division: "A",
-          name: "Treino A - Peitoral & Tríceps",
-          focus: "Push",
-          exercises: [
-            { name: "Supino Reto com Barra", group: "Peito", setsCount: 4, rest: 90 },
-            { name: "Desenvolvimento com Halteres", group: "Ombros", setsCount: 3, rest: 90 },
-            { name: "Tríceps Corda no Cross", group: "Braços", setsCount: 3, rest: 60 }
-          ]
-        }
-      ];
-    }
-
-    function persistGuestData() {
-      if (state.isGuest) {
-        localStorage.setItem('forja_guest_workouts', JSON.stringify(state.workouts));
-        localStorage.setItem('forja_guest_routines', JSON.stringify(state.routines));
-      }
-    }
-
     // --- RENDERIZAÇÃO GERAL ---
     function renderAllScreens() {
       renderHomeScreen();
@@ -998,7 +845,6 @@
       renderHistorySection();
     }
 
-    // --- NAVEGAÇÃO DE ABAS ---
     function navigateTab(tabKey) {
       const tabs = ['home', 'routines', 'workout', 'evolution', 'profile'];
       
@@ -1033,14 +879,12 @@
       }
     }
 
-    // --- CÁLCULO DE 1RM (FÓRMULA DE BRZYCKI) ---
     function calculate1RM(weight, reps) {
       if (!weight || !reps || reps <= 0) return 0;
       if (reps === 1) return weight;
       return Math.round(weight / (1.0278 - (0.0278 * reps)));
     }
 
-    // Performance anterior para ghost value
     function getLastExercisePerformance(exerciseName) {
       for (const sess of state.workouts) {
         const found = sess.exercises.find(e => e.name.toLowerCase() === exerciseName.toLowerCase());
@@ -1054,7 +898,6 @@
       return null;
     }
 
-    // Melhor PR histórico
     function getExerciseHistoricalPR(exerciseName) {
       let max1RM = 0;
       let maxSet = null;
@@ -1184,7 +1027,7 @@
       }
     }
 
-    // --- ABA 2: MINHAS FICHAS ---
+    // --- ABA 2: FICHAS ---
     function renderRoutinesGrid() {
       const grid = document.getElementById('routines-grid');
       grid.innerHTML = '';
@@ -1331,8 +1174,7 @@
         return;
       }
 
-      // Se conectado ao Supabase
-      if (state.supabase && state.user && !state.isGuest) {
+      if (state.supabase && state.user) {
         try {
           const payload = {
             title: name,
@@ -1353,13 +1195,6 @@
           showToast("Erro ao salvar no banco: " + err.message, "error");
           return;
         }
-      } else {
-        // Convidado Local
-        const newRoutine = { id: id || ("rot_" + Date.now()), name, division, focus, exercises };
-        const idx = state.routines.findIndex(r => r.id === id);
-        if (idx >= 0) state.routines[idx] = newRoutine;
-        else state.routines.push(newRoutine);
-        persistGuestData();
       }
 
       renderRoutinesGrid();
@@ -1376,16 +1211,13 @@
     async function deleteRoutine(id) {
       if (!confirm("Excluir esta ficha de treino?")) return;
 
-      if (state.supabase && state.user && !state.isGuest) {
+      if (state.supabase && state.user) {
         try {
           await state.supabase.from('templates').delete().eq('id', id);
           await fetchUserDataFromSupabase();
         } catch (err) {
           showToast("Erro ao excluir: " + err.message, "error");
         }
-      } else {
-        state.routines = state.routines.filter(r => r.id !== id);
-        persistGuestData();
       }
 
       renderRoutinesGrid();
@@ -1393,7 +1225,7 @@
       showToast("Ficha removida.", "info");
     }
 
-    // --- ABA 3: MODO TREINAR ---
+    // --- ABA 3: TREINAR ---
     function startWorkoutFromRoutine(routineId) {
       const routine = state.routines.find(r => r.id === routineId);
       if (!routine) return;
@@ -1679,7 +1511,7 @@
         exercises: exercises
       };
 
-      if (state.supabase && state.user && !state.isGuest) {
+      if (state.supabase && state.user) {
         try {
           await state.supabase.from('workouts').insert([{
             ...newSession,
@@ -1690,10 +1522,6 @@
           showToast("Erro ao gravar no banco: " + err.message, "error");
           return;
         }
-      } else {
-        newSession.id = "sess_" + Date.now();
-        state.workouts.unshift(newSession);
-        persistGuestData();
       }
 
       showToast("Treino finalizado e forjado no histórico!", "success");
@@ -1722,7 +1550,7 @@
         }
       });
 
-      if (state.supabase && state.user && !state.isGuest) {
+      if (state.supabase && state.user) {
         try {
           await state.supabase.from('templates').insert([{
             title: sessionName,
@@ -1736,22 +1564,13 @@
           showToast("Erro ao salvar ficha: " + err.message, "error");
           return;
         }
-      } else {
-        state.routines.push({
-          id: "rot_" + Date.now(),
-          division: "P",
-          name: sessionName,
-          focus: "Geral",
-          exercises
-        });
-        persistGuestData();
       }
 
       refreshRoutineDropdown();
       showToast(`Ficha "${sessionName}" criada com sucesso!`, "success");
     }
 
-    // --- REST TIMER INTELIGENTE ---
+    // --- CRONÔMETRO DE DESCANSO INTELIGENTE ---
     function startRestTimer(seconds = 90, exerciseName = '') {
       clearInterval(timerInterval);
       timerTotal = seconds;
@@ -1822,7 +1641,7 @@
         osc.start();
         osc.stop(ctx.currentTime + 0.35);
       } catch (e) {
-        console.warn("AudioContext restrito.");
+        console.warn("Audio restrito no navegador.");
       }
     }
 
@@ -1973,7 +1792,7 @@
 
       const filtered = state.workouts.filter(w => {
         const matchesName = w.name.toLowerCase().includes(query);
-        const matchesEx = w.exercises.some(e => e.name.toLowerCase().includes(query));
+        const matchesEx = w.exercises.some(e => e.name.toLowerCase() === query);
         return matchesName || matchesEx;
       });
 
@@ -2031,23 +1850,20 @@
     async function deleteWorkoutSession(id) {
       if (!confirm("Excluir este treino permanentemente?")) return;
 
-      if (state.supabase && state.user && !state.isGuest) {
+      if (state.supabase && state.user) {
         try {
           await state.supabase.from('workouts').delete().eq('id', id);
           await fetchUserDataFromSupabase();
         } catch (err) {
           showToast("Erro ao excluir: " + err.message, "error");
         }
-      } else {
-        state.workouts = state.workouts.filter(w => w.id !== id);
-        persistGuestData();
       }
 
       renderAllScreens();
       showToast("Treino removido.", "info");
     }
 
-    // --- EXPORT & IMPORT JSON ---
+    // --- BACKUP JSON ---
     function exportDataJSON() {
       const data = {
         app: "FORJA",
@@ -2083,8 +1899,7 @@
             state.routines = parsed.routines;
           }
 
-          if (state.supabase && state.user && !state.isGuest) {
-            // Sincroniza em lote para a nuvem
+          if (state.supabase && state.user) {
             for (const w of state.workouts) {
               await state.supabase.from('workouts').upsert({
                 name: w.name,
@@ -2093,8 +1908,6 @@
                 user_id: state.user.id
               });
             }
-          } else {
-            persistGuestData();
           }
 
           renderAllScreens();
@@ -2106,7 +1919,7 @@
       reader.readAsText(file);
     }
 
-    // --- UTILITÁRIOS ---
+    // --- FORMATADORES ---
     function formatDateBR(dateStr, short = false) {
       if (!dateStr) return '';
       const parts = dateStr.split('-');
