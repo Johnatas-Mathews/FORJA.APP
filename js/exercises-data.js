@@ -55,7 +55,7 @@ const EXERCISE_DATABASE = [
     equipment: 'Barras Paralelas / Graviton',
     muscles: 'Peitoral Inferior, Tríceps, Core',
     tips: 'Incline o tronco levemente para a frente e afaste ligeiramente os cotovelos.',
-    img: BASE_IMG_URL + 'Chest_Dips/0.jpg'
+    img: BASE_IMG_URL + 'Dips_Chest/0.jpg'
   },
   {
     id: 'cable-crossover-high',
@@ -73,7 +73,7 @@ const EXERCISE_DATABASE = [
     equipment: 'Polia Baixa Dupla',
     muscles: 'Peitoral Superior e Clavicular',
     tips: 'Puxe as alças de baixo para cima convergindo na altura dos olhos.',
-    img: BASE_IMG_URL + 'Cable_Crossover/1.jpg'
+    img: BASE_IMG_URL + 'Cable_Iron_Cross/0.jpg'
   },
   {
     id: 'dumbbell-flys',
