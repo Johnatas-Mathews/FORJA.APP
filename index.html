@@ -78,11 +78,9 @@
   <!-- ================= AUTH GATEWAY (ECRÃ DE LOGIN/REGISTO) ================= -->
   <div id="authGate" class="fixed inset-0 z-50 bg-[#07090c] flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-[#111620] tactical-border rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-      <!-- Glow superior de fundo -->
       <div class="absolute -top-24 -left-24 w-48 h-48 bg-brand-lime/10 rounded-full blur-3xl pointer-events-none"></div>
       <div class="absolute -top-24 -right-24 w-48 h-48 bg-brand-fire/10 rounded-full blur-3xl pointer-events-none"></div>
 
-      <!-- Cabeçalho / Logo -->
       <div class="text-center mb-8 relative">
         <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-lime to-emerald-600 text-black shadow-lg mb-3">
           <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -93,7 +91,6 @@
         <p class="text-xs text-brand-lime font-mono tracking-widest uppercase mt-1">Construa sua evolução</p>
       </div>
 
-      <!-- Abas de Alternância: Entrar vs Criar Conta -->
       <div class="flex bg-slate-900/80 p-1 rounded-xl tactical-border mb-6">
         <button id="btnTabLogin" onclick="switchAuthMode('login')" class="flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all bg-brand-lime text-black">
           ENTRAR
@@ -103,7 +100,6 @@
         </button>
       </div>
 
-      <!-- Formulário de Autenticação -->
       <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-4">
         <div>
           <label class="block text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-1">E-mail</label>
@@ -345,31 +341,33 @@
     </div>
   </nav>
 
-  <!-- ================= MODAL: BIBLIOTECA VISUAL DE EXERCÍCIOS ================= -->
+  <!-- ================= MODAL: BIBLIOTECA VISUAL EXPANDIDA ================= -->
   <div id="modalExerciseLibrary" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-[#111620] tactical-border rounded-2xl w-full max-w-lg p-5 space-y-4 max-h-[85vh] flex flex-col">
       <div class="flex justify-between items-center">
         <div>
-          <h3 class="text-base font-display font-bold text-white">Biblioteca de Exercícios</h3>
-          <p class="text-xs text-slate-400">Selecione para ver a execução biomecânica</p>
+          <h3 class="text-base font-display font-bold text-white">Arsenal de Exercícios</h3>
+          <p class="text-xs text-slate-400">Execuções biomecânicas de precisão</p>
         </div>
         <button onclick="closeExerciseLibraryModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
       </div>
 
-      <!-- Barra de Pesquisa e Filtros -->
+      <!-- Busca e Filtros -->
       <div class="space-y-2">
-        <input type="text" id="librarySearchInput" oninput="filterExerciseLibrary()" placeholder="Buscar por exercício..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-brand-lime" />
+        <input type="text" id="librarySearchInput" oninput="filterExerciseLibrary()" placeholder="Buscar por exercício ou músculo..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-brand-lime" />
         <div class="flex gap-1.5 overflow-x-auto pb-1 text-[11px] font-mono scrollbar-none" id="libraryFilterButtons">
           <button onclick="filterByGroup('Todos')" class="px-2.5 py-1 rounded bg-brand-lime text-black font-bold">Todos</button>
           <button onclick="filterByGroup('Peito')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">Peito</button>
           <button onclick="filterByGroup('Costas')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">Costas</button>
           <button onclick="filterByGroup('Pernas')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">Pernas</button>
           <button onclick="filterByGroup('Ombros')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">Ombros</button>
-          <button onclick="filterByGroup('Braços')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">Braços</button>
+          <button onclick="filterByGroup('Bíceps')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">Bíceps</button>
+          <button onclick="filterByGroup('Tríceps')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">Tríceps</button>
+          <button onclick="filterByGroup('Abdômen')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">Abdômen</button>
         </div>
       </div>
 
-      <!-- Lista de Exercícios da Biblioteca -->
+      <!-- Lista de Exercícios -->
       <div id="libraryListContainer" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
     </div>
   </div>
@@ -381,13 +379,22 @@
       <div class="text-center pt-2">
         <span id="detailGroupBadge" class="text-[10px] font-mono text-brand-lime border border-brand-lime/30 px-2 py-0.5 rounded uppercase">Peito</span>
         <h3 id="detailExerciseName" class="text-lg font-display font-extrabold text-white mt-1">Supino Reto</h3>
+        <p id="detailEquipment" class="text-[10px] font-mono text-slate-400">Equipamento: Barra</p>
       </div>
-      <div class="w-full h-52 bg-slate-950 rounded-xl tactical-border flex items-center justify-center overflow-hidden">
-        <img id="detailExerciseGif" src="" alt="Execução do Exercício" class="w-full h-full object-contain" />
+
+      <!-- Card com Ilustração SVG Temática do Movimento -->
+      <div id="detailIllustrationBox" class="w-full h-44 bg-slate-950 rounded-xl tactical-border flex flex-col items-center justify-center p-4 text-center">
+        <!-- Ícone / Anatomia Dinâmica -->
+        <div id="detailAnatomyIcon" class="w-16 h-16 rounded-full bg-slate-900 border border-brand-lime/30 flex items-center justify-center text-brand-lime mb-2">
+          <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+        </div>
+        <span id="detailMechanicalType" class="text-xs font-mono text-brand-lime font-bold uppercase tracking-wider">Movimento Composto</span>
+        <span class="text-[10px] text-slate-500 font-mono mt-0.5">Execução Guiada FORJA</span>
       </div>
-      <div class="text-xs text-slate-300 space-y-2 bg-slate-900/60 p-3 rounded-xl tactical-border">
-        <p><strong class="text-brand-lime font-mono">Músculos:</strong> <span id="detailMuscles">Peitoral Maior, Tríceps</span></p>
-        <p><strong class="text-brand-lime font-mono">Postura:</strong> <span id="detailTips">Mantenha os ombros recuados e escápulas aduzidas durante a descida.</span></p>
+
+      <div class="text-xs text-slate-300 space-y-2 bg-slate-900/60 p-3.5 rounded-xl tactical-border">
+        <p><strong class="text-brand-lime font-mono">Foco Principal:</strong> <span id="detailMuscles">Peitoral Maior</span></p>
+        <p><strong class="text-brand-lime font-mono">Biomecânica:</strong> <span id="detailTips">Desça controlando a carga até a linha dos mamilos.</span></p>
       </div>
       <button onclick="closeExerciseDetailModal()" class="w-full py-2.5 bg-slate-800 text-white font-mono text-xs font-bold rounded-xl hover:bg-slate-700">Fechar</button>
     </div>
@@ -411,7 +418,7 @@
             + Escrever Manual
           </button>
           <button onclick="openExerciseLibraryModal('template')" class="flex-1 py-2 bg-slate-900 border border-brand-lime/30 text-brand-lime font-mono text-xs rounded-lg hover:border-brand-lime">
-            + Da Biblioteca
+            + Do Arsenal
           </button>
         </div>
       </div>
@@ -425,9 +432,6 @@
 
   <!-- ================= JAVASCRIPT PRINCIPAL ================= -->
   <script>
-    /* -------------------------------------------------------------
-       CREDENCIAIS OFICIAIS DO SUPABASE
-    -------------------------------------------------------------- */
     const SUPABASE_URL = "https://pzygeoqjdyvtfpxuytvg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6eWdlb3FqZHl2dGZweHV5dHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNjczNzMsImV4cCI6MjEwODk0MzM3M30.lme2H9a6-QyI7Hf-7-tSIfr3DuvXMk03ZJoBnOemUYU";
 
@@ -439,88 +443,253 @@
     }
 
     /* -------------------------------------------------------------
-       CATÁLOGO DE EXERCÍCIOS VISUAIS (CDN GRATUITA - ESPAÇO ZERO SUPABASE)
+       ARSENAL DE EXERCÍCIOS OFICIAIS (PRECISÃO BIOMECÂNICA TOTAL)
     -------------------------------------------------------------- */
     const EXERCISE_DATABASE = [
+      // PEITO
       {
-        id: 'bench-press',
+        id: 'bench-press-barbell',
         name: 'Supino Reto com Barra',
         group: 'Peito',
-        muscles: 'Peitoral Maior, Deltóide Anterior, Tríceps',
-        tips: 'Desça a barra até à linha média do peito, mantendo as omoplatas retraídas.',
-        gif: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&auto=format&fit=crop&q=80'
+        equipment: 'Barra Olímpica',
+        muscles: 'Peitoral Maior (Fibras médias), Tríceps, Deltóide Anterior',
+        tips: 'Mantenha os pés cravados no chão, escápulas retraídas e encoste a barra na linha dos mamilos.'
       },
       {
         id: 'incline-dumbbell-press',
         name: 'Supino Inclinado com Halteres',
         group: 'Peito',
-        muscles: 'Peitoral Superior, Deltóides',
-        tips: 'Mantenha o banco entre 30 e 45 graus para foco no feixe clavicular.',
-        gif: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&auto=format&fit=crop&q=80'
+        equipment: 'Halteres & Banco 30°/45°',
+        muscles: 'Peitoral Superior (Porção Clavicular), Deltóides',
+        tips: 'Evite inclinar o banco além de 45° para não transferir o esforço excessivamente para os ombros.'
       },
       {
-        id: 'lat-pulldown',
-        name: 'Puxada Frontal na Polia',
+        id: 'dips-chest',
+        name: 'Paralelas com Foco em Peitoral',
+        group: 'Peito',
+        equipment: 'Barras Paralelas / Graviton',
+        muscles: 'Peitoral Inferior, Tríceps, Core',
+        tips: 'Incline o tronco levemente para a frente e abra ligeiramente os cotovelos durante a descida.'
+      },
+      {
+        id: 'cable-crossover-high',
+        name: 'Crossover na Polia Alta',
+        group: 'Peito',
+        equipment: 'Polia Dupla',
+        muscles: 'Peitoral Maior (Foco Esterno-costal e Inferior)',
+        tips: 'Cruze as mãos levemente à frente do quadril, concentrando na adução das escápulas e contração no final.'
+      },
+      {
+        id: 'peck-deck',
+        name: 'Voador / Peck Deck',
+        group: 'Peito',
+        equipment: 'Máquina',
+        muscles: 'Peitoral Maior (Isolamento)',
+        tips: 'Mantenha o peito estufado e os ombros baixos durante todo o arco de fechamento.'
+      },
+
+      // COSTAS
+      {
+        id: 'lat-pulldown-pronated',
+        name: 'Puxada Frontal Aberta na Polia',
         group: 'Costas',
-        muscles: 'Grande Dorsal, Redondo Maior, Bíceps',
-        tips: 'Puxe direcionando os cotovelos para os quadris sem balançar o tronco.',
-        gif: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=600&auto=format&fit=crop&q=80'
+        equipment: 'Polia Alta',
+        muscles: 'Grande Dorsal (Largura), Redondo Maior, Bíceps',
+        tips: 'Puxe direcionando a barra para a fúrcula esternal trazendo os cotovelos para as costelas.'
       },
       {
-        id: 'barbell-row',
+        id: 'barbell-bent-over-row',
         name: 'Remada Curvada com Barra',
         group: 'Costas',
-        muscles: 'Dorsais, Trapézio, Rombóides',
-        tips: 'Mantenha as costas estáveis a 45 graus e puxe a barra na direção do umbigo.',
-        gif: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&auto=format&fit=crop&q=80'
+        equipment: 'Barra',
+        muscles: 'Grande Dorsal (Espessura), Rombóides, Trapézio, Eretor da Espinha',
+        tips: 'Mantenha o tronco estável em aproximadamente 45°, coluna neutra e puxe a barra rente à coxa até a cintura.'
       },
       {
-        id: 'squat',
+        id: 'seated-cable-row',
+        name: 'Remada Baixa com Triângulo',
+        group: 'Costas',
+        equipment: 'Polia Baixa',
+        muscles: 'Dorsais, Trapézio Médio/Inferior, Rombóides',
+        tips: 'Alongue as dorsais na fase excêntrica e feche as escápulas com firmeza sem hiperextender a lombar.'
+      },
+      {
+        id: 'dumbbell-single-arm-row',
+        name: 'Remada Unilateral com Halter (Serrote)',
+        group: 'Costas',
+        equipment: 'Halter & Banco',
+        muscles: 'Grande Dorsal, Redondo Maior',
+        tips: 'Apoie o joelho no banco, estabilize o core e traga o halter em direção ao quadril, não ao ombro.'
+      },
+      {
+        id: 'straight-arm-pulldown',
+        name: 'Pulldown com Corda / Barra Reta',
+        group: 'Costas',
+        equipment: 'Polia Alta',
+        muscles: 'Grande Dorsal (Isolamento puro), Tríceps longo',
+        tips: 'Mantenha os cotovelos ligeiramente semi-flexionados e desça a barra até encostar na coxa.'
+      },
+
+      // PERNAS
+      {
+        id: 'barbell-back-squat',
         name: 'Agachamento Livre com Barra',
         group: 'Pernas',
-        muscles: 'Quadríceps, Glúteos, Isquiotibiais, Core',
-        tips: 'Mantenha os calcanhares firmes no solo e joelhos alinhados com a ponta dos pés.',
-        gif: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=600&auto=format&fit=crop&q=80'
+        equipment: 'Barra Olímpica & Rack',
+        muscles: 'Quadríceps, Glúteo Máximo, Isquiotibiais, Core',
+        tips: 'Distribua o peso em todo o pé, projete os joelhos na direção das pontas dos pés e desça além de 90°.'
       },
       {
-        id: 'leg-press',
+        id: 'leg-press-45',
         name: 'Leg Press 45°',
         group: 'Pernas',
-        muscles: 'Quadríceps e Glúteos',
-        tips: 'Não hiperestenda os joelhos no topo do movimento para proteger a articulação.',
-        gif: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600&auto=format&fit=crop&q=80'
+        equipment: 'Máquina 45°',
+        muscles: 'Quadríceps, Glúteos',
+        tips: 'Não permita que o quadril se descole do encosto na fase mais baixa e não estenda os joelhos até travar.'
       },
       {
-        id: 'military-press',
-        name: 'Desenvolvimento Militar',
+        id: 'bulgarian-split-squat',
+        name: 'Agachamento Búlgaro com Halteres',
+        group: 'Pernas',
+        equipment: 'Halteres & Banco',
+        muscles: 'Quadríceps, Glúteo Médio/Máximo',
+        tips: 'Um pé apoiado atrás no banco; desça o joelho de trás em direção ao chão mantendo o tronco levemente inclinado.'
+      },
+      {
+        id: 'leg-extension',
+        name: 'Cadeira Extensora',
+        group: 'Pernas',
+        equipment: 'Máquina',
+        muscles: 'Quadríceps (Reto femoral e vastos)',
+        tips: 'Segure 1 segundo de pico de contração no topo com as pontas dos pés apontadas para cima.'
+      },
+      {
+        id: 'romanian-deadlift',
+        name: 'Stiff / Levantamento Romeno',
+        group: 'Pernas',
+        equipment: 'Barra ou Halteres',
+        muscles: 'Posteriores de Coxa (Isquiotibiais), Glúteos, Lombar',
+        tips: 'Flexione levemente os joelhos e empurre o quadril para trás como se fosse fechar uma porta.'
+      },
+      {
+        id: 'lying-leg-curl',
+        name: 'Mesa Flexora',
+        group: 'Pernas',
+        equipment: 'Máquina',
+        muscles: 'Isquiotibiais (Bíceps femoral, Semitendíneo)',
+        tips: 'Mantenha a pelve colada no estofado para não sobrecarregar a lombar na puxada.'
+      },
+      {
+        id: 'hip-thrust',
+        name: 'Elevação Pélvica com Barra',
+        group: 'Pernas',
+        equipment: 'Barra & Banco',
+        muscles: 'Glúteo Máximo',
+        tips: 'Escápulas apoiadas no banco, queixo no peito e faça a extensão total do quadril contraindo os glúteos no topo.'
+      },
+      {
+        id: 'standing-calf-raise',
+        name: 'Panturrilha em Pé no Smith / Degrau',
+        group: 'Pernas',
+        equipment: 'Máquina ou Barra',
+        muscles: 'Gastrocnêmio, Sóleo',
+        tips: 'Alongue ao máximo no ponto mais baixo e suba na ponta dos dedos segurando a contração.'
+      },
+
+      // OMBROS
+      {
+        id: 'overhead-press',
+        name: 'Desenvolvimento Militar com Barra',
         group: 'Ombros',
-        muscles: 'Deltóide Anterior/Lateral, Tríceps',
-        tips: 'Trave os glúteos e o abdómen para proteger a região lombar.',
-        gif: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&auto=format&fit=crop&q=80'
+        equipment: 'Barra Olímpica',
+        muscles: 'Deltóide Anterior, Tríceps, Serrátil',
+        tips: 'Em pé, aperte os glúteos e abdômen, empurre a barra em linha reta passando rente ao rosto.'
       },
       {
-        id: 'lateral-raise',
+        id: 'dumbbell-lateral-raise',
         name: 'Elevação Lateral com Halteres',
         group: 'Ombros',
+        equipment: 'Halteres',
         muscles: 'Deltóide Lateral',
-        tips: 'Suba os braços até à linha dos ombros mantendo ligeira flexão dos cotovelos.',
-        gif: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=600&auto=format&fit=crop&q=80'
+        tips: 'Levante os halteres até a linha dos ombros, liderando o movimento com os cotovelos, sem dar tranco.'
       },
       {
-        id: 'biceps-curl',
+        id: 'face-pull',
+        name: 'Face Pull na Polia com Corda',
+        group: 'Ombros',
+        equipment: 'Polia Alta & Corda',
+        muscles: 'Deltóide Posterior, Manguito Rotador, Trapézio',
+        tips: 'Puxe a corda em direção aos olhos separando as pontas e fazendo rotação externa dos ombros.'
+      },
+
+      // BÍCEPS
+      {
+        id: 'barbell-curl',
         name: 'Rosca Direta com Barra W',
-        group: 'Braços',
-        muscles: 'Bíceps Braquial, Braquiorradial',
-        tips: 'Mantenha os cotovelos fixos ao lado do corpo sem utilizar balanço lombar.',
-        gif: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&auto=format&fit=crop&q=80'
+        group: 'Bíceps',
+        equipment: 'Barra W',
+        muscles: 'Bíceps Braquial, Braquial Anterior',
+        tips: 'Cotovelos travados ao lado do corpo; não balance o tronco para iniciar a subida do peso.'
       },
       {
-        id: 'triceps-pushdown',
-        name: 'Tríceps Corda na Polia',
-        group: 'Braços',
-        muscles: 'Tríceps (todas as cabeças)',
-        tips: 'Abra a corda no ponto final da extensão com contração máxima de 1 segundo.',
-        gif: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&auto=format&fit=crop&q=80'
+        id: 'incline-dumbbell-curl',
+        name: 'Rosca no Banco Inclinado',
+        group: 'Bíceps',
+        equipment: 'Halteres & Banco 45°',
+        muscles: 'Cabeça Longa do Bíceps',
+        tips: 'O banco inclinado gera maior estiramento prévio das fibras do bíceps, aumentando a hipertrofia.'
+      },
+      {
+        id: 'hammer-curl',
+        name: 'Rosca Martelo com Halteres',
+        group: 'Bíceps',
+        equipment: 'Halteres',
+        muscles: 'Braquiorradial, Braquial, Bíceps',
+        tips: 'Mantenha a pegada neutra (palmas viradas uma para a outra) durante todo o percurso.'
+      },
+
+      // TRÍCEPS
+      {
+        id: 'rope-pushdown',
+        name: 'Tríceps Corda na Polia Alta',
+        group: 'Tríceps',
+        equipment: 'Polia Alta',
+        muscles: 'Tríceps (Ênfase na cabeça lateral)',
+        tips: 'Mantenha os cotovelos colados ao lado do tronco e afaste as pontas da corda na extensão final.'
+      },
+      {
+        id: 'skull-crusher',
+        name: 'Tríceps Testa com Barra W',
+        group: 'Tríceps',
+        equipment: 'Barra W & Banco Reto',
+        muscles: 'Cabeça Longa e Medial do Tríceps',
+        tips: 'Desça a barra controladamente em direção à testa ou ligeiramente atrás da cabeça.'
+      },
+      {
+        id: 'overhead-triceps-extension',
+        name: 'Tríceps Francês na Polia / Halter',
+        group: 'Tríceps',
+        equipment: 'Polia Baixa ou Halter',
+        muscles: 'Cabeça Longa do Tríceps',
+        tips: 'Braços erguidos acima da cabeça proporcionam estiramento máximo do feixe longo do tríceps.'
+      },
+
+      // ABDÔMEN
+      {
+        id: 'cable-crunch',
+        name: 'Abdominal na Polia Alta (Cable Crunch)',
+        group: 'Abdômen',
+        equipment: 'Polia Alta & Corda',
+        muscles: 'Reto Abdominal',
+        tips: 'Ajoelhado, curve a coluna trazendo os cotovelos em direção aos joelhos, sem movimentar o quadril.'
+      },
+      {
+        id: 'hanging-leg-raise',
+        name: 'Elevação de Pernas na Barra Fixa',
+        group: 'Abdômen',
+        equipment: 'Barra Fixa',
+        muscles: 'Reto Abdominal Inferior, Flexores do Quadril',
+        tips: 'Suba as pernas ou joelhos enrolando a pelve para cima em vez de apenas levantar as coxas.'
       }
     ];
 
@@ -541,7 +710,7 @@
         remaining: 60,
         intervalId: null
       },
-      libraryContext: 'workout', // 'workout' ou 'template'
+      libraryContext: 'workout',
       activeGroupFilter: 'Todos'
     };
 
@@ -647,8 +816,8 @@
             division: 'A',
             exercises_config: [
               { name: 'Supino Reto com Barra', sets: 4, reps: '8-10', rest: 90 },
-              { name: 'Desenvolvimento Militar', sets: 3, reps: '10-12', rest: 90 },
-              { name: 'Tríceps Corda na Polia', sets: 3, reps: '12-15', rest: 60 }
+              { name: 'Desenvolvimento Militar com Barra', sets: 3, reps: '10-12', rest: 90 },
+              { name: 'Tríceps Corda na Polia Alta', sets: 3, reps: '12-15', rest: 60 }
             ]
           }
         ];
@@ -686,6 +855,19 @@
       renderExerciseLibraryList();
     }
 
+    function getGroupIcon(group) {
+      switch(group) {
+        case 'Peito': return '🛡️';
+        case 'Costas': return '🦅';
+        case 'Pernas': return '🦵';
+        case 'Ombros': return '⚔️';
+        case 'Bíceps': return '💪';
+        case 'Tríceps': return '⚡';
+        case 'Abdômen': return '🎯';
+        default: return '🏋️';
+      }
+    }
+
     function renderExerciseLibraryList() {
       const container = document.getElementById("libraryListContainer");
       const searchTerm = document.getElementById("librarySearchInput").value.toLowerCase();
@@ -704,18 +886,23 @@
 
       filtered.forEach(ex => {
         const div = document.createElement("div");
-        div.className = "bg-slate-900/80 p-3 rounded-xl tactical-border flex items-center justify-between gap-3";
+        div.className = "bg-slate-900/80 p-3 rounded-xl tactical-border flex items-center justify-between gap-3 hover:border-slate-700 transition-all";
         div.innerHTML = `
           <div class="flex items-center gap-3">
-            <img src="${ex.gif}" class="w-12 h-12 rounded-lg object-cover bg-slate-950 border border-slate-800" />
+            <div class="w-11 h-11 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-center text-lg flex-shrink-0">
+              ${getGroupIcon(ex.group)}
+            </div>
             <div>
-              <span class="text-[9px] font-mono text-brand-lime uppercase">${ex.group}</span>
-              <h4 class="text-xs font-bold text-white leading-tight">${ex.name}</h4>
-              <p class="text-[10px] text-slate-400 truncate max-w-[170px]">${ex.muscles}</p>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[9px] font-mono text-brand-lime uppercase font-bold">${ex.group}</span>
+                <span class="text-[9px] text-slate-500 font-mono">• ${ex.equipment}</span>
+              </div>
+              <h4 class="text-xs font-bold text-white leading-tight mt-0.5">${ex.name}</h4>
+              <p class="text-[10px] text-slate-400 truncate max-w-[190px] mt-0.5">${ex.muscles}</p>
             </div>
           </div>
-          <div class="flex items-center gap-1.5">
-            <button onclick="showExerciseDetail('${ex.id}')" title="Ver execução biomecânica" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs">
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <button onclick="showExerciseDetail('${ex.id}')" title="Ver biomecânica" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs">
               👁️
             </button>
             <button onclick="selectExerciseFromLibrary('${ex.id}')" class="px-2.5 py-1.5 bg-brand-lime text-black font-mono font-bold text-xs rounded-lg hover:brightness-110">
@@ -733,9 +920,10 @@
 
       document.getElementById("detailGroupBadge").textContent = ex.group;
       document.getElementById("detailExerciseName").textContent = ex.name;
-      document.getElementById("detailExerciseGif").src = ex.gif;
+      document.getElementById("detailEquipment").textContent = "Equipamento: " + ex.equipment;
       document.getElementById("detailMuscles").textContent = ex.muscles;
       document.getElementById("detailTips").textContent = ex.tips;
+      document.getElementById("detailMechanicalType").textContent = ex.group.toUpperCase() + " • " + ex.equipment.toUpperCase();
 
       document.getElementById("modalExerciseDetail").classList.remove("hidden");
     }
@@ -753,9 +941,9 @@
           name: ex.name,
           rest: 60,
           sets: [
-            { weight: getLastUsedWeight(ex.name) || 30, reps: 10, completed: false },
-            { weight: getLastUsedWeight(ex.name) || 30, reps: 10, completed: false },
-            { weight: getLastUsedWeight(ex.name) || 30, reps: 10, completed: false }
+            { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false },
+            { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false },
+            { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false }
           ]
         });
         renderActiveWorkout();
@@ -842,7 +1030,7 @@
         name: ex.name,
         rest: ex.rest || 60,
         sets: Array.from({ length: ex.sets || 3 }, () => ({
-          weight: getLastUsedWeight(ex.name) || 40,
+          weight: getLastUsedWeight(ex.name) || 30,
           reps: 10,
           completed: false
         }))
@@ -917,7 +1105,7 @@
       if (found) {
         showExerciseDetail(found.id);
       } else {
-        alert("Exercício adicionado manualmente sem ilustração registada na base.");
+        alert("Exercício adicionado manualmente sem ficha de postura cadastrada.");
       }
     }
 
