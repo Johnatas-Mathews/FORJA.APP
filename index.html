@@ -1,1146 +1,1809 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IronTrack - Registro & Evolução de Treinos</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>FORJA — Construa sua evolução</title>
+  
+  <!-- Google Fonts: Syne (Display/Bold), Inter (UI), JetBrains Mono (Dados/Cargas/Timer) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700;800&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome 6 Pro Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
           colors: {
-            brand: {
-              500: '#10b981', // emerald/neon green
-              accent: '#22c55e',
-              glow: 'rgba(34, 197, 94, 0.25)',
-              dark: '#0f172a',
-              card: '#1e293b',
-              cardHover: '#26354a',
-              border: '#334155'
+            forja: {
+              black: '#07090c',
+              dark: '#0c1017',
+              card: '#111620',
+              cardHover: '#161c28',
+              border: '#1f293d',
+              borderLight: '#2b3752',
+              neon: '#a3e635',       // Verde Neon / Lima Elétrico
+              neonGlow: 'rgba(163, 230, 53, 0.25)',
+              neonHover: '#bef264',
+              gold: '#facc15',
+              muted: '#71717a'
             }
+          },
+          fontFamily: {
+            display: ['Syne', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
           }
         }
       }
     }
   </script>
+
   <style>
-    /* Estilização suave para scrollbar */
+    /* Custom Scrollbar */
     ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
     }
     ::-webkit-scrollbar-track {
-      background: #0f172a;
+      background: #07090c;
     }
     ::-webkit-scrollbar-thumb {
-      background: #334155;
+      background: #1f293d;
       border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #475569;
+      background: #a3e635;
+    }
+
+    /* Glow Effects */
+    .neon-glow {
+      box-shadow: 0 0 20px -3px rgba(163, 230, 53, 0.25);
+    }
+    .neon-border-glow {
+      border-color: #a3e635;
+      box-shadow: 0 0 12px -2px rgba(163, 230, 53, 0.35);
+    }
+    .gold-glow {
+      box-shadow: 0 0 16px -2px rgba(250, 204, 21, 0.35);
+    }
+
+    /* Mobile safe viewport height */
+    .app-screen {
+      min-height: 100dvh;
+    }
+
+    /* Disable number input arrows */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-brand-500 selection:text-slate-950">
+<body class="bg-forja-black text-slate-100 font-sans selection:bg-forja-neon selection:text-black antialiased app-screen flex flex-col pb-24 md:pb-6">
 
-  <!-- Top Navigation Bar -->
-  <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-lime-400 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-emerald-500/20">
-          <i class="fa-solid fa-dumbbell"></i>
-        </div>
-        <div>
-          <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
-            IRON<span class="text-emerald-400">TRACK</span>
-            <span class="text-[10px] uppercase tracking-wider bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 font-semibold">Pro</span>
-          </h1>
-        </div>
-      </div>
-
-      <!-- Quick Actions / Navigation Pills -->
-  <nav class="flex items-center gap-1 sm:gap-2">
-    <button onclick="switchTab('register')" id="nav-register" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-150 flex items-center gap-2 bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20">
-      <i class="fa-solid fa-plus-circle"></i>
-      <span class="hidden sm:inline">Novo Treino</span>
-    </button>
-    <button onclick="switchTab('templates')" id="nav-templates" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-150 flex items-center gap-2">
-      <i class="fa-solid fa-folder-open"></i>
-      <span class="hidden sm:inline">Fichas / Templates</span>
-    </button>
-    <button onclick="switchTab('history')" id="nav-history" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-150 flex items-center gap-2">
-      <i class="fa-solid fa-clock-rotate-left"></i>
-      <span class="hidden sm:inline">Histórico</span>
-    </button>
-    <button onclick="switchTab('evolution')" id="nav-evolution" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-150 flex items-center gap-2">
-      <i class="fa-solid fa-chart-line"></i>
-      <span class="hidden sm:inline">Evolução</span>
-    </button>
-    <!-- Botão de Conexão Nuvem / Supabase -->
-    <button onclick="openCloudModal()" id="nav-cloud-btn" class="px-3 py-2 rounded-lg text-xs font-semibold bg-slate-800 border border-slate-700 text-slate-300 hover:border-emerald-500 hover:text-emerald-400 transition flex items-center gap-1.5" title="Sincronização Nuvem">
-      <span id="cloud-status-dot" class="w-2 h-2 rounded-full bg-slate-500 inline-block"></span>
-      <i class="fa-solid fa-cloud"></i>
-      <span id="cloud-btn-label" class="hidden sm:inline">Nuvem</span>
-    </button>
-  </nav>
-</div>
-</header>
-
-<!-- Global Notification Toast Container -->
-<div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
-
-<!-- Modal de Conexão com Supabase & Autenticação -->
-<div id="cloud-modal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-  <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
-    <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
-      <h3 class="text-base font-bold text-white flex items-center gap-2">
-        <i class="fa-solid fa-cloud-arrow-up text-emerald-400"></i> Sincronização Supabase
-      </h3>
-      <button onclick="closeCloudModal()" class="text-slate-400 hover:text-white p-1">
-        <i class="fa-solid fa-xmark text-lg"></i>
-      </button>
-    </div>
-
-    <!-- Seção de Configuração de Chaves -->
-    <div id="supabase-config-section" class="space-y-3 mb-4">
-      <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-400 space-y-1">
-        <p class="font-semibold text-slate-300 flex items-center gap-1.5">
-          <i class="fa-solid fa-shield-halved text-emerald-400"></i> Conexão Direta
-        </p>
-        <p>Insira a URL e a Anon Key do seu projeto Supabase (Project Settings &rarr; API):</p>
-      </div>
-
-      <div>
-        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Project URL</label>
-        <input type="text" id="sb-url-input" placeholder="https://xyzcompany.supabase.co" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
-      </div>
-      <div>
-        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Anon Public Key</label>
-        <input type="password" id="sb-key-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..." class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
-      </div>
-      <button onclick="saveSupabaseConfig()" class="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl transition">
-        Salvar & Conectar
-      </button>
-    </div>
-
-    <!-- Seção de Login / Cadastro quando conectado -->
-    <div id="supabase-auth-section" class="hidden space-y-3 border-t border-slate-800 pt-4">
-      <div id="auth-logged-out" class="space-y-3">
-        <div class="flex items-center justify-between">
-          <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Login / Cadastro</label>
-          <span class="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Supabase Conectado</span>
-        </div>
-        <input type="email" id="sb-email-input" placeholder="seu-email@exemplo.com" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
-        <input type="password" id="sb-pass-input" placeholder="Sua senha (mínimo 6 caracteres)" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
-        
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="handleSupabaseLogin()" class="py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl transition">
-            Entrar
-          </button>
-          <button onclick="handleSupabaseSignUp()" class="py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition">
-            Cadastrar
-          </button>
-        </div>
-      </div>
-
-      <div id="auth-logged-in" class="hidden space-y-3">
-        <div class="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl flex items-center justify-between">
-          <div class="overflow-hidden">
-            <span class="text-[10px] text-emerald-400 uppercase font-bold block">Autenticado</span>
-            <span id="sb-current-user-email" class="text-xs font-semibold text-white truncate block">email@exemplo.com</span>
-          </div>
-          <button onclick="handleSupabaseSignOut()" class="px-2.5 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 text-xs font-semibold rounded-lg transition">
-            Sair
-          </button>
-        </div>
-        <button onclick="syncAllLocalDataToSupabase()" class="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2">
-          <i class="fa-solid fa-arrows-rotate"></i> Forçar Sincronização
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Floating Rest Timer Widget -->
-<div id="floating-rest-timer" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-slate-900/95 border border-emerald-500/50 shadow-2xl shadow-emerald-500/20 rounded-2xl px-4 py-3 text-white backdrop-blur-md flex items-center gap-4 transition-all duration-300 hidden">
-  <div class="relative w-11 h-11 flex items-center justify-center">
-    <svg class="w-11 h-11 -rotate-90" viewBox="0 0 36 36">
-      <path class="text-slate-800" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-      <path id="timer-progress-ring" class="text-emerald-400 transition-all duration-300" stroke-dasharray="100, 100" stroke-dashoffset="0" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-    </svg>
-    <i class="fa-solid fa-stopwatch absolute text-emerald-400 text-xs"></i>
-  </div>
-  <div>
-    <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Descanso</div>
-    <div id="timer-display" class="font-mono text-xl font-black text-emerald-400">01:30</div>
-  </div>
-  <div class="flex items-center gap-1.5 ml-2">
-    <button onclick="adjustRestTimer(30)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs font-semibold" title="+30 segundos">+30s</button>
-    <button id="timer-pause-btn" onclick="togglePauseRestTimer()" class="w-8 h-8 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs" title="Pausar / Retomar">
-      <i class="fa-solid fa-pause"></i>
-    </button>
-    <button onclick="stopRestTimer()" class="w-8 h-8 flex items-center justify-center bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 rounded-lg text-xs" title="Finalizar descanso">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
-  </div>
-</div>
-
-<!-- Main Workspace -->
-<main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-
-  <!-- TAB 1: REGISTRAR TREINO -->
-  <section id="tab-register" class="space-y-6">
-    <!-- Barra de Ações Rápidas: Templates -->
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
-      <div class="flex items-center gap-3 w-full sm:w-auto">
-        <div class="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
-          <i class="fa-solid fa-bolt"></i>
-        </div>
-        <div>
-          <span class="text-sm font-bold text-white block">Carregar Ficha Pronta</span>
-          <span class="text-xs text-slate-400">Poupe tempo iniciando com sua rotina de exercícios pré-definida.</span>
-        </div>
-      </div>
-      <div class="flex items-center gap-2 w-full sm:w-auto">
-        <select id="quick-template-select" class="bg-slate-800 text-slate-200 text-xs sm:text-sm border border-slate-700 rounded-xl px-3 py-2 flex-1 sm:w-56 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-          <option value="">Selecione uma Ficha...</option>
-        </select>
-        <button onclick="loadSelectedTemplateToForm()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm whitespace-nowrap transition">
-          Carregar
-        </button>
-      </div>
-    </div>
-
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl relative overflow-hidden">
-      <div class="absolute -right-16 -top-16 w-56 h-56 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+  <!-- TOP BRANDING BAR -->
+  <header class="sticky top-0 z-40 bg-forja-dark/90 backdrop-blur-xl border-b border-forja-border">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
       
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800 gap-4">
+      <!-- LOGO -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="navigateTab('home')">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-forja-neon to-lime-500 flex items-center justify-center text-black font-display font-black text-xl shadow-lg shadow-forja-neon/20">
+          <i class="fa-solid fa-fire-flame-curved"></i>
+        </div>
         <div>
-          <h2 class="text-xl font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-file-pen text-emerald-400"></i> Sessão de Treino
-          </h2>
-          <p class="text-slate-400 text-xs sm:text-sm mt-0.5">Preencha cargas e repetições. Toque no cronômetro da série para descansar.</p>
-        </div>
-        <div class="flex flex-wrap items-center gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Data da Sessão</label>
-            <input type="date" id="session-date" class="bg-slate-800 text-slate-200 text-sm border border-slate-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <div class="flex items-center gap-1.5">
+            <span class="font-display font-black text-xl tracking-wider text-white">FORJA</span>
+            <span class="text-[9px] uppercase font-mono font-bold tracking-widest bg-forja-neon/15 text-forja-neon px-2 py-0.5 rounded-full border border-forja-neon/30">PRO</span>
           </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Nome/Foco</label>
-            <input type="text" id="session-name" placeholder="Ex: Treino A - Peito e Tríceps" class="bg-slate-800 text-slate-200 text-sm border border-slate-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 w-44 sm:w-56">
-          </div>
+          <span class="text-[10px] text-zinc-400 font-mono tracking-tight -mt-0.5 block">CONSTRUA SUA EVOLUÇÃO</span>
         </div>
       </div>
 
-      <!-- Lista de Exercícios na Sessão Atual -->
-      <div id="exercises-container" class="space-y-5 my-6">
-        <!-- Gerado dinamicamente -->
-      </div>
-
-      <!-- Botões de Ação do Registro -->
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-800">
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-          <button type="button" onclick="addExerciseCard()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-dashed border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 font-medium text-xs sm:text-sm flex items-center justify-center gap-2 transition">
-            <i class="fa-solid fa-circle-plus"></i> Adicionar Exercício
-          </button>
-          <button type="button" onclick="saveCurrentWorkoutAsTemplate()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-700 hover:border-slate-600 text-slate-300 hover:bg-slate-800 font-medium text-xs sm:text-sm flex items-center justify-center gap-2 transition" title="Gera um template para uso futuro">
-            <i class="fa-regular fa-bookmark"></i> Salvar como Ficha
-          </button>
+      <!-- STATUS & ATALHO DE NUVEM -->
+      <div class="flex items-center gap-3">
+        <div id="cloud-status-badge" onclick="navigateTab('profile')" class="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-forja-card border border-forja-border text-xs text-zinc-400 hover:border-forja-borderLight transition">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse" id="cloud-status-dot"></span>
+          <span class="font-mono text-[11px]" id="cloud-status-text">Local / Offline</span>
         </div>
-        
-        <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
-          <button type="button" onclick="clearWorkoutForm()" class="px-4 py-2.5 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-slate-800 text-xs sm:text-sm font-medium transition">
-            Limpar
-          </button>
-          <button type="button" onclick="saveWorkoutSession()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-lime-500 hover:from-emerald-400 hover:to-lime-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/25 transition active:scale-95 flex items-center justify-center gap-2">
-            <i class="fa-solid fa-floppy-disk"></i> Finalizar & Salvar Treino
-          </button>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- TAB 2: FICHAS / TEMPLATES -->
-  <section id="tab-templates" class="hidden space-y-6">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div>
-        <h2 class="text-xl font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-folder-open text-emerald-400"></i> Minhas Fichas de Treino
-        </h2>
-        <p class="text-slate-400 text-xs sm:text-sm">Monte suas rotinas pré-definidas (A/B/C, Push/Pull/Legs) e inicie treinos com 1 clique.</p>
-      </div>
-      <button onclick="openCreateTemplateModal()" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm flex items-center gap-2 transition shadow-md shadow-emerald-500/20">
-        <i class="fa-solid fa-plus"></i> Criar Nova Ficha
-      </button>
-    </div>
-
-    <!-- Lista de Fichas -->
-    <div id="templates-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <!-- Inserido dinamicamente -->
-    </div>
-  </section>
-
-  <!-- MODAL: CRIAR / EDITAR FICHA PRÉVIA -->
-  <div id="template-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-folder-plus text-emerald-400"></i> Cadastrar Ficha de Treino
-        </h3>
-        <button onclick="closeTemplateModal()" class="text-slate-400 hover:text-white p-1">
-          <i class="fa-solid fa-xmark text-lg"></i>
+        <button onclick="startQuickEmptyWorkout()" class="hidden md:flex items-center gap-2 px-3.5 py-1.5 bg-forja-neon hover:bg-forja-neonHover text-black rounded-lg font-bold text-xs tracking-tight transition neon-glow">
+          <i class="fa-solid fa-bolt"></i> Treino Rápido
         </button>
       </div>
+    </div>
+  </header>
 
-      <p class="text-xs text-slate-400 mt-2">
-        Monte sua ficha uma única vez. Sempre que for treinar, você carrega essa lista com 1 clique e apenas preenche os pesos e repetições realizados.
-      </p>
+  <!-- NOTIFICAÇÕES (TOAST) -->
+  <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
 
-      <div class="space-y-3 mt-4 overflow-y-auto pr-1 flex-1">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <div>
-            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Nome da Ficha *</label>
-            <input type="text" id="tpl-modal-name" placeholder="Ex: Treino A - Peito & Tríceps" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+  <!-- PERSISTENT FLOATING REST TIMER (AUTO-REST WIDGET) -->
+  <div id="floating-rest-timer" class="fixed bottom-24 md:bottom-8 right-4 md:right-8 z-40 bg-forja-card/95 border border-forja-neon/60 rounded-2xl p-4 text-white backdrop-blur-xl shadow-2xl neon-glow flex items-center gap-4 transition-all duration-300 hidden">
+    <div class="relative w-12 h-12 flex items-center justify-center">
+      <svg class="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
+        <path class="text-zinc-800" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        <path id="timer-progress-ring" class="text-forja-neon transition-all duration-300" stroke-dasharray="100, 100" stroke-dashoffset="0" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+      </svg>
+      <i class="fa-solid fa-stopwatch absolute text-forja-neon text-xs"></i>
+    </div>
+    
+    <div>
+      <div class="text-[10px] font-mono uppercase tracking-wider text-zinc-400 font-semibold flex items-center gap-1">
+        <span>DESCANSO</span>
+        <span class="text-forja-neon" id="timer-exercise-name"></span>
+      </div>
+      <div id="timer-display" class="font-mono text-2xl font-black text-forja-neon leading-tight">01:30</div>
+    </div>
+
+    <div class="flex items-center gap-1.5 ml-2 border-l border-forja-border pl-3">
+      <button onclick="adjustRestTimer(30)" class="px-2 py-1 bg-forja-dark hover:bg-zinc-800 text-zinc-300 border border-forja-border rounded text-xs font-mono font-bold" title="+30 segundos">+30s</button>
+      <button id="timer-pause-btn" onclick="togglePauseRestTimer()" class="w-8 h-8 flex items-center justify-center bg-forja-dark hover:bg-zinc-800 text-zinc-200 border border-forja-border rounded-lg text-xs" title="Pausar / Retomar">
+        <i class="fa-solid fa-pause"></i>
+      </button>
+      <button onclick="stopRestTimer()" class="w-8 h-8 flex items-center justify-center bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg text-xs" title="Encerrar descanso">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTAINER DE TELAS PRINCIPAIS -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 pt-6">
+
+    <!-- ============================================== -->
+    <!-- ABA 1: INÍCIO (DASHBOARD TÁTICO) -->
+    <!-- ============================================== -->
+    <section id="view-home" class="space-y-6">
+      
+      <!-- HERO RESUMO COM PRÓXIMO TREINO -->
+      <div class="bg-gradient-to-r from-forja-card to-forja-dark border border-forja-border rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-2xl">
+        <div class="absolute -right-16 -top-16 w-64 h-64 bg-forja-neon/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="space-y-2">
+            <span class="text-xs font-mono text-forja-neon uppercase tracking-wider font-semibold">Painel Tático do Atleta</span>
+            <h2 class="text-2xl sm:text-3xl font-display font-black text-white">Construa sua força.</h2>
+            <p class="text-zinc-400 text-sm max-w-lg">Supere a última sessão. Cada repetição registrada é forjada com sobrecarga progressiva.</p>
           </div>
-          <div>
-            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Foco / Divisão</label>
-            <input type="text" id="tpl-modal-focus" placeholder="Ex: Push / Peito e Tríceps" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-          </div>
-        </div>
 
-        <div>
-          <div class="flex items-center justify-between mb-1.5">
-            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Exercícios & Séries Estimadas</label>
-            <button type="button" onclick="addTemplateModalExerciseRow()" class="text-xs text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1">
-              <i class="fa-solid fa-plus text-[10px]"></i> Adicionar Exercício
+          <!-- Card de Recomendação do Próximo Treino -->
+          <div id="home-next-routine-card" class="bg-forja-black/80 border border-forja-border rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 min-w-[320px]">
+            <div>
+              <span class="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block mb-1">Próxima Ficha Sugerida</span>
+              <h3 id="home-next-routine-title" class="font-bold text-white text-base">Treino A - Peitoral & Tríceps</h3>
+              <p id="home-next-routine-details" class="text-xs text-zinc-400 font-mono mt-0.5">5 Exercícios • Divisão Push</p>
+            </div>
+            <button id="home-start-next-btn" onclick="startRecommendedWorkout()" class="w-full sm:w-auto px-5 py-2.5 bg-forja-neon hover:bg-forja-neonHover text-black font-display font-extrabold text-xs tracking-wider rounded-xl transition shadow-lg shadow-forja-neon/20 flex items-center justify-center gap-2 whitespace-nowrap">
+              <i class="fa-solid fa-play"></i> INICIAR AGORA
             </button>
           </div>
-          <div id="tpl-modal-exercises-list" class="space-y-2">
-            <!-- Linhas dinâmicas -->
+        </div>
+      </div>
+
+      <!-- FREQUÊNCIA SEMANAL (HEATMAP / DIAS TREINADOS) -->
+      <div class="bg-forja-card border border-forja-border rounded-2xl p-5 shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-calendar-check text-forja-neon text-sm"></i>
+            <h3 class="font-bold text-white text-sm">Frequência Semanal</h3>
+          </div>
+          <span id="weekly-frequency-summary" class="text-xs font-mono text-zinc-400">0 treinos nos últimos 7 dias</span>
+        </div>
+        
+        <!-- Dias da Semana no Heatmap -->
+        <div id="weekly-heatmap" class="grid grid-cols-7 gap-2">
+          <!-- Renderizado via JS -->
+        </div>
+      </div>
+
+      <!-- MÉTRICAS RÁPIDAS (CARDS) -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        
+        <div class="bg-forja-card border border-forja-border rounded-2xl p-4">
+          <span class="text-[11px] font-mono uppercase text-zinc-500 font-semibold block">Volume Semana</span>
+          <div class="mt-2 flex items-baseline gap-1.5">
+            <h4 id="stat-weekly-volume" class="font-mono text-xl sm:text-2xl font-bold text-white">0</h4>
+            <span class="text-xs text-zinc-400 font-mono">kg</span>
+          </div>
+          <span class="text-[10px] text-forja-neon mt-1 block font-mono">Total movimentado</span>
+        </div>
+
+        <div class="bg-forja-card border border-forja-border rounded-2xl p-4">
+          <span class="text-[11px] font-mono uppercase text-zinc-500 font-semibold block">Sessões Totais</span>
+          <div class="mt-2 flex items-baseline gap-1.5">
+            <h4 id="stat-total-workouts" class="font-mono text-xl sm:text-2xl font-bold text-white">0</h4>
+            <span class="text-xs text-zinc-400 font-mono">treinos</span>
+          </div>
+          <span class="text-[10px] text-zinc-400 mt-1 block font-mono">Histórico completo</span>
+        </div>
+
+        <div class="bg-forja-card border border-forja-border rounded-2xl p-4">
+          <span class="text-[11px] font-mono uppercase text-zinc-500 font-semibold block">Séries Concluídas</span>
+          <div class="mt-2 flex items-baseline gap-1.5">
+            <h4 id="stat-total-sets" class="font-mono text-xl sm:text-2xl font-bold text-white">0</h4>
+            <span class="text-xs text-zinc-400 font-mono">séries</span>
+          </div>
+          <span class="text-[10px] text-zinc-400 mt-1 block font-mono">Disciplina em execução</span>
+        </div>
+
+        <div class="bg-forja-card border border-forja-border rounded-2xl p-4">
+          <span class="text-[11px] font-mono uppercase text-zinc-500 font-semibold block">PRs Batidos</span>
+          <div class="mt-2 flex items-baseline gap-1.5">
+            <h4 id="stat-total-prs" class="font-mono text-xl sm:text-2xl font-bold text-forja-gold">0</h4>
+            <span class="text-xs text-zinc-400 font-mono">marcos</span>
+          </div>
+          <span class="text-[10px] text-amber-400 mt-1 block font-mono">Recordes de força</span>
+        </div>
+
+      </div>
+
+      <!-- ÚLTIMOS RESULTADOS / ATIVIDADES RECENTES -->
+      <div class="bg-forja-card border border-forja-border rounded-2xl p-5 shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-white text-sm flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-forja-neon"></i> Treinos Recentes
+          </h3>
+          <button onclick="navigateTab('evolution')" class="text-xs font-mono text-forja-neon hover:underline">Ver tudo &rarr;</button>
+        </div>
+        <div id="home-recent-workouts-list" class="space-y-3">
+          <!-- Renderizado via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- ABA 2: MINHAS FICHAS (ROTINAS A, B, C, D...) -->
+    <!-- ============================================== -->
+    <section id="view-routines" class="hidden space-y-6">
+      
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-display font-extrabold text-white flex items-center gap-2">
+            <i class="fa-solid fa-folder-closed text-forja-neon"></i> Fichas & Rotinas
+          </h2>
+          <p class="text-xs sm:text-sm text-zinc-400">Monte suas divisões de treino (A, B, C, D...) com ordem e descanso planejado.</p>
+        </div>
+
+        <button onclick="openRoutineModal()" class="px-4 py-2.5 bg-forja-neon hover:bg-forja-neonHover text-black font-display font-extrabold text-xs tracking-wider rounded-xl transition neon-glow flex items-center justify-center gap-2">
+          <i class="fa-solid fa-plus"></i> NOVA FICHA
+        </button>
+      </div>
+
+      <!-- Grid de Fichas -->
+      <div id="routines-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Renderizado dinamicamente -->
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- ABA 3: TREINAR (EXECUÇÃO DE SESSÃO EM TEMPO REAL) -->
+    <!-- ============================================== -->
+    <section id="view-workout" class="hidden space-y-6">
+      
+      <!-- Cabeçalho do Treino Ativo -->
+      <div class="bg-forja-card border border-forja-border rounded-2xl p-4 sm:p-5 shadow-xl">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-forja-border">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-2.5 h-2.5 rounded-full bg-forja-neon animate-pulse"></span>
+              <span class="text-[10px] font-mono uppercase tracking-widest text-forja-neon font-bold">Sessão em Andamento</span>
+            </div>
+            <input type="text" id="active-session-name" placeholder="Nome do Treino (ex: Treino A - Peitoral)" class="bg-transparent text-lg sm:text-xl font-display font-black text-white focus:outline-none focus:border-b focus:border-forja-neon w-full">
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Seletor Rápido de Ficha Pronta -->
+            <select id="active-routine-selector" onchange="loadRoutineIntoActiveSession(this.value)" class="bg-forja-dark text-zinc-300 text-xs font-mono border border-forja-border rounded-xl px-3 py-2 focus:outline-none focus:ring-1 focus:ring-forja-neon">
+              <option value="">Carregar Ficha...</option>
+            </select>
+
+            <button onclick="saveActiveSessionAsTemplate()" class="px-3 py-2 bg-forja-dark hover:bg-zinc-800 text-zinc-300 border border-forja-border rounded-xl text-xs font-mono font-semibold transition" title="Salvar sessão atual como uma nova ficha">
+              <i class="fa-regular fa-bookmark"></i> Salvar Ficha
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 text-xs font-mono text-zinc-400">
+          <div>Data: <input type="date" id="active-session-date" class="bg-forja-dark text-zinc-200 border border-forja-border rounded px-2 py-0.5 text-xs"></div>
+          <div>Volume: <span id="active-live-volume" class="text-forja-neon font-bold">0 kg</span></div>
+        </div>
+      </div>
+
+      <!-- Container Dinâmico de Exercícios -->
+      <div id="active-exercises-container" class="space-y-4">
+        <!-- Renderizado dinamicamente -->
+      </div>
+
+      <!-- Ações do Treino -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-forja-border">
+        <button onclick="addExerciseToActiveWorkout()" class="w-full sm:w-auto px-4 py-3 rounded-xl border border-dashed border-forja-neon/50 text-forja-neon hover:bg-forja-neon/10 font-bold text-xs font-display tracking-wider flex items-center justify-center gap-2 transition">
+          <i class="fa-solid fa-plus-circle"></i> ADICIONAR EXERCÍCIO
+        </button>
+
+        <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+          <button onclick="cancelActiveWorkout()" class="px-4 py-3 rounded-xl text-zinc-500 hover:text-rose-400 hover:bg-forja-card text-xs font-mono font-bold transition">
+            Descartar
+          </button>
+          <button onclick="finishActiveWorkout()" class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-forja-neon to-lime-500 hover:from-forja-neonHover hover:to-lime-400 text-black font-display font-black text-xs tracking-wider rounded-xl transition neon-glow shadow-xl active:scale-95 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-flag-checkered"></i> FINALIZAR TREINO
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- ABA 4: EVOLUÇÃO (GRÁFICOS, PRS E HISTÓRICO) -->
+    <!-- ============================================== -->
+    <section id="view-evolution" class="hidden space-y-6">
+      
+      <div>
+        <h2 class="text-xl sm:text-2xl font-display font-extrabold text-white flex items-center gap-2">
+          <i class="fa-solid fa-chart-line text-forja-neon"></i> Evolução & Sobrecarga
+        </h2>
+        <p class="text-xs sm:text-sm text-zinc-400">Analise seu ganho de força, recordes pessoais (PRs) e histórico detalhado.</p>
+      </div>
+
+      <!-- Gráfico de Progressão Interativo -->
+      <div class="bg-forja-card border border-forja-border rounded-2xl p-4 sm:p-6 shadow-xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-forja-border">
+          <div>
+            <h3 class="font-bold text-white text-base">Progressão por Exercício</h3>
+            <span class="text-xs text-zinc-400">Histórico de Carga Máxima e Volume</span>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="evo-exercise-select" onchange="renderEvolutionChart()" class="bg-forja-dark text-zinc-200 text-xs font-mono border border-forja-border rounded-xl px-3 py-2 focus:outline-none focus:ring-1 focus:ring-forja-neon">
+              <!-- Preenchido via JS -->
+            </select>
+            <select id="evo-metric-select" onchange="renderEvolutionChart()" class="bg-forja-dark text-zinc-200 text-xs font-mono border border-forja-border rounded-xl px-3 py-2 focus:outline-none focus:ring-1 focus:ring-forja-neon">
+              <option value="maxWeight">Carga Máxima (kg)</option>
+              <option value="estimated1RM">1RM Estimado (kg)</option>
+              <option value="volume">Volume da Sessão (kg)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="w-full h-72 sm:h-80 relative mt-4">
+          <canvas id="evolutionChartCanvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Vitrine de Recordes Pessoais (PRs) -->
+      <div class="bg-forja-card border border-forja-border rounded-2xl p-5 shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-white text-sm flex items-center gap-2">
+            <i class="fa-solid fa-trophy text-forja-gold"></i> Vitrine de Recordes (PRs)
+          </h3>
+          <span class="text-xs font-mono text-zinc-500">Estimativas 1RM & Cargas Absolutas</span>
+        </div>
+        <div id="prs-showcase-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <!-- Renderizado via JS -->
+        </div>
+      </div>
+
+      <!-- Histórico Detalhado de Sessões -->
+      <div class="bg-forja-card border border-forja-border rounded-2xl p-5 shadow-lg">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <h3 class="font-bold text-white text-sm flex items-center gap-2">
+            <i class="fa-solid fa-calendar-days text-forja-neon"></i> Histórico Detalhado
+          </h3>
+          <input type="text" id="history-search-input" oninput="renderHistorySection()" placeholder="Buscar treino ou exercício..." class="bg-forja-dark text-xs text-zinc-200 border border-forja-border rounded-xl px-3 py-2 w-full sm:w-60 focus:outline-none focus:ring-1 focus:ring-forja-neon">
+        </div>
+        
+        <div id="history-sessions-accordion" class="space-y-3">
+          <!-- Renderizado via JS -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================== -->
+    <!-- ABA 5: PERFIL & CONEXÃO (CONFIGS, BACKUP, NUVEM) -->
+    <!-- ============================================== -->
+    <section id="view-profile" class="hidden space-y-6">
+      
+      <div>
+        <h2 class="text-xl sm:text-2xl font-display font-extrabold text-white flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-forja-neon"></i> Perfil & Configurações
+        </h2>
+        <p class="text-xs sm:text-sm text-zinc-400">Preferências, sincronização em nuvem e exportação de dados.</p>
+      </div>
+
+      <!-- Card do Atleta -->
+      <div class="bg-forja-card border border-forja-border rounded-2xl p-5 flex flex-col sm:flex-row items-center gap-4">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-forja-neon to-lime-500 flex items-center justify-center text-black font-display font-black text-2xl shadow-lg shadow-forja-neon/20">
+          <i class="fa-solid fa-dumbbell"></i>
+        </div>
+        <div class="text-center sm:text-left flex-1">
+          <h3 class="font-bold text-white text-base" id="profile-user-email">Atleta FORJA (Modo Local)</h3>
+          <p class="text-xs text-zinc-400 font-mono mt-0.5" id="profile-user-id">Dados salvos de forma segura no navegador</p>
+        </div>
+      </div>
+
+      <!-- Configuração de Nuvem (Supabase) -->
+      <div class="bg-forja-card border border-forja-border rounded-2xl p-5 space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-forja-border">
+          <div>
+            <h4 class="font-bold text-white text-sm flex items-center gap-2">
+              <i class="fa-solid fa-cloud text-sky-400"></i> Integração Supabase
+            </h4>
+            <span class="text-xs text-zinc-400">Sincronize seus treinos entre qualquer celular ou computador.</span>
+          </div>
+          <span id="supabase-pill-indicator" class="text-[10px] font-mono px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-400 border border-forja-border">Não Conectado</span>
+        </div>
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-[11px] font-mono uppercase text-zinc-400 mb-1">Project URL (Supabase)</label>
+            <input type="text" id="supabase-cfg-url" placeholder="https://xyzcompany.supabase.co" class="w-full bg-forja-dark border border-forja-border rounded-xl px-3 py-2 text-xs font-mono text-zinc-200 focus:outline-none focus:ring-1 focus:ring-forja-neon">
+          </div>
+          <div>
+            <label class="block text-[11px] font-mono uppercase text-zinc-400 mb-1">Anon / Public API Key</label>
+            <input type="password" id="supabase-cfg-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5c..." class="w-full bg-forja-dark border border-forja-border rounded-xl px-3 py-2 text-xs font-mono text-zinc-200 focus:outline-none focus:ring-1 focus:ring-forja-neon">
+          </div>
+        </div>
+
+        <div id="supabase-auth-box" class="pt-2 space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-mono uppercase text-zinc-400 mb-1">Seu E-mail</label>
+              <input type="email" id="supabase-auth-email" placeholder="voce@email.com" class="w-full bg-forja-dark border border-forja-border rounded-xl px-3 py-2 text-xs font-mono text-zinc-200 focus:outline-none focus:ring-1 focus:ring-forja-neon">
+            </div>
+            <div>
+              <label class="block text-[11px] font-mono uppercase text-zinc-400 mb-1">Sua Senha</label>
+              <input type="password" id="supabase-auth-password" placeholder="••••••••" class="w-full bg-forja-dark border border-forja-border rounded-xl px-3 py-2 text-xs font-mono text-zinc-200 focus:outline-none focus:ring-1 focus:ring-forja-neon">
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 pt-1">
+            <button onclick="handleSupabaseConnect('login')" class="px-4 py-2 bg-forja-neon text-black font-mono font-bold text-xs rounded-xl hover:bg-forja-neonHover transition">Entrar</button>
+            <button onclick="handleSupabaseConnect('signup')" class="px-4 py-2 bg-forja-dark text-zinc-200 border border-forja-border font-mono font-bold text-xs rounded-xl hover:bg-zinc-800 transition">Criar Conta</button>
+            <button onclick="handleSupabaseSync()" class="px-4 py-2 bg-sky-500/10 text-sky-400 border border-sky-500/30 font-mono font-bold text-xs rounded-xl hover:bg-sky-500/20 transition">Sincronizar Agora</button>
           </div>
         </div>
       </div>
 
-      <div class="flex items-center justify-end gap-2 pt-4 border-t border-slate-800 mt-4">
-        <button type="button" onclick="closeTemplateModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 text-xs sm:text-sm font-medium transition">
-          Cancelar
-        </button>
-        <button type="button" onclick="saveTemplateFromModal()" class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm transition flex items-center gap-2">
-          <i class="fa-solid fa-check"></i> Salvar Ficha
+      <!-- Backup e Importação/Exportação Local -->
+      <div class="bg-forja-card border border-forja-border rounded-2xl p-5 space-y-3">
+        <h4 class="font-bold text-white text-sm flex items-center gap-2">
+          <i class="fa-solid fa-database text-forja-neon"></i> Dados & Backup
+        </h4>
+        <p class="text-xs text-zinc-400">Exporte todos os seus dados em arquivo JSON ou recupere um backup anterior.</p>
+        
+        <div class="flex flex-wrap items-center gap-3 pt-1">
+          <button onclick="exportDataJSON()" class="px-4 py-2.5 bg-forja-dark hover:bg-zinc-800 border border-forja-border text-zinc-200 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2">
+            <i class="fa-solid fa-download"></i> Baixar Backup JSON
+          </button>
+          <label class="px-4 py-2.5 bg-forja-dark hover:bg-zinc-800 border border-forja-border text-zinc-200 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-upload"></i> Importar Backup JSON
+            <input type="file" id="backup-file-input" onchange="importDataJSON(event)" accept=".json" class="hidden">
+          </label>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ============================================== -->
+  <!-- BARRA DE NAVEGAÇÃO INFERIOR TÁTICA (MOBILE DOCK) -->
+  <!-- ============================================== -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-forja-dark/95 backdrop-blur-xl border-t border-forja-border">
+    <div class="max-w-md mx-auto px-4 h-16 flex items-center justify-around">
+      
+      <button onclick="navigateTab('home')" id="tab-btn-home" class="flex flex-col items-center gap-1 text-forja-neon transition">
+        <i class="fa-solid fa-house text-lg"></i>
+        <span class="text-[10px] font-mono font-bold tracking-tight">Início</span>
+      </button>
+
+      <button onclick="navigateTab('routines')" id="tab-btn-routines" class="flex flex-col items-center gap-1 text-zinc-400 hover:text-zinc-200 transition">
+        <i class="fa-solid fa-layer-group text-lg"></i>
+        <span class="text-[10px] font-mono font-bold tracking-tight">Fichas</span>
+      </button>
+
+      <!-- Botão Central Destacado "Treinar" -->
+      <button onclick="navigateTab('workout')" id="tab-btn-workout" class="relative -top-2 flex flex-col items-center">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-forja-neon to-lime-400 flex items-center justify-center text-black font-black text-xl shadow-lg shadow-forja-neon/30 active:scale-95 transition">
+          <i class="fa-solid fa-dumbbell"></i>
+        </div>
+        <span class="text-[10px] font-mono font-bold text-forja-neon mt-0.5">Treinar</span>
+      </button>
+
+      <button onclick="navigateTab('evolution')" id="tab-btn-evolution" class="flex flex-col items-center gap-1 text-zinc-400 hover:text-zinc-200 transition">
+        <i class="fa-solid fa-chart-simple text-lg"></i>
+        <span class="text-[10px] font-mono font-bold tracking-tight">Evolução</span>
+      </button>
+
+      <button onclick="navigateTab('profile')" id="tab-btn-profile" class="flex flex-col items-center gap-1 text-zinc-400 hover:text-zinc-200 transition">
+        <i class="fa-solid fa-user-gear text-lg"></i>
+        <span class="text-[10px] font-mono font-bold tracking-tight">Perfil</span>
+      </button>
+
+    </div>
+  </nav>
+
+  <!-- ============================================== -->
+  <!-- MODAL: CRIAR / EDITAR FICHA DE TREINO -->
+  <!-- ============================================== -->
+  <div id="routine-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-forja-card border border-forja-border rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      
+      <div class="p-5 border-b border-forja-border flex items-center justify-between">
+        <h3 class="font-display font-extrabold text-lg text-white flex items-center gap-2">
+          <i class="fa-solid fa-pen-ruler text-forja-neon"></i> Configurar Ficha de Treino
+        </h3>
+        <button onclick="closeRoutineModal()" class="text-zinc-400 hover:text-white p-1 text-base">
+          <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
+
+      <div class="p-5 overflow-y-auto space-y-4 flex-1">
+        <input type="hidden" id="modal-routine-id">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-mono text-zinc-400 mb-1">Nome da Ficha</label>
+            <input type="text" id="modal-routine-name" placeholder="Ex: Treino A - Peitoral & Tríceps" class="w-full bg-forja-dark border border-forja-border rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-forja-neon">
+          </div>
+          <div>
+            <label class="block text-xs font-mono text-zinc-400 mb-1">Divisão</label>
+            <select id="modal-routine-division" class="w-full bg-forja-dark border border-forja-border rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-forja-neon">
+              <option value="A">Divisão A</option>
+              <option value="B">Divisão B</option>
+              <option value="C">Divisão C</option>
+              <option value="D">Divisão D</option>
+              <option value="E">Divisão E</option>
+              <option value="FULL">Full Body</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-mono text-zinc-400 mb-1">Foco Muscular / Descrição</label>
+          <input type="text" id="modal-routine-focus" placeholder="Ex: Push / Ênfase em Peitoral Superior" class="w-full bg-forja-dark border border-forja-border rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-forja-neon">
+        </div>
+
+        <div class="pt-2">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-mono uppercase text-zinc-400 font-bold">Exercícios da Ficha</span>
+            <button type="button" onclick="addExerciseRowToRoutineModal()" class="text-xs font-mono text-forja-neon hover:underline flex items-center gap-1 font-bold">
+              <i class="fa-solid fa-plus"></i> Adicionar Exercício
+            </button>
+          </div>
+          <div id="modal-exercises-list" class="space-y-2">
+            <!-- Linhas de Exercícios -->
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-forja-border bg-forja-dark flex items-center justify-end gap-3">
+        <button onclick="closeRoutineModal()" class="px-4 py-2 text-zinc-400 hover:text-white text-xs font-mono font-bold">Cancelar</button>
+        <button onclick="saveRoutineFromModal()" class="px-5 py-2.5 bg-forja-neon hover:bg-forja-neonHover text-black font-display font-extrabold text-xs tracking-wider rounded-xl transition neon-glow">SALVAR FICHA</button>
+      </div>
+
     </div>
   </div>
 
-  <!-- TAB 3: HISTÓRICO -->
-  <section id="tab-history" class="hidden space-y-6">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 class="text-xl font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-calendar-days text-emerald-400"></i> Histórico de Atividades
-          </h2>
-          <p class="text-slate-400 text-xs sm:text-sm">Consulte suas sessões passadas e detalhes de cada série.</p>
-        </div>
-
-        <!-- Filtros do Histórico -->
-        <div class="flex flex-wrap items-center gap-3">
-          <div class="relative">
-            <i class="fa-solid fa-search absolute left-3 top-2.5 text-xs text-slate-400"></i>
-            <input type="text" id="history-search" oninput="renderHistoryList()" placeholder="Buscar exercício ou treino..." class="bg-slate-900 border border-slate-800 text-slate-200 text-sm rounded-xl pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-          </div>
-          <select id="history-filter-muscle" onchange="renderHistoryList()" class="bg-slate-900 border border-slate-800 text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-            <option value="ALL">Todos os Grupos</option>
-            <option value="Peito">Peito</option>
-            <option value="Costas">Costas</option>
-            <option value="Pernas">Pernas</option>
-            <option value="Ombros">Ombros</option>
-            <option value="Braços">Braços</option>
-            <option value="Core">Core / Abdômen</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Feed do Histórico -->
-      <div id="history-feed" class="space-y-4">
-        <!-- Preenchido via Javascript -->
-      </div>
-    </section>
-
-    <!-- TAB 3: EVOLUÇÃO & DASHBOARD -->
-    <section id="tab-evolution" class="hidden space-y-6">
-      <!-- Cards de Métricas Principais -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center gap-4">
-          <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl border border-emerald-500/20">
-            <i class="fa-solid fa-weight-hanging"></i>
-          </div>
-          <div>
-            <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Volume Total (Geral)</p>
-            <h3 id="stat-total-volume" class="text-xl font-bold text-white">0 kg</h3>
-          </div>
-        </div>
-
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center gap-4">
-          <div class="w-12 h-12 rounded-xl bg-lime-500/10 text-lime-400 flex items-center justify-center text-xl border border-lime-500/20">
-            <i class="fa-solid fa-calendar-check"></i>
-          </div>
-          <div>
-            <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Treinos Registrados</p>
-            <h3 id="stat-total-workouts" class="text-xl font-bold text-white">0</h3>
-          </div>
-        </div>
-
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center gap-4">
-          <div class="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-xl border border-cyan-500/20">
-            <i class="fa-solid fa-trophy"></i>
-          </div>
-          <div>
-            <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Recorde (PR Atual)</p>
-            <h3 id="stat-exercise-pr" class="text-xl font-bold text-white">0 kg</h3>
-          </div>
-        </div>
-
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center gap-4">
-          <div class="w-12 h-12 rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center text-xl border border-violet-500/20">
-            <i class="fa-solid fa-layer-group"></i>
-          </div>
-          <div>
-            <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Séries Totais</p>
-            <h3 id="stat-total-sets" class="text-xl font-bold text-white">0</h3>
-          </div>
-        </div>
-      </div>
-
-      <!-- Seção do Gráfico Interativo -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-4 shadow-xl">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-800">
-          <div>
-            <h3 class="text-lg font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-arrow-trend-up text-emerald-400"></i> Progresso ao Longo do Tempo
-            </h3>
-            <p class="text-xs text-slate-400">Analise o avanço de carga ou volume por exercício específico.</p>
-          </div>
-          <div class="flex flex-wrap items-center gap-2">
-            <select id="chart-exercise-select" onchange="updateEvolutionChart()" class="bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
-              <!-- Preenchido via Javascript -->
-            </select>
-            <select id="chart-metric-select" onchange="updateEvolutionChart()" class="bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
-              <option value="maxWeight">Carga Máxima (kg)</option>
-              <option value="totalVolume">Volume da Sessão (kg × reps)</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Container do Canvas -->
-        <div class="w-full h-72 sm:h-96 relative">
-          <canvas id="progressChart"></canvas>
-        </div>
-      </div>
-    </section>
-  </main>
-
+  <!-- ============================================== -->
+  <!-- JAVASCRIPT PRINCIPAL DA APLICAÇÃO (FORJA ENGINE) -->
+  <!-- ============================================== -->
   <script>
-    // --- INTEGRAÇÃO SUPABASE ---
-    let supabaseClient = null;
-    let currentUser = null;
-
-    function initSupabase() {
-      // 1. Prioriza variáveis injetadas em ambiente Vercel (window.__ENV__) se existirem
-      const envUrl = window.__ENV__?.SUPABASE_URL || localStorage.getItem('irontrack_sb_url');
-      const envKey = window.__ENV__?.SUPABASE_ANON_KEY || localStorage.getItem('irontrack_sb_key');
-
-      if (envUrl && envKey && window.supabase) {
-        try {
-          supabaseClient = window.supabase.createClient(envUrl, envKey);
-          updateCloudIndicator(true, false);
-          checkSupabaseAuth();
-        } catch (err) {
-          console.error("Falha ao inicializar Supabase:", err);
-          updateCloudIndicator(false, false);
-        }
-      } else {
-        updateCloudIndicator(false, false);
-      }
-    }
-
-    function openCloudModal() {
-      const urlInput = document.getElementById('sb-url-input');
-      const keyInput = document.getElementById('sb-key-input');
-      if (urlInput) urlInput.value = localStorage.getItem('irontrack_sb_url') || '';
-      if (keyInput) keyInput.value = localStorage.getItem('irontrack_sb_key') || '';
-      document.getElementById('cloud-modal').classList.remove('hidden');
-    }
-
-    function closeCloudModal() {
-      document.getElementById('cloud-modal').classList.add('hidden');
-    }
-
-    function saveSupabaseConfig() {
-      const url = document.getElementById('sb-url-input').value.trim();
-      const key = document.getElementById('sb-key-input').value.trim();
-
-      if (!url || !key) {
-        showToast("Preencha a URL e a Anon Key do Supabase.", "error");
-        return;
-      }
-
-      localStorage.setItem('irontrack_sb_url', url);
-      localStorage.setItem('irontrack_sb_key', key);
-      initSupabase();
-      showToast("Configurações do Supabase salvas com sucesso!", "success");
-    }
-
-    async function checkSupabaseAuth() {
-      if (!supabaseClient) return;
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      
-      const authSection = document.getElementById('supabase-auth-section');
-      const loggedOutDiv = document.getElementById('auth-logged-out');
-      const loggedInDiv = document.getElementById('auth-logged-in');
-      const emailDisplay = document.getElementById('sb-current-user-email');
-
-      if (authSection) authSection.classList.remove('hidden');
-
-      if (session?.user) {
-        currentUser = session.user;
-        if (loggedOutDiv) loggedOutDiv.classList.add('hidden');
-        if (loggedInDiv) loggedInDiv.classList.remove('hidden');
-        if (emailDisplay) emailDisplay.innerText = currentUser.email;
-        updateCloudIndicator(true, true);
-        await fetchRemoteDataFromSupabase();
-      } else {
-        currentUser = null;
-        if (loggedOutDiv) loggedOutDiv.classList.remove('hidden');
-        if (loggedInDiv) loggedInDiv.classList.add('hidden');
-        updateCloudIndicator(true, false);
-      }
-
-      // Listener de alteração de estado
-      supabaseClient.auth.onAuthStateChange(async (event, currentSession) => {
-        if (currentSession?.user) {
-          currentUser = currentSession.user;
-          if (loggedOutDiv) loggedOutDiv.classList.add('hidden');
-          if (loggedInDiv) loggedInDiv.classList.remove('hidden');
-          if (emailDisplay) emailDisplay.innerText = currentUser.email;
-          updateCloudIndicator(true, true);
-        } else {
-          currentUser = null;
-          if (loggedOutDiv) loggedOutDiv.classList.remove('hidden');
-          if (loggedInDiv) loggedInDiv.classList.add('hidden');
-          updateCloudIndicator(true, false);
-        }
-      });
-    }
-
-    async function handleSupabaseSignUp() {
-      if (!supabaseClient) return;
-      const email = document.getElementById('sb-email-input').value.trim();
-      const password = document.getElementById('sb-pass-input').value.trim();
-
-      if (!email || password.length < 6) {
-        showToast("Insira um e-mail válido e senha com no mínimo 6 caracteres.", "error");
-        return;
-      }
-
-      const { data, error } = await supabaseClient.auth.signUp({ email, password });
-      if (error) {
-        showToast("Erro no cadastro: " + error.message, "error");
-      } else {
-        showToast("Cadastro realizado com sucesso!", "success");
-        checkSupabaseAuth();
-      }
-    }
-
-    async function handleSupabaseLogin() {
-      if (!supabaseClient) return;
-      const email = document.getElementById('sb-email-input').value.trim();
-      const password = document.getElementById('sb-pass-input').value.trim();
-
-      if (!email || !password) {
-        showToast("Preencha e-mail e senha para logar.", "error");
-        return;
-      }
-
-      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-      if (error) {
-        showToast("Falha no login: " + error.message, "error");
-      } else {
-        showToast("Bem-vindo de volta!", "success");
-        checkSupabaseAuth();
-        closeCloudModal();
-      }
-    }
-
-    async function handleSupabaseSignOut() {
-      if (!supabaseClient) return;
-      await supabaseClient.auth.signOut();
-      currentUser = null;
-      checkSupabaseAuth();
-      showToast("Desconectado da conta.", "info");
-    }
-
-    function updateCloudIndicator(connected, loggedIn) {
-      const dot = document.getElementById('cloud-status-dot');
-      const label = document.getElementById('cloud-btn-label');
-      if (!dot || !label) return;
-
-      if (loggedIn) {
-        dot.className = "w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse";
-        label.innerText = "Sincronizado";
-      } else if (connected) {
-        dot.className = "w-2 h-2 rounded-full bg-amber-400 inline-block";
-        label.innerText = "Conectar Login";
-      } else {
-        dot.className = "w-2 h-2 rounded-full bg-slate-500 inline-block";
-        label.innerText = "Offline (Local)";
-      }
-    }
-
-    // Sincronização bidirecional de dados
-    async function syncWorkoutToSupabase(session) {
-      if (!supabaseClient || !currentUser) return;
-      try {
-        await supabaseClient.from('workouts').upsert({
-          id: session.id,
-          user_id: currentUser.id,
-          date: session.date,
-          name: session.name,
-          exercises: session.exercises,
-          updated_at: new Date().toISOString()
-        });
-      } catch (err) {
-        console.warn("Erro ao sincronizar treino remoto:", err);
-      }
-    }
-
-    async function syncTemplateToSupabase(tpl) {
-      if (!supabaseClient || !currentUser) return;
-      try {
-        await supabaseClient.from('templates').upsert({
-          id: tpl.id,
-          user_id: currentUser.id,
-          name: tpl.name,
-          focus: tpl.focus,
-          exercises: tpl.exercises,
-          updated_at: new Date().toISOString()
-        });
-      } catch (err) {
-        console.warn("Erro ao sincronizar ficha remota:", err);
-      }
-    }
-
-    async function deleteWorkoutFromSupabase(id) {
-      if (!supabaseClient || !currentUser) return;
-      await supabaseClient.from('workouts').delete().eq('id', id);
-    }
-
-    async function deleteTemplateFromSupabase(id) {
-      if (!supabaseClient || !currentUser) return;
-      await supabaseClient.from('templates').delete().eq('id', id);
-    }
-
-    async function fetchRemoteDataFromSupabase() {
-      if (!supabaseClient || !currentUser) return;
-      try {
-        const { data: remoteWorkouts } = await supabaseClient.from('workouts').select('*').order('date', { ascending: false });
-        if (remoteWorkouts && remoteWorkouts.length > 0) {
-          workouts = remoteWorkouts;
-          saveToLocalStorage();
-          renderHistoryList();
-          populateExerciseSelectOptions();
-        }
-
-        const { data: remoteTemplates } = await supabaseClient.from('templates').select('*');
-        if (remoteTemplates && remoteTemplates.length > 0) {
-          templates = remoteTemplates;
-          saveTemplatesToLocalStorage();
-          refreshTemplateSelectors();
-          renderTemplatesList();
-        }
-        showToast("Dados sincronizados com o Supabase!", "success");
-      } catch (err) {
-        console.warn("Falha ao buscar dados remotos:", err);
-      }
-    }
-
-    async function syncAllLocalDataToSupabase() {
-      if (!supabaseClient || !currentUser) {
-        showToast("Faça login antes de sincronizar.", "error");
-        return;
-      }
-      showToast("Sincronizando dados locais com a nuvem...", "info");
-      for (let w of workouts) {
-        await syncWorkoutToSupabase(w);
-      }
-      for (let t of templates) {
-        await syncTemplateToSupabase(t);
-      }
-      showToast("Tudo atualizado no Supabase!", "success");
-    }
-
-    // --- BANCO PREDEFINIDO DE EXERCÍCIOS ---
-    const PREDEFINED_EXERCISES = [
-      { name: "Supino Reto com Barra", group: "Peito" },
-      { name: "Supino Inclinado com Halteres", group: "Peito" },
-      { name: "Crucifixo na Polia", group: "Peito" },
-      { name: "Puxada Frontal", group: "Costas" },
-      { name: "Remada Curvada com Barra", group: "Costas" },
-      { name: "Remada Baixa Triângulo", group: "Costas" },
-      { name: "Agachamento Livre", group: "Pernas" },
-      { name: "Leg Press 45°", group: "Pernas" },
-      { name: "Cadeira Extensora", group: "Pernas" },
-      { name: "Mesa Flexora", group: "Pernas" },
-      { name: "Desenvolvimento com Halteres", group: "Ombros" },
-      { name: "Elevação Lateral na Polia", group: "Ombros" },
-      { name: "Rosca Direta com Barra W", group: "Braços" },
-      { name: "Tríceps Corda no Cross", group: "Braços" },
-      { name: "Prancha Abdominal", group: "Core" },
-      { name: "Abdominal Supra na Polia", group: "Core" }
+    // --- BIBLIOTECA PADRÃO DE EXERCÍCIOS ---
+    const STANDARD_EXERCISES = [
+      { name: "Supino Reto com Barra", group: "Peito", rest: 90 },
+      { name: "Supino Inclinado com Halteres", group: "Peito", rest: 90 },
+      { name: "Crucifixo na Polia", group: "Peito", rest: 60 },
+      { name: "Puxada Frontal", group: "Costas", rest: 90 },
+      { name: "Remada Curvada com Barra", group: "Costas", rest: 90 },
+      { name: "Remada Baixa Triângulo", group: "Costas", rest: 60 },
+      { name: "Levantamento Terra", group: "Costas", rest: 120 },
+      { name: "Agachamento Livre", group: "Pernas", rest: 120 },
+      { name: "Leg Press 45°", group: "Pernas", rest: 90 },
+      { name: "Cadeira Extensora", group: "Pernas", rest: 60 },
+      { name: "Mesa Flexora", group: "Pernas", rest: 60 },
+      { name: "Elevação Pélvica", group: "Pernas", rest: 90 },
+      { name: "Desenvolvimento com Halteres", group: "Ombros", rest: 90 },
+      { name: "Elevação Lateral na Polia", group: "Ombros", rest: 60 },
+      { name: "Rosca Direta Barra W", group: "Braços", rest: 60 },
+      { name: "Rosca Martelo", group: "Braços", rest: 60 },
+      { name: "Tríceps Corda no Cross", group: "Braços", rest: 60 },
+      { name: "Tríceps Testa com Barra", group: "Braços", rest: 60 },
+      { name: "Abdominal na Polia Alta", group: "Core", rest: 45 },
+      { name: "Prancha Isométrica", group: "Core", rest: 45 }
     ];
 
-    // Dados Mock caso o LocalStorage esteja vazio
-    const MOCK_WORKOUTS = [
+    // --- FICHAS PADRÃO (ROUTINES MOCK) ---
+    const DEFAULT_ROUTINES = [
       {
-        id: "mock_1",
-        date: "2026-10-15",
-        name: "Treino A - Peito & Tríceps",
+        id: "routine_a",
+        division: "A",
+        name: "Treino A - Peitoral & Tríceps",
+        focus: "Push / Hipertrofia Peito",
+        exercises: [
+          { name: "Supino Reto com Barra", group: "Peito", setsCount: 4, rest: 90 },
+          { name: "Supino Inclinado com Halteres", group: "Peito", setsCount: 3, rest: 90 },
+          { name: "Crucifixo na Polia", group: "Peito", setsCount: 3, rest: 60 },
+          { name: "Desenvolvimento com Halteres", group: "Ombros", setsCount: 3, rest: 90 },
+          { name: "Tríceps Corda no Cross", group: "Braços", setsCount: 4, rest: 60 }
+        ]
+      },
+      {
+        id: "routine_b",
+        division: "B",
+        name: "Treino B - Costas & Bíceps",
+        focus: "Pull / Densidade de Dorsais",
+        exercises: [
+          { name: "Puxada Frontal", group: "Costas", setsCount: 4, rest: 90 },
+          { name: "Remada Curvada com Barra", group: "Costas", setsCount: 4, rest: 90 },
+          { name: "Remada Baixa Triângulo", group: "Costas", setsCount: 3, rest: 60 },
+          { name: "Elevação Lateral na Polia", group: "Ombros", setsCount: 4, rest: 60 },
+          { name: "Rosca Direta Barra W", group: "Braços", setsCount: 3, rest: 60 }
+        ]
+      },
+      {
+        id: "routine_c",
+        division: "C",
+        name: "Treino C - Pernas Completo",
+        focus: "Legs / Quadríceps & Isquiotibiais",
+        exercises: [
+          { name: "Agachamento Livre", group: "Pernas", setsCount: 4, rest: 120 },
+          { name: "Leg Press 45°", group: "Pernas", setsCount: 4, rest: 90 },
+          { name: "Cadeira Extensora", group: "Pernas", setsCount: 3, rest: 60 },
+          { name: "Mesa Flexora", group: "Pernas", setsCount: 3, rest: 60 }
+        ]
+      }
+    ];
+
+    // --- SESSÕES PASSADAS (HISTÓRICO MOCK) ---
+    const INITIAL_WORKOUTS = [
+      {
+        id: "sess_1",
+        date: "2026-10-18",
+        name: "Treino A - Peitoral & Tríceps",
         exercises: [
           {
             name: "Supino Reto com Barra",
             group: "Peito",
-            notes: "RPE 8, aquecimento prévio",
+            notes: "Execução com pausa no peito",
             sets: [
-              { weight: 60, reps: 10 },
-              { weight: 70, reps: 8 },
-              { weight: 75, reps: 6 }
+              { weight: 60, reps: 10, completed: true },
+              { weight: 70, reps: 8, completed: true },
+              { weight: 75, reps: 6, completed: true }
             ]
           },
           {
             name: "Tríceps Corda no Cross",
             group: "Braços",
-            notes: "Cadência 3-1",
+            notes: "",
             sets: [
-              { weight: 25, reps: 12 },
-              { weight: 30, reps: 10 }
+              { weight: 25, reps: 12, completed: true },
+              { weight: 30, reps: 10, completed: true }
             ]
           }
         ]
       },
       {
-        id: "mock_2",
-        date: "2026-10-22",
-        name: "Treino A - Peito & Tríceps",
+        id: "sess_2",
+        date: "2026-10-23",
+        name: "Treino B - Costas & Bíceps",
         exercises: [
           {
-            name: "Supino Reto com Barra",
-            group: "Peito",
-            notes: "RPE 8.5, boa técnica",
+            name: "Puxada Frontal",
+            group: "Costas",
+            notes: "Pegada pronada",
             sets: [
-              { weight: 65, reps: 10 },
-              { weight: 75, reps: 8 },
-              { weight: 80, reps: 6 }
+              { weight: 55, reps: 10, completed: true },
+              { weight: 65, reps: 8, completed: true },
+              { weight: 70, reps: 6, completed: true }
             ]
           }
         ]
       },
       {
-        id: "mock_3",
-        date: "2026-10-29",
-        name: "Treino A - Peito & Tríceps",
+        id: "sess_3",
+        date: "2026-10-28",
+        name: "Treino A - Peitoral & Tríceps",
         exercises: [
           {
             name: "Supino Reto com Barra",
             group: "Peito",
-            notes: "PR batido com auxílio!",
+            notes: "Sobrecarga progressiva aplicada!",
             sets: [
-              { weight: 70, reps: 10 },
-              { weight: 80, reps: 7 },
-              { weight: 85, reps: 5 }
+              { weight: 65, reps: 10, completed: true },
+              { weight: 75, reps: 8, completed: true },
+              { weight: 82.5, reps: 5, completed: true }
             ]
           }
         ]
       }
     ];
 
-    // Estado da Aplicação
-    let workouts = [];
-    let progressChartInstance = null;
+    // --- ESTADO GLOBAL DA APLICAÇÃO ---
+    let state = {
+      workouts: [],
+      routines: [],
+      activeWorkout: null,
+      supabaseClient: null,
+      currentUser: null,
+      chartInstance: null
+    };
 
-    // Inicialização da Aplicação
+    // --- CRONÔMETRO FLUTUANTE ---
+    let timerInterval = null;
+    let timerTotal = 90;
+    let timerRemaining = 90;
+    let isTimerPaused = false;
+
+    // --- INICIALIZAÇÃO ---
     window.addEventListener('DOMContentLoaded', () => {
-      loadWorkouts();
-      setDefaultSessionDate();
-      addExerciseCard(); // Adiciona 1 exercício inicial no formulário
-      populateExerciseSelectOptions();
+      loadStorageData();
+      initDefaultSessionDate();
+      renderHomeScreen();
+      renderRoutinesGrid();
+      refreshRoutineDropdown();
+      populateEvolutionSelects();
+      checkSupabaseSavedConfig();
     });
 
-    // Funções de Armazenamento Local
-    function loadWorkouts() {
-      const stored = localStorage.getItem('irontrack_workouts');
-      if (stored) {
-        try {
-          workouts = JSON.parse(stored);
-        } catch (e) {
-          workouts = [...MOCK_WORKOUTS];
-        }
-      } else {
-        workouts = [...MOCK_WORKOUTS];
-        saveToLocalStorage();
-      }
+    // --- STORAGE LOCAL ---
+    function loadStorageData() {
+      const storedWorkouts = localStorage.getItem('forja_workouts');
+      state.workouts = storedWorkouts ? JSON.parse(storedWorkouts) : [...INITIAL_WORKOUTS];
+
+      const storedRoutines = localStorage.getItem('forja_routines');
+      state.routines = storedRoutines ? JSON.parse(storedRoutines) : [...DEFAULT_ROUTINES];
+
+      saveToLocalStorage();
     }
 
     function saveToLocalStorage() {
-      localStorage.setItem('irontrack_workouts', JSON.stringify(workouts));
+      localStorage.setItem('forja_workouts', JSON.stringify(state.workouts));
+      localStorage.setItem('forja_routines', JSON.stringify(state.routines));
     }
 
-    function setDefaultSessionDate() {
-      const today = new Date().toISOString().split('T')[0];
-      const dateEl = document.getElementById('session-date');
-      if (dateEl) dateEl.value = today;
+    function initDefaultSessionDate() {
+      const dateEl = document.getElementById('active-session-date');
+      if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
     }
 
-    // Alternador de Abas
-    function switchTab(tabName) {
-      const tabs = ['register', 'history', 'evolution'];
+    // --- NAVEGAÇÃO DE ABAS ---
+    function navigateTab(tabKey) {
+      const tabs = ['home', 'routines', 'workout', 'evolution', 'profile'];
+      
       tabs.forEach(t => {
-        const section = document.getElementById(`tab-${t}`);
-        const navBtn = document.getElementById(`nav-${t}`);
-        if (t === tabName) {
-          section.classList.remove('hidden');
-          navBtn.classList.remove('text-slate-400', 'hover:bg-slate-800');
-          navBtn.classList.add('bg-emerald-500', 'text-slate-950', 'shadow-md', 'shadow-emerald-500/20');
+        const viewEl = document.getElementById(`view-${t}`);
+        const btnEl = document.getElementById(`tab-btn-${t}`);
+        
+        if (t === tabKey) {
+          viewEl.classList.remove('hidden');
+          if (btnEl && t !== 'workout') {
+            btnEl.classList.remove('text-zinc-400');
+            btnEl.classList.add('text-forja-neon');
+          }
         } else {
-          section.classList.add('hidden');
-          navBtn.classList.add('text-slate-400', 'hover:bg-slate-800');
-          navBtn.classList.remove('bg-emerald-500', 'text-slate-950', 'shadow-md', 'shadow-emerald-500/20');
+          viewEl.classList.add('hidden');
+          if (btnEl && t !== 'workout') {
+            btnEl.classList.remove('text-forja-neon');
+            btnEl.classList.add('text-zinc-400');
+          }
         }
       });
 
-      if (tabName === 'history') {
-        renderHistoryList();
-      } else if (tabName === 'evolution') {
-        renderEvolutionDashboard();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (tabKey === 'home') renderHomeScreen();
+      if (tabKey === 'routines') renderRoutinesGrid();
+      if (tabKey === 'evolution') {
+        populateEvolutionSelects();
+        renderEvolutionChart();
+        renderPRsShowcase();
+        renderHistorySection();
       }
     }
 
-    // --- FORMULÁRIO DE REGISTRO DINÂMICO ---
-    let exerciseCounter = 0;
+    // --- CÁLCULO DE 1RM (FÓRMULA DE BRZYCKI) ---
+    function calculate1RM(weight, reps) {
+      if (!weight || !reps || reps <= 0) return 0;
+      if (reps === 1) return weight;
+      return Math.round(weight / (1.0278 - (0.0278 * reps)));
+    }
 
-    function addExerciseCard(initialData = null) {
-      exerciseCounter++;
-      const id = `exercise-${exerciseCounter}`;
-      const container = document.getElementById('exercises-container');
+    // --- CONSULTAR ÚLTIMO REGISTRO DE UM EXERCÍCIO (GHOST VALUE) ---
+    function getLastExercisePerformance(exerciseName) {
+      for (const sess of state.workouts) {
+        const found = sess.exercises.find(e => e.name.toLowerCase() === exerciseName.toLowerCase());
+        if (found && found.sets && found.sets.length > 0) {
+          const validSet = [...found.sets].reverse().find(s => s.completed && s.weight > 0);
+          if (validSet) {
+            return {
+              weight: validSet.weight,
+              reps: validSet.reps,
+              date: sess.date
+            };
+          }
+        }
+      }
+      return null;
+    }
+
+    // Obter melhor PR histórico
+    function getExerciseHistoricalPR(exerciseName) {
+      let max1RM = 0;
+      let maxSet = null;
+
+      state.workouts.forEach(s => {
+        const ex = s.exercises.find(e => e.name.toLowerCase() === exerciseName.toLowerCase());
+        if (ex) {
+          ex.sets.forEach(st => {
+            if (st.completed && st.weight > 0) {
+              const current1RM = calculate1RM(st.weight, st.reps);
+              if (current1RM > max1RM) {
+                max1RM = current1RM;
+                maxSet = { weight: st.weight, reps: st.reps, date: s.date, oneRM: current1RM };
+              }
+            }
+          });
+        }
+      });
+
+      return maxSet;
+    }
+
+    // --- ABA 1: INÍCIO (DASHBOARD) ---
+    function renderHomeScreen() {
+      // 1. Heatmap Semanal
+      renderWeeklyHeatmap();
+
+      // 2. Próximo Treino Sugerido
+      const nextRoutine = state.routines[0] || null;
+      if (nextRoutine) {
+        document.getElementById('home-next-routine-title').innerText = nextRoutine.name;
+        document.getElementById('home-next-routine-details').innerText = `${nextRoutine.exercises.length} Exercícios • Divisão ${nextRoutine.division}`;
+      }
+
+      // 3. Métricas
+      let weeklyVolume = 0;
+      let totalWorkouts = state.workouts.length;
+      let totalSets = 0;
+      let prsCount = 0;
+
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+      state.workouts.forEach(w => {
+        const wDate = new Date(w.date + "T00:00:00");
+        const isThisWeek = wDate >= oneWeekAgo;
+
+        w.exercises.forEach(ex => {
+          ex.sets.forEach(st => {
+            if (st.completed) {
+              totalSets++;
+              const vol = st.weight * st.reps;
+              if (isThisWeek) weeklyVolume += vol;
+            }
+          });
+        });
+      });
+
+      // Contar exercícios com PR
+      const allUniqueExercises = getAllUniqueExercises();
+      prsCount = allUniqueExercises.length;
+
+      document.getElementById('stat-weekly-volume').innerText = weeklyVolume.toLocaleString();
+      document.getElementById('stat-total-workouts').innerText = totalWorkouts;
+      document.getElementById('stat-total-sets').innerText = totalSets;
+      document.getElementById('stat-total-prs').innerText = prsCount;
+
+      // 4. Atividades Recentes
+      const recentContainer = document.getElementById('home-recent-workouts-list');
+      recentContainer.innerHTML = '';
+
+      const recentThree = [...state.workouts].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
+      if (recentThree.length === 0) {
+        recentContainer.innerHTML = `<p class="text-xs text-zinc-500 font-mono">Nenhum treino finalizado ainda.</p>`;
+        return;
+      }
+
+      recentThree.forEach(s => {
+        let vol = 0;
+        s.exercises.forEach(e => e.sets.forEach(st => vol += (st.weight * st.reps)));
+        const card = document.createElement('div');
+        card.className = "flex items-center justify-between p-3 bg-forja-dark border border-forja-border rounded-xl";
+        card.innerHTML = `
+          <div>
+            <h4 class="font-bold text-white text-xs sm:text-sm">${s.name}</h4>
+            <span class="text-[10px] font-mono text-zinc-400">${formatDateBR(s.date)} • ${s.exercises.length} exercícios</span>
+          </div>
+          <div class="text-right">
+            <span class="text-xs font-mono font-bold text-forja-neon">${vol.toLocaleString()} kg</span>
+            <span class="block text-[9px] font-mono text-zinc-500 uppercase">Volume</span>
+          </div>
+        `;
+        recentContainer.appendChild(card);
+      });
+    }
+
+    function renderWeeklyHeatmap() {
+      const container = document.getElementById('weekly-heatmap');
+      container.innerHTML = '';
+
+      const daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      const today = new Date();
+      let trainedCount = 0;
+
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(today.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const dayName = daysOfWeek[d.getDay()];
+
+        const hasTrained = state.workouts.some(w => w.date === dateStr);
+        if (hasTrained) trainedCount++;
+
+        const box = document.createElement('div');
+        box.className = `flex flex-col items-center justify-center p-2 rounded-xl border text-center transition ${
+          hasTrained 
+            ? 'bg-forja-neon/15 border-forja-neon/50 text-forja-neon font-bold' 
+            : 'bg-forja-dark border-forja-border text-zinc-500'
+        }`;
+        box.innerHTML = `
+          <span class="text-[10px] font-mono uppercase">${dayName}</span>
+          <span class="text-xs font-mono mt-0.5">${d.getDate()}</span>
+          <i class="fa-solid fa-${hasTrained ? 'circle-check' : 'minus'} text-[10px] mt-1"></i>
+        `;
+        container.appendChild(box);
+      }
+
+      document.getElementById('weekly-frequency-summary').innerText = `${trainedCount} treinos nos últimos 7 dias`;
+    }
+
+    function startRecommendedWorkout() {
+      if (state.routines.length > 0) {
+        startWorkoutFromRoutine(state.routines[0].id);
+      } else {
+        startQuickEmptyWorkout();
+      }
+    }
+
+    // --- ABA 2: MINHAS FICHAS (ROTINAS) ---
+    function renderRoutinesGrid() {
+      const grid = document.getElementById('routines-grid');
+      grid.innerHTML = '';
+
+      if (state.routines.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full bg-forja-card border border-forja-border rounded-2xl p-8 text-center text-zinc-400">
+            <i class="fa-regular fa-folder-open text-3xl mb-3 text-zinc-600"></i>
+            <p class="font-mono text-sm">Nenhuma ficha criada. Clique em "NOVA FICHA" para estruturar seu treino.</p>
+          </div>
+        `;
+        return;
+      }
+
+      state.routines.forEach(rt => {
+        const card = document.createElement('div');
+        card.className = "bg-forja-card border border-forja-border rounded-2xl p-5 flex flex-col justify-between hover:border-forja-borderLight transition shadow-lg";
+        card.innerHTML = `
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <div>
+                <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-forja-neon/15 text-forja-neon border border-forja-neon/30 font-bold">Divisão ${rt.division}</span>
+                <h3 class="font-display font-bold text-white text-base mt-2">${rt.name}</h3>
+                <span class="text-xs text-zinc-400 font-mono">${rt.focus || 'Geral'}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <button onclick="duplicateRoutine('${rt.id}')" class="text-zinc-500 hover:text-zinc-300 p-1.5 transition" title="Duplicar Ficha">
+                  <i class="fa-regular fa-copy text-xs"></i>
+                </button>
+                <button onclick="editRoutine('${rt.id}')" class="text-zinc-500 hover:text-forja-neon p-1.5 transition" title="Editar Ficha">
+                  <i class="fa-solid fa-pen text-xs"></i>
+                </button>
+                <button onclick="deleteRoutine('${rt.id}')" class="text-zinc-500 hover:text-rose-400 p-1.5 transition" title="Excluir Ficha">
+                  <i class="fa-regular fa-trash-can text-xs"></i>
+                </button>
+              </div>
+            </div>
+
+            <ul class="text-xs text-zinc-300 space-y-1.5 my-4 border-t border-forja-border pt-3">
+              ${rt.exercises.map(e => `
+                <li class="flex items-center justify-between text-zinc-400">
+                  <span class="truncate pr-2 font-mono text-[11px]"><i class="fa-solid fa-dumbbell text-zinc-600 text-[10px] mr-1.5"></i>${e.name}</span>
+                  <span class="font-mono text-[11px] text-zinc-300">${e.setsCount || 3}x • ${e.rest || 60}s</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+
+          <button onclick="startWorkoutFromRoutine('${rt.id}')" class="w-full py-2.5 bg-forja-neon/15 hover:bg-forja-neon text-forja-neon hover:text-black font-display font-extrabold text-xs tracking-wider rounded-xl border border-forja-neon/30 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-play"></i> INICIAR TREINO
+          </button>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function refreshRoutineDropdown() {
+      const select = document.getElementById('active-routine-selector');
+      if (!select) return;
+      select.innerHTML = '<option value="">Carregar Ficha...</option>';
+      state.routines.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.id;
+        opt.innerText = `${r.division} - ${r.name}`;
+        select.appendChild(opt);
+      });
+    }
+
+    // Modal de Rotina
+    function openRoutineModal(routineData = null) {
+      document.getElementById('modal-routine-id').value = routineData ? routineData.id : '';
+      document.getElementById('modal-routine-name').value = routineData ? routineData.name : '';
+      document.getElementById('modal-routine-division').value = routineData ? routineData.division : 'A';
+      document.getElementById('modal-routine-focus').value = routineData ? routineData.focus : '';
+
+      const list = document.getElementById('modal-exercises-list');
+      list.innerHTML = '';
+
+      if (routineData && routineData.exercises.length > 0) {
+        routineData.exercises.forEach(ex => addExerciseRowToRoutineModal(ex.name, ex.setsCount, ex.rest));
+      } else {
+        addExerciseRowToRoutineModal("Supino Reto com Barra", 4, 90);
+        addExerciseRowToRoutineModal("Desenvolvimento com Halteres", 3, 90);
+      }
+
+      document.getElementById('routine-modal').classList.remove('hidden');
+    }
+
+    function closeRoutineModal() {
+      document.getElementById('routine-modal').classList.add('hidden');
+    }
+
+    function addExerciseRowToRoutineModal(defaultName = '', defaultSets = 3, defaultRest = 60) {
+      const list = document.getElementById('modal-exercises-list');
+      const row = document.createElement('div');
+      row.className = "flex items-center gap-2 bg-forja-dark p-2.5 rounded-xl border border-forja-border";
+
+      let options = STANDARD_EXERCISES.map(e => `<option value="${e.name}">${e.name}</option>`).join('');
+
+      row.innerHTML = `
+        <input type="text" list="modal-predefined-list" value="${defaultName}" placeholder="Nome do exercício..." class="modal-row-name bg-forja-card text-white text-xs font-mono rounded-lg px-2.5 py-1.5 flex-1 border border-forja-border focus:outline-none focus:ring-1 focus:ring-forja-neon">
+        <datalist id="modal-predefined-list">${options}</datalist>
+        <input type="number" min="1" max="10" value="${defaultSets}" class="modal-row-sets bg-forja-card text-white text-xs font-mono rounded-lg px-2 py-1.5 w-14 border border-forja-border text-center" title="Séries">
+        <select class="modal-row-rest bg-forja-card text-white text-xs font-mono rounded-lg px-2 py-1.5 border border-forja-border" title="Descanso">
+          <option value="45" ${defaultRest == 45 ? 'selected':''}>45s</option>
+          <option value="60" ${defaultRest == 60 ? 'selected':''}>60s</option>
+          <option value="90" ${defaultRest == 90 ? 'selected':''}>90s</option>
+          <option value="120" ${defaultRest == 120 ? 'selected':''}>120s</option>
+        </select>
+        <button type="button" onclick="this.closest('div').remove()" class="text-zinc-500 hover:text-rose-400 p-1">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      `;
+      list.appendChild(row);
+    }
+
+    function saveRoutineFromModal() {
+      const id = document.getElementById('modal-routine-id').value || ("routine_" + Date.now());
+      const name = document.getElementById('modal-routine-name').value.trim();
+      const division = document.getElementById('modal-routine-division').value;
+      const focus = document.getElementById('modal-routine-focus').value.trim();
+
+      if (!name) {
+        showToast("Dê um nome para a sua ficha.", "error");
+        return;
+      }
+
+      const rows = document.querySelectorAll('#modal-exercises-list > div');
+      const exercises = [];
+
+      rows.forEach(r => {
+        const exName = r.querySelector('.modal-row-name').value.trim();
+        const setsCount = parseInt(r.querySelector('.modal-row-sets').value, 10) || 3;
+        const rest = parseInt(r.querySelector('.modal-row-rest').value, 10) || 60;
+        if (exName) {
+          const matched = STANDARD_EXERCISES.find(e => e.name.toLowerCase() === exName.toLowerCase());
+          exercises.push({
+            name: exName,
+            group: matched ? matched.group : "Outro",
+            setsCount,
+            rest
+          });
+        }
+      });
+
+      if (exercises.length === 0) {
+        showToast("Adicione pelo menos um exercício.", "error");
+        return;
+      }
+
+      const existingIndex = state.routines.findIndex(r => r.id === id);
+      const newRoutine = { id, name, division, focus, exercises };
+
+      if (existingIndex >= 0) {
+        state.routines[existingIndex] = newRoutine;
+      } else {
+        state.routines.push(newRoutine);
+      }
+
+      saveToLocalStorage();
+      renderRoutinesGrid();
+      refreshRoutineDropdown();
+      closeRoutineModal();
+      showToast("Ficha salva com sucesso!", "success");
+    }
+
+    function editRoutine(id) {
+      const routine = state.routines.find(r => r.id === id);
+      if (routine) openRoutineModal(routine);
+    }
+
+    function duplicateRoutine(id) {
+      const routine = state.routines.find(r => r.id === id);
+      if (!routine) return;
+      const duplicated = JSON.parse(JSON.stringify(routine));
+      duplicated.id = "routine_" + Date.now();
+      duplicated.name = `${duplicated.name} (Cópia)`;
+      state.routines.push(duplicated);
+      saveToLocalStorage();
+      renderRoutinesGrid();
+      refreshRoutineDropdown();
+      showToast("Ficha duplicada com sucesso!", "info");
+    }
+
+    function deleteRoutine(id) {
+      state.routines = state.routines.filter(r => r.id !== id);
+      saveToLocalStorage();
+      renderRoutinesGrid();
+      refreshRoutineDropdown();
+      showToast("Ficha excluída.", "info");
+    }
+
+    // --- ABA 3: TREINAR (MODO EXECUÇÃO ATIVA) ---
+    function startQuickEmptyWorkout() {
+      initActiveSession("Treino Livre");
+      addExerciseToActiveWorkout("Supino Reto com Barra");
+      navigateTab('workout');
+    }
+
+    function startWorkoutFromRoutine(routineId) {
+      const routine = state.routines.find(r => r.id === routineId);
+      if (!routine) return;
+
+      initActiveSession(routine.name);
+
+      routine.exercises.forEach(ex => {
+        addExerciseToActiveWorkout(ex.name, ex.setsCount, ex.rest);
+      });
+
+      navigateTab('workout');
+      showToast(`Treino "${routine.name}" iniciado. Bom treino!`, "success");
+    }
+
+    function loadRoutineIntoActiveSession(routineId) {
+      if (!routineId) return;
+      startWorkoutFromRoutine(routineId);
+    }
+
+    function initActiveSession(name = "Novo Treino") {
+      document.getElementById('active-session-name').value = name;
+      initDefaultSessionDate();
+      document.getElementById('active-exercises-container').innerHTML = '';
+      updateActiveLiveVolume();
+    }
+
+    let activeExerciseCounter = 0;
+
+    function addExerciseToActiveWorkout(defaultName = '', setsCount = 3, restSeconds = 60) {
+      activeExerciseCounter++;
+      const id = `act-ex-${activeExerciseCounter}`;
+      const container = document.getElementById('active-exercises-container');
 
       const card = document.createElement('div');
       card.id = id;
-      card.className = "bg-slate-950/60 border border-slate-800 rounded-xl p-4 sm:p-5 relative transition hover:border-slate-700";
+      card.className = "bg-forja-card border border-forja-border rounded-2xl p-4 sm:p-5 transition hover:border-forja-borderLight relative shadow-lg";
 
-      let optionsHtml = PREDEFINED_EXERCISES.map(ex => 
-        `<option value="${ex.name}" data-group="${ex.group}">${ex.name} (${ex.group})</option>`
-      ).join('');
+      // Ghost value: consulta performance anterior
+      const ghost = defaultName ? getLastExercisePerformance(defaultName) : null;
+      const ghostText = ghost ? `Último: ${ghost.weight} kg × ${ghost.reps} reps` : 'Sem histórico prévio';
+
+      const matchedEx = STANDARD_EXERCISES.find(e => e.name.toLowerCase() === defaultName.toLowerCase());
+      const group = matchedEx ? matchedEx.group : 'Geral';
+      const rest = restSeconds || (matchedEx ? matchedEx.rest : 60);
+
+      let options = STANDARD_EXERCISES.map(e => `<option value="${e.name}">${e.name} (${e.group})</option>`).join('');
 
       card.innerHTML = `
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <div class="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            <div class="w-full sm:w-1/2">
-              <label class="block text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">Exercício</label>
-              <input type="text" list="exercise-datalist-${id}" placeholder="Selecione ou digite..." class="exercise-name-input bg-slate-800 text-white text-sm rounded-lg px-3 py-2 w-full border border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-              <datalist id="exercise-datalist-${id}">
-                ${optionsHtml}
-              </datalist>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-forja-border mb-3">
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <input type="text" list="act-ex-list-${id}" value="${defaultName}" placeholder="Nome do Exercício..." onchange="onActiveExerciseNameChange('${id}')" class="act-name-input bg-transparent font-display font-bold text-white text-base focus:outline-none focus:border-b focus:border-forja-neon w-full sm:w-80">
+              <datalist id="act-ex-list-${id}">${options}</datalist>
+              <span class="act-group-badge text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-forja-dark text-zinc-400 border border-forja-border font-bold">${group}</span>
             </div>
-            <div class="w-full sm:w-1/4">
-              <label class="block text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">Grupo Muscular</label>
-              <select class="exercise-group-select bg-slate-800 text-slate-200 text-sm rounded-lg px-3 py-2 w-full border border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                <option value="Peito">Peito</option>
-                <option value="Costas">Costas</option>
-                <option value="Pernas">Pernas</option>
-                <option value="Ombros">Ombros</option>
-                <option value="Braços">Braços</option>
-                <option value="Core">Core</option>
-                <option value="Outro">Outro</option>
-              </select>
-            </div>
-            <div class="w-full sm:w-1/4">
-              <label class="block text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">Notas / RPE</label>
-              <input type="text" placeholder="Ex: RPE 8, pausa 90s" class="exercise-notes-input bg-slate-800 text-slate-300 text-sm rounded-lg px-3 py-2 w-full border border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <div class="flex items-center gap-3 mt-1">
+              <span class="act-ghost-label text-[11px] font-mono text-zinc-500"><i class="fa-solid fa-ghost mr-1 text-[10px]"></i>${ghostText}</span>
+              <span class="text-[11px] font-mono text-forja-neon"><i class="fa-solid fa-stopwatch mr-1 text-[10px]"></i>Descanso: <span class="act-rest-val font-bold">${rest}</span>s</span>
             </div>
           </div>
-          <button type="button" onclick="removeExerciseCard('${id}')" class="text-slate-500 hover:text-rose-400 p-2 self-end sm:self-center transition" title="Remover Exercício">
-            <i class="fa-solid fa-trash-can text-sm"></i>
-          </button>
+
+          <div class="flex items-center gap-2 self-end sm:self-center">
+            <button type="button" onclick="removeActiveExercise('${id}')" class="text-zinc-500 hover:text-rose-400 p-1.5 transition" title="Remover Exercício">
+              <i class="fa-regular fa-trash-can text-sm"></i>
+            </button>
+          </div>
         </div>
 
         <!-- Tabela de Séries -->
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs text-slate-300">
+          <table class="w-full text-left text-xs font-mono text-zinc-300">
             <thead>
-              <tr class="text-slate-400 border-b border-slate-800/80">
-                <th class="py-2 px-3 w-16">SÉRIE</th>
-                <th class="py-2 px-3">PESO / CARGA (KG)</th>
-                <th class="py-2 px-3">REPETIÇÕES</th>
-                <th class="py-2 px-3 text-center">DESCANSO</th>
-                <th class="py-2 px-3 w-16 text-center">AÇÃO</th>
+              <tr class="text-zinc-500 border-b border-forja-border/60 text-[10px] uppercase">
+                <th class="py-2 px-2 w-10 text-center">SET</th>
+                <th class="py-2 px-2">CARGA (KG)</th>
+                <th class="py-2 px-2">REPS</th>
+                <th class="py-2 px-2 text-center">CHECK / AUTO-REST</th>
+                <th class="py-2 px-2 w-10 text-center"></th>
               </tr>
             </thead>
             <tbody id="sets-tbody-${id}">
-              <!-- Séries inseridas aqui -->
+              <!-- Séries adicionadas aqui -->
             </tbody>
           </table>
         </div>
 
-        <div class="mt-3">
-          <button type="button" onclick="addSetRow('${id}')" class="text-xs text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1.5 py-1 px-2 rounded hover:bg-emerald-500/10 transition">
+        <div class="mt-3 flex items-center justify-between">
+          <button type="button" onclick="addSetRowToActiveExercise('${id}', ${rest})" class="text-xs font-mono font-bold text-forja-neon hover:underline flex items-center gap-1.5 py-1 px-2 rounded bg-forja-neon/10 border border-forja-neon/20 transition">
             <i class="fa-solid fa-plus text-[10px]"></i> Adicionar Série
           </button>
+          
+          <div id="pr-badge-box-${id}" class="hidden flex items-center gap-1 px-2.5 py-1 bg-amber-400/10 border border-amber-400/40 rounded-lg text-amber-300 text-[11px] font-mono font-bold">
+            <i class="fa-solid fa-crown text-[10px]"></i> NOVO PR ESTIMADO: <span class="pr-val-display font-black"></span>kg
+          </div>
         </div>
       `;
 
       container.appendChild(card);
 
-      // Preenchimento de dados iniciais caso venha de um template
-      if (initialData) {
-        card.querySelector('.exercise-name-input').value = initialData.name || '';
-        card.querySelector('.exercise-group-select').value = initialData.group || 'Peito';
-        const setsCount = initialData.setsCount || 3;
-        for (let i = 0; i < setsCount; i++) {
-          addSetRow(id, initialData.suggestedWeight || '', '');
-        }
-      } else {
-        // Adiciona 1 série padrão caso seja vazio
-        addSetRow(id, 60, 10);
+      const targetCount = setsCount || 3;
+      for (let i = 0; i < targetCount; i++) {
+        addSetRowToActiveExercise(id, rest, ghost ? ghost.weight : '', ghost ? ghost.reps : '');
+      }
+    }
+
+    function removeActiveExercise(id) {
+      const card = document.getElementById(id);
+      if (card) card.remove();
+      updateActiveLiveVolume();
+    }
+
+    function onActiveExerciseNameChange(cardId) {
+      const card = document.getElementById(cardId);
+      const name = card.querySelector('.act-name-input').value.trim();
+      const matched = STANDARD_EXERCISES.find(e => e.name.toLowerCase() === name.toLowerCase());
+
+      if (matched) {
+        card.querySelector('.act-group-badge').innerText = matched.group;
+        card.querySelector('.act-rest-val').innerText = matched.rest;
       }
 
-      // Adiciona listener para preenchimento inteligente de grupo muscular
-      const nameInput = card.querySelector('.exercise-name-input');
-      const groupSelect = card.querySelector('.exercise-group-select');
-      nameInput.addEventListener('change', (e) => {
-        const found = PREDEFINED_EXERCISES.find(ex => ex.name.toLowerCase() === e.target.value.trim().toLowerCase());
-        if (found) {
-          groupSelect.value = found.group;
-        }
-      });
+      const ghost = getLastExercisePerformance(name);
+      card.querySelector('.act-ghost-label').innerHTML = `<i class="fa-solid fa-ghost mr-1 text-[10px]"></i>` + 
+        (ghost ? `Último: ${ghost.weight} kg × ${ghost.reps} reps` : 'Sem histórico prévio');
     }
 
-    function removeExerciseCard(id) {
-      const el = document.getElementById(id);
-      if (el) el.remove();
-    }
-
-    function addSetRow(exerciseId, defaultWeight = '', defaultReps = '') {
-      const tbody = document.getElementById(`sets-tbody-${exerciseId}`);
+    function addSetRowToActiveExercise(exerciseCardId, restSeconds = 60, defaultWeight = '', defaultReps = '') {
+      const tbody = document.getElementById(`sets-tbody-${exerciseCardId}`);
       if (!tbody) return;
 
-      const setIndex = tbody.children.length + 1;
+      const setNum = tbody.children.length + 1;
       const row = document.createElement('tr');
-      row.className = "border-b border-slate-800/40 hover:bg-slate-900/40";
+      row.className = "border-b border-forja-border/40 hover:bg-forja-dark/50 transition";
       row.innerHTML = `
-        <td class="py-2 px-3 font-mono font-bold text-slate-400">${setIndex}</td>
-        <td class="py-2 px-3">
+        <td class="py-2.5 px-2 text-center font-bold text-zinc-400">${setNum}</td>
+        
+        <td class="py-2.5 px-2">
           <div class="flex items-center gap-1">
-            <input type="number" step="0.5" min="0" placeholder="0" value="${defaultWeight}" class="set-weight bg-slate-900 border border-slate-700 text-white rounded-lg px-2.5 py-1.5 w-24 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
-            <span class="text-slate-400 text-xs">kg</span>
+            <input type="number" step="0.5" min="0" value="${defaultWeight}" placeholder="0" oninput="onSetInputChange('${exerciseCardId}')" class="set-weight-input bg-forja-dark border border-forja-border rounded-lg px-2 py-1.5 w-20 text-white font-mono text-sm focus:outline-none focus:ring-1 focus:ring-forja-neon">
+            <div class="flex flex-col gap-0.5">
+              <button type="button" onclick="incrementSetWeight(this, 2)" class="px-1 py-0.5 bg-forja-dark hover:bg-zinc-800 border border-forja-border rounded text-[9px] text-zinc-400 font-mono">+2</button>
+              <button type="button" onclick="incrementSetWeight(this, 5)" class="px-1 py-0.5 bg-forja-dark hover:bg-zinc-800 border border-forja-border rounded text-[9px] text-zinc-400 font-mono">+5</button>
+            </div>
           </div>
         </td>
-        <td class="py-2 px-3">
-          <div class="flex items-center gap-1">
-            <input type="number" step="1" min="1" placeholder="reps" value="${defaultReps}" class="set-reps bg-slate-900 border border-slate-700 text-white rounded-lg px-2.5 py-1.5 w-24 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
-            <span class="text-slate-400 text-xs">reps</span>
-          </div>
+
+        <td class="py-2.5 px-2">
+          <input type="number" step="1" min="1" value="${defaultReps}" placeholder="0" oninput="onSetInputChange('${exerciseCardId}')" class="set-reps-input bg-forja-dark border border-forja-border rounded-lg px-2 py-1.5 w-16 text-white font-mono text-sm focus:outline-none focus:ring-1 focus:ring-forja-neon">
         </td>
-        <td class="py-2 px-3 text-center">
-          <div class="flex items-center justify-center gap-1">
-            <button type="button" onclick="startRestTimer(60)" class="px-1.5 py-1 bg-slate-800 hover:bg-emerald-500/20 hover:text-emerald-400 text-[11px] font-mono rounded text-slate-400 transition" title="Descanso de 60s">60s</button>
-            <button type="button" onclick="startRestTimer(90)" class="px-1.5 py-1 bg-slate-800 hover:bg-emerald-500/20 hover:text-emerald-400 text-[11px] font-mono rounded text-slate-400 transition" title="Descanso de 90s">90s</button>
-            <button type="button" onclick="startRestTimer(120)" class="px-1.5 py-1 bg-slate-800 hover:bg-emerald-500/20 hover:text-emerald-400 text-[11px] font-mono rounded text-slate-400 transition" title="Descanso de 120s">120s</button>
-          </div>
+
+        <td class="py-2.5 px-2 text-center">
+          <button type="button" onclick="toggleSetComplete(this, '${exerciseCardId}', ${restSeconds})" class="set-check-btn px-3 py-1.5 rounded-lg border border-forja-border bg-forja-dark text-zinc-400 hover:text-white transition font-mono font-bold text-xs flex items-center justify-center gap-1.5 mx-auto">
+            <i class="fa-solid fa-check text-xs"></i> <span>Pronto</span>
+          </button>
         </td>
-        <td class="py-2 px-3 text-center">
-          <button type="button" onclick="this.closest('tr').remove(); renumberSets('${exerciseId}')" class="text-slate-500 hover:text-rose-400 p-1">
-            <i class="fa-solid fa-xmark"></i>
+
+        <td class="py-2.5 px-2 text-center">
+          <button type="button" onclick="this.closest('tr').remove(); renumberSets('${exerciseCardId}'); updateActiveLiveVolume();" class="text-zinc-600 hover:text-rose-400 p-1">
+            <i class="fa-solid fa-xmark text-xs"></i>
           </button>
         </td>
       `;
+
       tbody.appendChild(row);
+      updateActiveLiveVolume();
     }
 
-    function renumberSets(exerciseId) {
-      const tbody = document.getElementById(`sets-tbody-${exerciseId}`);
+    function incrementSetWeight(btn, amount) {
+      const input = btn.closest('tr').querySelector('.set-weight-input');
+      const cur = parseFloat(input.value) || 0;
+      input.value = cur + amount;
+      input.dispatchEvent(new Event('input'));
+    }
+
+    function renumberSets(cardId) {
+      const tbody = document.getElementById(`sets-tbody-${cardId}`);
       if (!tbody) return;
       Array.from(tbody.children).forEach((tr, index) => {
         tr.children[0].innerText = index + 1;
       });
     }
 
-    function clearWorkoutForm() {
-      document.getElementById('exercises-container').innerHTML = '';
-      document.getElementById('session-name').value = '';
-      setDefaultSessionDate();
-      addExerciseCard();
+    function onSetInputChange(cardId) {
+      updateActiveLiveVolume();
+      checkIfNewPR(cardId);
     }
 
-    function saveWorkoutSession() {
-      const date = document.getElementById('session-date').value;
-      const sessionName = document.getElementById('session-name').value.trim() || "Treino Geral";
+    // Toggle de Série Concluída & Auto-Rest
+    function toggleSetComplete(btn, cardId, restSeconds) {
+      const row = btn.closest('tr');
+      const isCompleted = row.classList.toggle('bg-forja-neon/10');
+      
+      const weight = parseFloat(row.querySelector('.set-weight-input').value) || 0;
+      const reps = parseInt(row.querySelector('.set-reps-input').value, 10) || 0;
 
-      if (!date) {
-        showToast("Por favor, selecione uma data para o treino.", "error");
+      if (isCompleted) {
+        btn.classList.remove('bg-forja-dark', 'text-zinc-400', 'border-forja-border');
+        btn.classList.add('bg-forja-neon', 'text-black', 'border-forja-neon', 'font-black');
+        btn.innerHTML = `<i class="fa-solid fa-check-double text-xs"></i> <span>Feito</span>`;
+
+        // Ativa Auto-Rest
+        const card = document.getElementById(cardId);
+        const exName = card.querySelector('.act-name-input').value.trim() || 'Exercício';
+        startRestTimer(restSeconds, exName);
+        showToast(`Série concluída! Descanso de ${restSeconds}s iniciado.`, "info");
+      } else {
+        btn.classList.remove('bg-forja-neon', 'text-black', 'border-forja-neon', 'font-black');
+        btn.classList.add('bg-forja-dark', 'text-zinc-400', 'border-forja-border');
+        btn.innerHTML = `<i class="fa-solid fa-check text-xs"></i> <span>Pronto</span>`;
+      }
+
+      updateActiveLiveVolume();
+      checkIfNewPR(cardId);
+    }
+
+    // Testar se a carga atual bate o PR histórico
+    function checkIfNewPR(cardId) {
+      const card = document.getElementById(cardId);
+      const exName = card.querySelector('.act-name-input').value.trim();
+      if (!exName) return;
+
+      const histPR = getExerciseHistoricalPR(exName);
+      const histMax1RM = histPR ? histPR.oneRM : 0;
+
+      let currentMax1RM = 0;
+      const rows = card.querySelectorAll('tbody tr');
+      rows.forEach(tr => {
+        const weight = parseFloat(tr.querySelector('.set-weight-input').value) || 0;
+        const reps = parseInt(tr.querySelector('.set-reps-input').value, 10) || 0;
+        const est = calculate1RM(weight, reps);
+        if (est > currentMax1RM) currentMax1RM = est;
+      });
+
+      const prBox = document.getElementById(`pr-badge-box-${cardId}`);
+      if (currentMax1RM > histMax1RM && histMax1RM > 0) {
+        prBox.classList.remove('hidden');
+        prBox.querySelector('.pr-val-display').innerText = currentMax1RM;
+      } else {
+        prBox.classList.add('hidden');
+      }
+    }
+
+    function updateActiveLiveVolume() {
+      let total = 0;
+      const rows = document.querySelectorAll('#active-exercises-container tbody tr');
+      rows.forEach(tr => {
+        const w = parseFloat(tr.querySelector('.set-weight-input').value) || 0;
+        const r = parseInt(tr.querySelector('.set-reps-input').value, 10) || 0;
+        total += (w * r);
+      });
+      document.getElementById('active-live-volume').innerText = `${total.toLocaleString()} kg`;
+    }
+
+    function cancelActiveWorkout() {
+      if (confirm("Deseja descartar as alterações deste treino em andamento?")) {
+        initActiveSession();
+        navigateTab('home');
+      }
+    }
+
+    function finishActiveWorkout() {
+      const sessionName = document.getElementById('active-session-name').value.trim() || "Treino Geral";
+      const date = document.getElementById('active-session-date').value || new Date().toISOString().split('T')[0];
+
+      const cards = document.querySelectorAll('#active-exercises-container > div');
+      if (cards.length === 0) {
+        showToast("Adicione ao menos um exercício para finalizar.", "error");
         return;
       }
 
-      const exerciseCards = document.querySelectorAll('#exercises-container > div');
-      if (exerciseCards.length === 0) {
-        showToast("Adicione pelo menos um exercício ao treino.", "error");
-        return;
-      }
+      const exercises = [];
 
-      const exercisesList = [];
-
-      for (let card of exerciseCards) {
-        const name = card.querySelector('.exercise-name-input').value.trim();
-        const group = card.querySelector('.exercise-group-select').value;
-        const notes = card.querySelector('.exercise-notes-input').value.trim();
+      for (let card of cards) {
+        const name = card.querySelector('.act-name-input').value.trim();
+        const group = card.querySelector('.act-group-badge').innerText.trim() || "Outro";
 
         if (!name) {
-          showToast("Informe o nome de todos os exercícios registrados.", "error");
+          showToast("Preencha o nome de todos os exercícios.", "error");
           return;
         }
 
         const sets = [];
         const rows = card.querySelectorAll('tbody tr');
-        rows.forEach(tr => {
-          const weight = parseFloat(tr.querySelector('.set-weight').value) || 0;
-          const reps = parseInt(tr.querySelector('.set-reps').value, 10) || 0;
+        rows.forEach(r => {
+          const weight = parseFloat(r.querySelector('.set-weight-input').value) || 0;
+          const reps = parseInt(r.querySelector('.set-reps-input').value, 10) || 0;
+          const completed = r.classList.contains('bg-forja-neon/10');
           if (reps > 0) {
-            sets.push({ weight, reps });
+            sets.push({ weight, reps, completed: completed || true });
           }
         });
 
-        if (sets.length === 0) {
-          showToast(`Adicione ao menos uma série válida para o exercício: ${name}`, "error");
-          return;
+        if (sets.length > 0) {
+          exercises.push({ name, group, sets, notes: "" });
         }
-
-        exercisesList.push({
-          name,
-          group,
-          notes,
-          sets
-        });
       }
 
-      const newSession = {
-        id: "workout_" + Date.now(),
-        date,
-        name: sessionName,
-        exercises: exercisesList
-      };
-
-      workouts.unshift(newSession);
-      saveToLocalStorage();
-      syncWorkoutToSupabase(newSession); // Nuvem Supabase
-      showToast("Treino registrado com sucesso!", "success");
-
-      clearWorkoutForm();
-      populateExerciseSelectOptions();
-      switchTab('history');
-    }
-
-    // --- HISTÓRICO DE TREINOS ---
-    function renderHistoryList() {
-      const feed = document.getElementById('history-feed');
-      const searchTerm = document.getElementById('history-search').value.toLowerCase().trim();
-      const muscleFilter = document.getElementById('history-filter-muscle').value;
-
-      feed.innerHTML = '';
-
-      // Ordenar decrescente por data
-      const sorted = [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date));
-
-      const filtered = sorted.filter(session => {
-        const matchesSearch = session.name.toLowerCase().includes(searchTerm) ||
-          session.exercises.some(ex => ex.name.toLowerCase().includes(searchTerm));
-
-        const matchesMuscle = muscleFilter === 'ALL' ||
-          session.exercises.some(ex => ex.group === muscleFilter);
-
-        return matchesSearch && matchesMuscle;
-      });
-
-      if (filtered.length === 0) {
-        feed.innerHTML = `
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
-            <i class="fa-solid fa-clipboard-question text-3xl mb-3 text-slate-600"></i>
-            <p class="font-medium">Nenhum treino encontrado com os filtros selecionados.</p>
-          </div>
-        `;
+      if (exercises.length === 0) {
+        showToast("Preencha ao menos uma série válida com repetições.", "error");
         return;
       }
 
-      filtered.forEach(session => {
-        // Cálculo do volume da sessão
-        let sessionVolume = 0;
-        let totalReps = 0;
-        session.exercises.forEach(ex => {
-          ex.sets.forEach(s => {
-            sessionVolume += (s.weight * s.reps);
-            totalReps += s.reps;
+      const newSession = {
+        id: "sess_" + Date.now(),
+        date,
+        name: sessionName,
+        exercises
+      };
+
+      state.workouts.unshift(newSession);
+      saveToLocalStorage();
+
+      // Sincroniza se Supabase estiver ativo
+      if (state.supabaseClient && state.currentUser) {
+        syncSingleWorkoutToSupabase(newSession);
+      }
+
+      showToast("Treino finalizado e forjado no histórico!", "success");
+      stopRestTimer();
+      initActiveSession();
+      navigateTab('evolution');
+    }
+
+    function saveActiveSessionAsTemplate() {
+      const sessionName = document.getElementById('active-session-name').value.trim() || "Minha Nova Ficha";
+      const cards = document.querySelectorAll('#active-exercises-container > div');
+      if (cards.length === 0) {
+        showToast("Adicione exercícios antes de salvar como ficha.", "error");
+        return;
+      }
+
+      const exercises = [];
+      cards.forEach(c => {
+        const name = c.querySelector('.act-name-input').value.trim();
+        const group = c.querySelector('.act-group-badge').innerText.trim();
+        const rest = parseInt(c.querySelector('.act-rest-val').innerText, 10) || 60;
+        const setsCount = c.querySelectorAll('tbody tr').length || 3;
+        if (name) {
+          exercises.push({ name, group, setsCount, rest });
+        }
+      });
+
+      const newRoutine = {
+        id: "routine_" + Date.now(),
+        division: "Personalizada",
+        name: sessionName,
+        focus: exercises[0] ? exercises[0].group : "Geral",
+        exercises
+      };
+
+      state.routines.push(newRoutine);
+      saveToLocalStorage();
+      refreshRoutineDropdown();
+      showToast(`Ficha "${sessionName}" criada com sucesso!`, "success");
+    }
+
+    // --- REST TIMER INTELIGENTE ---
+    function startRestTimer(seconds = 90, exerciseName = '') {
+      clearInterval(timerInterval);
+      timerTotal = seconds;
+      timerRemaining = seconds;
+      isTimerPaused = false;
+
+      document.getElementById('floating-rest-timer').classList.remove('hidden');
+      document.getElementById('timer-exercise-name').innerText = exerciseName ? `• ${exerciseName}` : '';
+
+      updateTimerUI();
+
+      timerInterval = setInterval(() => {
+        if (!isTimerPaused) {
+          timerRemaining--;
+          updateTimerUI();
+
+          if (timerRemaining <= 0) {
+            clearInterval(timerInterval);
+            playTimerSound();
+            showToast("Descanso finalizado! Hora de executar.", "success");
+            if ('vibrate' in navigator) navigator.vibrate([200, 100, 300]);
+            setTimeout(() => stopRestTimer(), 3500);
+          }
+        }
+      }, 1000);
+    }
+
+    function updateTimerUI() {
+      const mins = Math.floor(timerRemaining / 60);
+      const secs = timerRemaining % 60;
+      document.getElementById('timer-display').innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+      const ring = document.getElementById('timer-progress-ring');
+      const percent = Math.max(0, (timerRemaining / timerTotal) * 100);
+      ring.setAttribute('stroke-dasharray', `${percent}, 100`);
+    }
+
+    function adjustRestTimer(delta) {
+      timerRemaining = Math.max(0, timerRemaining + delta);
+      timerTotal = Math.max(timerTotal, timerRemaining);
+      updateTimerUI();
+    }
+
+    function togglePauseRestTimer() {
+      isTimerPaused = !isTimerPaused;
+      const btn = document.getElementById('timer-pause-btn');
+      btn.innerHTML = isTimerPaused ? '<i class="fa-solid fa-play"></i>' : '<i class="fa-solid fa-pause"></i>';
+    }
+
+    function stopRestTimer() {
+      clearInterval(timerInterval);
+      document.getElementById('floating-rest-timer').classList.add('hidden');
+    }
+
+    function playTimerSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.3);
+
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.35);
+      } catch (e) {
+        console.warn("Audio Context restrito.");
+      }
+    }
+
+    // --- ABA 4: EVOLUÇÃO (GRÁFICOS, PRS & HISTÓRICO) ---
+    function getAllUniqueExercises() {
+      const set = new Set();
+      state.workouts.forEach(s => s.exercises.forEach(e => set.add(e.name)));
+      return Array.from(set).sort();
+    }
+
+    function populateEvolutionSelects() {
+      const select = document.getElementById('evo-exercise-select');
+      select.innerHTML = '';
+      const list = getAllUniqueExercises();
+
+      if (list.length === 0) {
+        select.innerHTML = '<option value="">Sem exercícios registrados</option>';
+        return;
+      }
+
+      list.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.innerText = name;
+        select.appendChild(opt);
+      });
+    }
+
+    function renderEvolutionChart() {
+      const exerciseName = document.getElementById('evo-exercise-select').value;
+      const metric = document.getElementById('evo-metric-select').value;
+
+      if (!exerciseName) return;
+
+      const sorted = [...state.workouts].sort((a, b) => new Date(a.date) - new Date(b.date));
+      const labels = [];
+      const values = [];
+
+      sorted.forEach(s => {
+        const match = s.exercises.find(e => e.name.toLowerCase() === exerciseName.toLowerCase());
+        if (match && match.sets.length > 0) {
+          labels.push(formatDateBR(s.date, true));
+
+          let maxWeight = 0;
+          let max1RM = 0;
+          let volume = 0;
+
+          match.sets.forEach(st => {
+            if (st.weight > maxWeight) maxWeight = st.weight;
+            const est1RM = calculate1RM(st.weight, st.reps);
+            if (est1RM > max1RM) max1RM = est1RM;
+            volume += (st.weight * st.reps);
           });
-        });
+
+          if (metric === 'maxWeight') values.push(maxWeight);
+          else if (metric === 'estimated1RM') values.push(max1RM);
+          else values.push(volume);
+        }
+      });
+
+      const ctx = document.getElementById('evolutionChartCanvas').getContext('2d');
+      if (state.chartInstance) state.chartInstance.destroy();
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+      gradient.addColorStop(0, 'rgba(163, 230, 53, 0.35)');
+      gradient.addColorStop(1, 'rgba(163, 230, 53, 0.0)');
+
+      const labelNames = {
+        maxWeight: 'Carga Máxima (kg)',
+        estimated1RM: '1RM Estimado (kg)',
+        volume: 'Volume Total da Sessão (kg)'
+      };
+
+      state.chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: labelNames[metric],
+            data: values,
+            borderColor: '#a3e635',
+            backgroundColor: gradient,
+            borderWidth: 3,
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#a3e635',
+            pointBorderColor: '#07090c',
+            pointBorderWidth: 2,
+            pointRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#a1a1aa', font: { family: 'JetBrains Mono' } } },
+            tooltip: {
+              backgroundColor: '#111620',
+              titleColor: '#fff',
+              bodyColor: '#a3e635',
+              borderColor: '#1f293d',
+              borderWidth: 1,
+              padding: 10
+            }
+          },
+          scales: {
+            x: { grid: { color: 'rgba(31, 41, 61, 0.4)' }, ticks: { color: '#71717a' } },
+            y: { grid: { color: 'rgba(31, 41, 61, 0.4)' }, ticks: { color: '#71717a' } }
+          }
+        }
+      });
+    }
+
+    function renderPRsShowcase() {
+      const container = document.getElementById('prs-showcase-grid');
+      container.innerHTML = '';
+      const list = getAllUniqueExercises();
+
+      if (list.length === 0) {
+        container.innerHTML = `<p class="col-span-full text-xs font-mono text-zinc-500">Nenhum PR registrado.</p>`;
+        return;
+      }
+
+      list.forEach(name => {
+        const pr = getExerciseHistoricalPR(name);
+        if (!pr) return;
 
         const card = document.createElement('div');
-        card.className = "bg-slate-900 border border-slate-800 rounded-2xl p-5 transition hover:border-slate-700 shadow-lg";
-
-        // Formatação de data
-        const dateParts = session.date.split('-');
-        const formattedDate = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}` : session.date;
-
+        card.className = "bg-forja-dark border border-forja-border p-3.5 rounded-xl flex items-center justify-between";
         card.innerHTML = `
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-800 gap-3">
+          <div>
+            <h4 class="font-bold text-white text-xs sm:text-sm">${name}</h4>
+            <span class="text-[10px] font-mono text-zinc-500">${formatDateBR(pr.date)}</span>
+            <div class="text-[11px] font-mono text-zinc-300 mt-0.5">Executado: <strong class="text-white">${pr.weight}kg</strong> × ${pr.reps} reps</div>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] font-mono text-amber-400 font-bold uppercase block">1RM Estimado</span>
+            <span class="font-mono text-lg font-black text-amber-400">${pr.oneRM} kg</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderHistorySection() {
+      const container = document.getElementById('history-sessions-accordion');
+      const query = document.getElementById('history-search-input').value.toLowerCase().trim();
+      container.innerHTML = '';
+
+      const filtered = state.workouts.filter(w => {
+        const matchesName = w.name.toLowerCase().includes(query);
+        const matchesEx = w.exercises.some(e => e.name.toLowerCase().includes(query));
+        return matchesName || matchesEx;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<p class="text-xs font-mono text-zinc-500 p-4">Nenhum treino encontrado.</p>`;
+        return;
+      }
+
+      filtered.forEach(s => {
+        let vol = 0;
+        let setsCount = 0;
+        s.exercises.forEach(e => e.sets.forEach(st => {
+          vol += (st.weight * st.reps);
+          setsCount++;
+        }));
+
+        const item = document.createElement('div');
+        item.className = "bg-forja-dark border border-forja-border rounded-xl p-4 transition";
+        item.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-forja-border">
             <div>
-              <div class="flex items-center gap-3">
-                <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-md">
-                  <i class="fa-regular fa-calendar mr-1"></i>${formattedDate}
-                </span>
-                <h3 class="text-base font-bold text-white">${session.name}</h3>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-mono font-bold text-forja-neon px-2 py-0.5 rounded bg-forja-neon/15">${formatDateBR(s.date)}</span>
+                <h4 class="font-bold text-white text-sm">${s.name}</h4>
               </div>
-              <p class="text-xs text-slate-400 mt-1">
-                Volume: <strong class="text-slate-200">${sessionVolume.toLocaleString()} kg</strong> | ${session.exercises.length} Exercícios | ${totalReps} Repetições totais
-              </p>
+              <span class="text-[11px] font-mono text-zinc-400 mt-1 block">Volume: <strong class="text-white">${vol.toLocaleString()} kg</strong> • ${s.exercises.length} Exercícios • ${setsCount} Séries</span>
             </div>
-            <div>
-              <button onclick="deleteWorkoutSession('${session.id}')" class="text-slate-500 hover:text-rose-400 hover:bg-slate-800 p-2 rounded-lg text-sm transition" title="Excluir Treino">
-                <i class="fa-solid fa-trash-can"></i>
-              </button>
-            </div>
+            <button onclick="deleteWorkoutSession('${s.id}')" class="text-zinc-500 hover:text-rose-400 self-end sm:self-center p-1 transition" title="Excluir do Histórico">
+              <i class="fa-regular fa-trash-can text-xs"></i>
+            </button>
           </div>
 
-          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-            ${session.exercises.map(ex => `
-              <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3.5 flex flex-col justify-between">
-                <div>
-                  <div class="flex items-center justify-between mb-1.5">
-                    <span class="font-semibold text-slate-200 text-sm flex items-center gap-1.5">
-                      <i class="fa-solid fa-angle-right text-emerald-400 text-xs"></i> ${ex.name}
-                    </span>
-                    <span class="text-[10px] uppercase font-bold text-slate-400 bg-slate-800 px-2 py-0.5 rounded">${ex.group}</span>
-                  </div>
-                  ${ex.notes ? `<p class="text-[11px] text-slate-400 italic mb-2">Nota: ${ex.notes}</p>` : ''}
+          <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
+            ${s.exercises.map(e => `
+              <div class="bg-forja-card p-3 rounded-lg border border-forja-border/60">
+                <div class="flex items-center justify-between text-xs font-bold text-zinc-200 mb-1.5">
+                  <span>${e.name}</span>
+                  <span class="text-[9px] font-mono uppercase bg-forja-dark px-1.5 py-0.5 rounded text-zinc-400">${e.group}</span>
                 </div>
-                <div class="flex flex-wrap gap-1.5 mt-2">
-                  ${ex.sets.map((s, idx) => `
-                    <span class="text-xs bg-slate-900 border border-slate-800 text-slate-300 px-2 py-1 rounded font-mono">
-                      #${idx + 1}: <span class="text-emerald-400 font-bold">${s.weight}kg</span> × ${s.reps}
+                <div class="flex flex-wrap gap-1 font-mono text-[11px]">
+                  ${e.sets.map((st, idx) => `
+                    <span class="px-2 py-0.5 bg-forja-dark border border-forja-border rounded text-zinc-300">
+                      #${idx + 1}: <strong class="text-forja-neon">${st.weight}kg</strong> × ${st.reps}
                     </span>
                   `).join('')}
                 </div>
@@ -1148,590 +1811,240 @@
             `).join('')}
           </div>
         `;
-        feed.appendChild(card);
+        container.appendChild(item);
       });
     }
 
     function deleteWorkoutSession(id) {
-      workouts = workouts.filter(w => w.id !== id);
-      saveToLocalStorage();
-      deleteWorkoutFromSupabase(id); // Nuvem Supabase
-      renderHistoryList();
-      populateExerciseSelectOptions();
-      showToast("Registro de treino removido.", "info");
-    }
-
-    // --- EVOLUÇÃO, DASHBOARD & GRÁFICOS ---
-    function getAllUniqueExercises() {
-      const set = new Set();
-      workouts.forEach(w => {
-        w.exercises.forEach(ex => set.add(ex.name));
-      });
-      return Array.from(set).sort();
-    }
-
-    function populateExerciseSelectOptions() {
-      const select = document.getElementById('chart-exercise-select');
-      if (!select) return;
-
-      const exercises = getAllUniqueExercises();
-      select.innerHTML = '';
-
-      if (exercises.length === 0) {
-        select.innerHTML = '<option value="">Sem exercícios registrados</option>';
-        return;
+      if (confirm("Excluir este treino permanentemente?")) {
+        state.workouts = state.workouts.filter(w => w.id !== id);
+        saveToLocalStorage();
+        renderHistorySection();
+        renderEvolutionChart();
+        renderPRsShowcase();
+        renderHomeScreen();
+        showToast("Treino removido do histórico.", "info");
       }
-
-      exercises.forEach(exName => {
-        const option = document.createElement('option');
-        option.value = exName;
-        option.innerText = exName;
-        select.appendChild(option);
-      });
     }
 
-    function renderEvolutionDashboard() {
-      let totalVolumeGlobal = 0;
-      let totalSetsGlobal = 0;
-
-      workouts.forEach(w => {
-        w.exercises.forEach(ex => {
-          ex.sets.forEach(s => {
-            totalVolumeGlobal += (s.weight * s.reps);
-            totalSetsGlobal++;
-          });
-        });
-      });
-
-      document.getElementById('stat-total-volume').innerText = `${totalVolumeGlobal.toLocaleString()} kg`;
-      document.getElementById('stat-total-workouts').innerText = workouts.length;
-      document.getElementById('stat-total-sets').innerText = totalSetsGlobal;
-
-      const select = document.getElementById('chart-exercise-select');
-      if (!select.value && select.options.length > 0) {
-        select.selectedIndex = 0;
+    // --- ABA 5: PERFIL, BACKUP & SUPABASE ---
+    function checkSupabaseSavedConfig() {
+      const url = localStorage.getItem('forja_sp_url');
+      const key = localStorage.getItem('forja_sp_key');
+      if (url && key) {
+        document.getElementById('supabase-cfg-url').value = url;
+        document.getElementById('supabase-cfg-key').value = key;
+        initSupabase(url, key);
       }
-
-      updateEvolutionChart();
     }
 
-    function updateEvolutionChart() {
-      const exerciseSelect = document.getElementById('chart-exercise-select');
-      const metricSelect = document.getElementById('chart-metric-select');
-      const prDisplay = document.getElementById('stat-exercise-pr');
-
-      const selectedExercise = exerciseSelect.value;
-      const selectedMetric = metricSelect.value;
-
-      if (!selectedExercise) {
-        prDisplay.innerText = "0 kg";
-        return;
-      }
-
-      const sortedWorkouts = [...workouts].sort((a, b) => new Date(a.date) - new Date(b.date));
-      
-      const labels = [];
-      const dataPoints = [];
-      let maxWeightGlobal = 0;
-
-      sortedWorkouts.forEach(session => {
-        const matched = session.exercises.find(ex => ex.name.toLowerCase() === selectedExercise.toLowerCase());
-        if (matched && matched.sets.length > 0) {
-          const dateParts = session.date.split('-');
-          labels.push(`${dateParts[2]}/${dateParts[1]}`);
-
-          let sessionMax = 0;
-          let sessionVolume = 0;
-
-          matched.sets.forEach(s => {
-            if (s.weight > sessionMax) sessionMax = s.weight;
-            if (s.weight > maxWeightGlobal) maxWeightGlobal = s.weight;
-            sessionVolume += (s.weight * s.reps);
-          });
-
-          if (selectedMetric === 'maxWeight') {
-            dataPoints.push(sessionMax);
-          } else {
-            dataPoints.push(sessionVolume);
-          }
-        }
-      });
-
-      prDisplay.innerText = `${maxWeightGlobal} kg`;
-
-      const ctx = document.getElementById('progressChart').getContext('2d');
-      if (progressChartInstance) {
-        progressChartInstance.destroy();
-      }
-
-      const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-      gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
-      gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
-
-      const metricLabel = selectedMetric === 'maxWeight' ? 'Carga Máxima (kg)' : 'Volume Total (kg × reps)';
-
-      progressChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: metricLabel,
-            data: dataPoints,
-            borderColor: '#10b981',
-            backgroundColor: gradient,
-            borderWidth: 3,
-            fill: true,
-            tension: 0.35,
-            pointBackgroundColor: '#22c55e',
-            pointBorderColor: '#0f172a',
-            pointBorderWidth: 2,
-            pointRadius: 5,
-            pointHoverRadius: 7
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              labels: {
-                color: '#94a3b8',
-                font: { family: 'sans-serif', size: 12 }
-              }
-            },
-            tooltip: {
-              backgroundColor: '#1e293b',
-              titleColor: '#f8fafc',
-              bodyColor: '#34d399',
-              borderColor: '#334155',
-              borderWidth: 1,
-              padding: 10,
-              displayColors: false
-            }
-          },
-          scales: {
-            x: {
-              grid: { color: 'rgba(51, 65, 85, 0.3)' },
-              ticks: { color: '#94a3b8' }
-            },
-            y: {
-              grid: { color: 'rgba(51, 65, 85, 0.3)' },
-              ticks: { color: '#94a3b8' },
-              beginAtZero: false
-            }
-          }
-        }
-      });
-    }
-
-    // --- CRONÔMETRO DE DESCANSO (REST TIMER) ---
-    let restTimerInterval = null;
-    let restTimerTotal = 90;
-    let restTimerRemaining = 90;
-    let isTimerPaused = false;
-
-    function startRestTimer(seconds = 90) {
-      clearInterval(restTimerInterval);
-      restTimerTotal = seconds;
-      restTimerRemaining = seconds;
-      isTimerPaused = false;
-
-      const timerWidget = document.getElementById('floating-rest-timer');
-      timerWidget.classList.remove('hidden');
-
-      updateTimerDisplay();
-      updateTimerPauseButton();
-
-      restTimerInterval = setInterval(() => {
-        if (!isTimerPaused) {
-          restTimerRemaining--;
-          updateTimerDisplay();
-
-          if (restTimerRemaining <= 0) {
-            clearInterval(restTimerInterval);
-            playTimerBeep();
-            showToast("Tempo de descanso finalizado! Hora da próxima série.", "success");
-            if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
-            setTimeout(() => {
-              stopRestTimer();
-            }, 3500);
-          }
-        }
-      }, 1000);
-    }
-
-    function updateTimerDisplay() {
-      const mins = Math.floor(restTimerRemaining / 60);
-      const secs = restTimerRemaining % 60;
-      const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-      document.getElementById('timer-display').innerText = formatted;
-
-      const progressRing = document.getElementById('timer-progress-ring');
-      const progressPercent = Math.max(0, (restTimerRemaining / restTimerTotal) * 100);
-      progressRing.setAttribute('stroke-dasharray', `${progressPercent}, 100`);
-    }
-
-    function adjustRestTimer(seconds) {
-      restTimerRemaining = Math.max(0, restTimerRemaining + seconds);
-      restTimerTotal = Math.max(restTimerTotal, restTimerRemaining);
-      updateTimerDisplay();
-    }
-
-    function togglePauseRestTimer() {
-      isTimerPaused = !isTimerPaused;
-      updateTimerPauseButton();
-    }
-
-    function updateTimerPauseButton() {
-      const btn = document.getElementById('timer-pause-btn');
-      btn.innerHTML = isTimerPaused ? '<i class="fa-solid fa-play"></i>' : '<i class="fa-solid fa-pause"></i>';
-    }
-
-    function stopRestTimer() {
-      clearInterval(restTimerInterval);
-      document.getElementById('floating-rest-timer').classList.add('hidden');
-    }
-
-    function playTimerBeep() {
+    function initSupabase(url, key) {
       try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(1320, audioCtx.currentTime + 0.3);
-
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.35);
+        state.supabaseClient = supabase.createClient(url, key);
+        updateCloudStatus(true);
       } catch (e) {
-        console.warn("Áudio não suportado ou bloqueado pelo navegador.");
+        console.warn("Erro ao instanciar Supabase:", e);
       }
     }
 
-    // --- GERENCIAMENTO DE FICHAS / TEMPLATES ---
-    const DEFAULT_TEMPLATES = [
-      {
-        id: "tpl_a",
-        name: "Treino A - Peito, Ombros e Tríceps",
-        focus: "Push / Empurrar",
-        exercises: [
-          { name: "Supino Reto com Barra", group: "Peito", defaultSets: 4 },
-          { name: "Supino Inclinado com Halteres", group: "Peito", defaultSets: 3 },
-          { name: "Desenvolvimento com Halteres", group: "Ombros", defaultSets: 3 },
-          { name: "Elevação Lateral na Polia", group: "Ombros", defaultSets: 4 },
-          { name: "Tríceps Corda no Cross", group: "Braços", defaultSets: 3 }
-        ]
-      },
-      {
-        id: "tpl_b",
-        name: "Treino B - Costas e Bíceps",
-        focus: "Pull / Puxar",
-        exercises: [
-          { name: "Puxada Frontal", group: "Costas", defaultSets: 4 },
-          { name: "Remada Curvada com Barra", group: "Costas", defaultSets: 4 },
-          { name: "Remada Baixa Triângulo", group: "Costas", defaultSets: 3 },
-          { name: "Rosca Direta com Barra W", group: "Braços", defaultSets: 3 }
-        ]
-      },
-      {
-        id: "tpl_c",
-        name: "Treino C - Pernas Completo",
-        focus: "Legs / Inferiores",
-        exercises: [
-          { name: "Agachamento Livre", group: "Pernas", defaultSets: 4 },
-          { name: "Leg Press 45°", group: "Pernas", defaultSets: 4 },
-          { name: "Cadeira Extensora", group: "Pernas", defaultSets: 3 },
-          { name: "Mesa Flexora", group: "Pernas", defaultSets: 3 }
-        ]
-      }
-    ];
+    function updateCloudStatus(connected, email = null) {
+      const dot = document.getElementById('cloud-status-dot');
+      const text = document.getElementById('cloud-status-text');
+      const pill = document.getElementById('supabase-pill-indicator');
 
-    let templates = [];
-
-    function loadTemplates() {
-      const stored = localStorage.getItem('irontrack_templates');
-      if (stored) {
-        try { templates = JSON.parse(stored); } catch (e) { templates = [...DEFAULT_TEMPLATES]; }
+      if (connected) {
+        dot.classList.remove('bg-amber-400');
+        dot.classList.add('bg-forja-neon');
+        text.innerText = email ? email.split('@')[0] : 'Nuvem Conectada';
+        pill.innerText = 'Online / Conectado';
+        pill.className = "text-[10px] font-mono px-2.5 py-1 rounded-full bg-forja-neon/15 text-forja-neon border border-forja-neon/40";
+        if (email) {
+          document.getElementById('profile-user-email').innerText = email;
+          document.getElementById('profile-user-id').innerText = 'Sincronização em nuvem ativa';
+        }
       } else {
-        templates = [...DEFAULT_TEMPLATES];
-        saveTemplatesToLocalStorage();
+        dot.classList.add('bg-amber-400');
+        dot.classList.remove('bg-forja-neon');
+        text.innerText = 'Local / Offline';
+        pill.innerText = 'Offline';
+        pill.className = "text-[10px] font-mono px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-400 border border-forja-border";
       }
     }
 
-    function saveTemplatesToLocalStorage() {
-      localStorage.setItem('irontrack_templates', JSON.stringify(templates));
-    }
+    async function handleSupabaseConnect(type = 'login') {
+      const url = document.getElementById('supabase-cfg-url').value.trim();
+      const key = document.getElementById('supabase-cfg-key').value.trim();
+      const email = document.getElementById('supabase-auth-email').value.trim();
+      const password = document.getElementById('supabase-auth-password').value.trim();
 
-    function refreshTemplateSelectors() {
-      const select = document.getElementById('quick-template-select');
-      if (!select) return;
-      select.innerHTML = '<option value="">Selecione uma Ficha...</option>';
-      templates.forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t.id;
-        opt.innerText = t.name;
-        select.appendChild(opt);
-      });
-    }
-
-    function renderTemplatesList() {
-      const grid = document.getElementById('templates-grid');
-      if (!grid) return;
-      grid.innerHTML = '';
-
-      if (templates.length === 0) {
-        grid.innerHTML = `
-          <div class="col-span-full bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
-            <i class="fa-regular fa-folder-open text-3xl mb-3 text-slate-600"></i>
-            <p class="font-medium">Nenhuma ficha cadastrada ainda. Crie sua primeira rotina!</p>
-          </div>
-        `;
+      if (!url || !key) {
+        showToast("Informe a URL e a Anon Key do seu projeto Supabase.", "error");
+        return;
+      }
+      if (!email || !password) {
+        showToast("Informe e-mail e senha.", "error");
         return;
       }
 
-      templates.forEach(tpl => {
-        const card = document.createElement('div');
-        card.className = "bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition shadow-lg";
-        card.innerHTML = `
-          <div>
-            <div class="flex items-start justify-between gap-2 mb-2">
-              <div>
-                <h3 class="text-base font-bold text-white">${tpl.name}</h3>
-                <span class="text-xs text-emerald-400 font-semibold">${tpl.focus || 'Geral'}</span>
-              </div>
-              <button onclick="deleteTemplate('${tpl.id}')" class="text-slate-500 hover:text-rose-400 p-1 transition" title="Excluir Ficha">
-                <i class="fa-solid fa-trash-can text-sm"></i>
-              </button>
-            </div>
-            <p class="text-xs text-slate-400 mb-3">${tpl.exercises.length} exercícios configurados</p>
-            <ul class="text-xs text-slate-300 space-y-1.5 mb-4 border-t border-slate-800 pt-3">
-              ${tpl.exercises.map(e => `
-                <li class="flex items-center justify-between">
-                  <span class="truncate pr-2"><i class="fa-solid fa-dumbbell text-slate-500 text-[10px] mr-1.5"></i>${e.name}</span>
-                  <span class="text-slate-400 font-mono">${e.defaultSets || 3} séries</span>
-                </li>
-              `).join('')}
-            </ul>
-          </div>
-          <button onclick="applyTemplateToWorkout('${tpl.id}')" class="w-full py-2 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 font-bold text-xs rounded-xl border border-emerald-500/30 transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-play"></i> Iniciar com Esta Ficha
-          </button>
-        `;
-        grid.appendChild(card);
-      });
-    }
+      localStorage.setItem('forja_sp_url', url);
+      localStorage.setItem('forja_sp_key', key);
+      initSupabase(url, key);
 
-    function applyTemplateToWorkout(templateId) {
-      const tpl = templates.find(t => t.id === templateId);
-      if (!tpl) return;
-
-      document.getElementById('exercises-container').innerHTML = '';
-      document.getElementById('session-name').value = tpl.name;
-      setDefaultSessionDate();
-
-      tpl.exercises.forEach(ex => {
-        let lastWeight = '';
-        for (let session of workouts) {
-          const found = session.exercises.find(e => e.name.toLowerCase() === ex.name.toLowerCase());
-          if (found && found.sets.length > 0) {
-            lastWeight = found.sets[found.sets.length - 1].weight || '';
-            break;
-          }
+      try {
+        let authRes;
+        if (type === 'login') {
+          authRes = await state.supabaseClient.auth.signInWithPassword({ email, password });
+        } else {
+          authRes = await state.supabaseClient.auth.signUp({ email, password });
         }
 
-        addExerciseCard({
-          name: ex.name,
-          group: ex.group,
-          setsCount: ex.defaultSets || 3,
-          suggestedWeight: lastWeight
+        if (authRes.error) throw authRes.error;
+
+        state.currentUser = authRes.data.user;
+        updateCloudStatus(true, state.currentUser.email);
+        showToast(type === 'login' ? "Conectado ao Supabase com sucesso!" : "Conta criada com sucesso! Verifique seu e-mail.", "success");
+        handleSupabaseSync();
+      } catch (err) {
+        showToast("Erro de autenticação: " + err.message, "error");
+      }
+    }
+
+    async function handleSupabaseSync() {
+      if (!state.supabaseClient || !state.currentUser) {
+        showToast("Faça login no Supabase para sincronizar.", "error");
+        return;
+      }
+
+      showToast("Sincronizando dados com o banco...", "info");
+
+      try {
+        // Enviar treinos locais para a nuvem
+        for (const w of state.workouts) {
+          await state.supabaseClient.from('workouts').upsert({
+            id: w.id,
+            user_id: state.currentUser.id,
+            date: w.date,
+            name: w.name,
+            exercises: w.exercises
+          });
+        }
+
+        // Enviar fichas locais
+        for (const r of state.routines) {
+          await state.supabaseClient.from('templates').upsert({
+            id: r.id,
+            user_id: state.currentUser.id,
+            name: r.name,
+            focus: r.focus,
+            exercises: r.exercises
+          });
+        }
+
+        showToast("Sincronização na nuvem concluída!", "success");
+      } catch (err) {
+        showToast("Falha na sincronização: " + err.message, "error");
+      }
+    }
+
+    async function syncSingleWorkoutToSupabase(session) {
+      if (!state.supabaseClient || !state.currentUser) return;
+      try {
+        await state.supabaseClient.from('workouts').upsert({
+          id: session.id,
+          user_id: state.currentUser.id,
+          date: session.date,
+          name: session.name,
+          exercises: session.exercises
         });
-      });
-
-      switchTab('register');
-      showToast(`Ficha "${tpl.name}" carregada! Ajuste as cargas e repetições.`, "success");
+      } catch (e) {
+        console.warn("Erro ao sincronizar treino em segundo plano:", e);
+      }
     }
 
-    function loadSelectedTemplateToForm() {
-      const templateId = document.getElementById('quick-template-select').value;
-      if (!templateId) {
-        showToast("Selecione uma ficha para carregar.", "error");
-        return;
-      }
-      applyTemplateToWorkout(templateId);
-    }
-
-    function deleteTemplate(id) {
-      templates = templates.filter(t => t.id !== id);
-      saveTemplatesToLocalStorage();
-      deleteTemplateFromSupabase(id); // Nuvem Supabase
-      renderTemplatesList();
-      refreshTemplateSelectors();
-      showToast("Ficha excluída com sucesso.", "info");
-    }
-
-    function saveCurrentWorkoutAsTemplate() {
-      const sessionName = document.getElementById('session-name').value.trim() || "Minha Nova Ficha";
-      const cards = document.querySelectorAll('#exercises-container > div');
-      if (cards.length === 0) {
-        showToast("Adicione pelo menos um exercício para salvar como ficha.", "error");
-        return;
-      }
-
-      const tplExercises = [];
-      cards.forEach(card => {
-        const name = card.querySelector('.exercise-name-input').value.trim();
-        const group = card.querySelector('.exercise-group-select').value;
-        const setsCount = card.querySelectorAll('tbody tr').length || 3;
-        if (name) {
-          tplExercises.push({ name, group, defaultSets: setsCount });
-        }
-      });
-
-      if (tplExercises.length === 0) {
-        showToast("Preencha o nome dos exercícios antes de salvar.", "error");
-        return;
-      }
-
-      const newTemplate = {
-        id: "tpl_" + Date.now(),
-        name: sessionName,
-        focus: tplExercises[0].group || "Personalizado",
-        exercises: tplExercises
+    // Exportação & Importação JSON
+    function exportDataJSON() {
+      const data = {
+        app: "FORJA",
+        version: "2.0",
+        exportedAt: new Date().toISOString(),
+        workouts: state.workouts,
+        routines: state.routines
       };
 
-      templates.push(newTemplate);
-      saveTemplatesToLocalStorage();
-      syncTemplateToSupabase(newTemplate); // Nuvem Supabase
-      refreshTemplateSelectors();
-      renderTemplatesList();
-      showToast(`Ficha "${sessionName}" salva com sucesso!`, "success");
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `FORJA_Backup_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("Backup baixado com sucesso!", "success");
     }
 
-    function openCreateTemplateModal() {
-      document.getElementById('tpl-modal-name').value = '';
-      document.getElementById('tpl-modal-focus').value = '';
-      const list = document.getElementById('tpl-modal-exercises-list');
-      list.innerHTML = '';
-      addTemplateModalExerciseRow();
-      addTemplateModalExerciseRow();
-      document.getElementById('template-modal').classList.remove('hidden');
-    }
+    function importDataJSON(e) {
+      const file = e.target.files[0];
+      if (!file) return;
 
-    function closeTemplateModal() {
-      document.getElementById('template-modal').classList.add('hidden');
-    }
-
-    function addTemplateModalExerciseRow() {
-      const list = document.getElementById('tpl-modal-exercises-list');
-      const row = document.createElement('div');
-      row.className = "flex items-center gap-2 bg-slate-950 p-2.5 rounded-xl border border-slate-800";
-      
-      let optionsHtml = PREDEFINED_EXERCISES.map(ex => `<option value="${ex.name}">${ex.name}</option>`).join('');
-
-      row.innerHTML = `
-        <input type="text" list="modal-exercises-list" placeholder="Exercício..." class="tpl-row-name bg-slate-800 text-white text-xs sm:text-sm rounded-lg px-2.5 py-1.5 flex-1 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500">
-        <datalist id="modal-exercises-list">${optionsHtml}</datalist>
-        <input type="number" min="1" max="10" value="3" placeholder="Séries" class="tpl-row-sets bg-slate-800 text-white text-xs sm:text-sm rounded-lg px-2 py-1.5 w-16 border border-slate-700 text-center" title="Qtd. de séries">
-        <button type="button" onclick="this.closest('div').remove()" class="text-slate-500 hover:text-rose-400 p-1">
-          <i class="fa-solid fa-trash-can text-xs"></i>
-        </button>
-      `;
-      list.appendChild(row);
-    }
-
-    function saveTemplateFromModal() {
-      const name = document.getElementById('tpl-modal-name').value.trim();
-      const focus = document.getElementById('tpl-modal-focus').value.trim() || "Geral";
-      if (!name) {
-        showToast("Informe o nome da ficha.", "error");
-        return;
-      }
-
-      const rows = document.querySelectorAll('#tpl-modal-exercises-list > div');
-      const exercises = [];
-      rows.forEach(r => {
-        const exName = r.querySelector('.tpl-row-name').value.trim();
-        const setsCount = parseInt(r.querySelector('.tpl-row-sets').value, 10) || 3;
-        if (exName) {
-          const found = PREDEFINED_EXERCISES.find(e => e.name.toLowerCase() === exName.toLowerCase());
-          exercises.push({
-            name: exName,
-            group: found ? found.group : "Personalizado",
-            defaultSets: setsCount
-          });
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (parsed.workouts && Array.isArray(parsed.workouts)) {
+            state.workouts = parsed.workouts;
+          }
+          if (parsed.routines && Array.isArray(parsed.routines)) {
+            state.routines = parsed.routines;
+          }
+          saveToLocalStorage();
+          renderHomeScreen();
+          renderRoutinesGrid();
+          refreshRoutineDropdown();
+          populateEvolutionSelects();
+          showToast("Dados restaurados com sucesso!", "success");
+        } catch (err) {
+          showToast("Arquivo de backup inválido.", "error");
         }
-      });
-
-      if (exercises.length === 0) {
-        showToast("Adicione pelo menos um exercício à ficha.", "error");
-        return;
-      }
-
-      templates.push({
-        id: "tpl_" + Date.now(),
-        name,
-        focus,
-        exercises
-      });
-
-      saveTemplatesToLocalStorage();
-      syncTemplateToSupabase(templates[templates.length - 1]); // Nuvem Supabase
-      refreshTemplateSelectors();
-      renderTemplatesList();
-      closeTemplateModal();
-      showToast("Nova ficha criada com sucesso!", "success");
+      };
+      reader.readAsText(file);
     }
 
-    // Inicialização ajustada
-    const originalInit = window.onload;
-    window.onload = function() {
-      if (typeof originalInit === 'function') originalInit();
-      loadTemplates();
-      refreshTemplateSelectors();
-      renderTemplatesList();
-      initSupabase(); // Inicializa Conexão Supabase
-    };
+    // --- UTILITÁRIOS ---
+    function formatDateBR(dateStr, short = false) {
+      if (!dateStr) return '';
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return dateStr;
+      return short ? `${parts[2]}/${parts[1]}` : `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
 
-    // --- SISTEMA DE TOAST / NOTIFICAÇÃO ---
     function showToast(message, type = 'info') {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
 
       let icon = 'fa-circle-info';
-      let border = 'border-slate-700';
+      let border = 'border-forja-border';
       let accent = 'text-sky-400';
 
       if (type === 'success') {
         icon = 'fa-circle-check';
-        border = 'border-emerald-500/40';
-        accent = 'text-emerald-400';
+        border = 'border-forja-neon/60';
+        accent = 'text-forja-neon';
       } else if (type === 'error') {
         icon = 'fa-circle-exclamation';
-        border = 'border-rose-500/40';
+        border = 'border-rose-500/60';
         accent = 'text-rose-400';
       }
 
-      toast.className = `pointer-events-auto flex items-center gap-3 bg-slate-900/95 text-white text-sm px-4 py-3 rounded-xl border ${border} shadow-2xl backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0`;
+      toast.className = `pointer-events-auto flex items-center gap-3 bg-forja-dark/95 text-white text-xs font-mono px-4 py-3 rounded-xl border ${border} shadow-2xl backdrop-blur-md transition-all duration-300 transform -translate-y-2 opacity-0`;
       toast.innerHTML = `
-        <i class="fa-solid ${icon} ${accent} text-lg"></i>
-        <span class="flex-1 text-slate-200 text-xs sm:text-sm">${message}</span>
+        <i class="fa-solid ${icon} ${accent} text-base"></i>
+        <span class="flex-1 text-zinc-200">${message}</span>
       `;
 
       container.appendChild(toast);
 
+      setTimeout(() => toast.classList.remove('-translate-y-2', 'opacity-0'), 10);
       setTimeout(() => {
-        toast.classList.remove('translate-y-2', 'opacity-0');
-      }, 10);
-
-      setTimeout(() => {
-        toast.classList.add('opacity-0', 'translate-y-2');
+        toast.classList.add('opacity-0', '-translate-y-2');
         setTimeout(() => toast.remove(), 300);
       }, 3500);
     }
