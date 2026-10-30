@@ -162,7 +162,6 @@
         </button>
       </div>
 
-      <!-- Frequência Semanal -->
       <div class="bg-[#111620] rounded-2xl p-4 tactical-border">
         <div class="flex justify-between items-center mb-3">
           <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400">Frequência Semanal</h3>
@@ -171,7 +170,6 @@
         <div class="grid grid-cols-7 gap-1.5 text-center" id="weeklyHeatmap"></div>
       </div>
 
-      <!-- Resumo Tático Geral -->
       <div class="grid grid-cols-2 gap-3">
         <div class="bg-[#111620] rounded-xl p-4 tactical-border">
           <span class="text-[10px] font-mono uppercase text-slate-500">Volume Total</span>
@@ -336,11 +334,11 @@
     </div>
   </nav>
 
-  <!-- ================= MODAL DE NOVA FICHA (Z-50) ================= -->
+  <!-- ================= MODAL DE NOVA / EDITAR FICHA (Z-50) ================= -->
   <div id="modalNewTemplate" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-[#111620] tactical-border rounded-2xl w-full max-w-md p-5 space-y-4">
       <div class="flex justify-between items-center">
-        <h3 class="text-base font-display font-bold text-white">Criar Nova Ficha</h3>
+        <h3 id="tplModalTitle" class="text-base font-display font-bold text-white">Criar Nova Ficha</h3>
         <button type="button" onclick="closeCreateTemplateModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
       </div>
       <input type="text" id="tplNameInput" placeholder="Ex: Treino C - Pernas Completo" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-brand-lime" />
@@ -348,7 +346,7 @@
       
       <div class="space-y-2">
         <label class="text-[11px] font-mono text-slate-400 uppercase">Exercícios da Ficha</label>
-        <div id="tplExerciseInputs" class="space-y-2 max-h-48 overflow-y-auto"></div>
+        <div id="tplExerciseInputs" class="space-y-2 max-h-52 overflow-y-auto pr-1"></div>
         <div class="flex gap-2">
           <button type="button" onclick="addTplExerciseRow()" class="flex-1 py-2 bg-slate-900 border border-dashed border-slate-700 text-slate-300 font-mono text-xs rounded-lg hover:border-brand-lime">
             + Manual
@@ -366,7 +364,7 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: ARSENAL EXPANDIDO DE EXERCÍCIOS (Z-[60] - FICA POR CIMA) ================= -->
+  <!-- ================= MODAL: ARSENAL EXPANDIDO DE EXERCÍCIOS (Z-[60]) ================= -->
   <div id="modalExerciseLibrary" class="fixed inset-0 z-[60] bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="bg-[#111620] tactical-border rounded-2xl w-full max-w-lg p-5 space-y-4 max-h-[85vh] flex flex-col shadow-2xl">
       <div class="flex justify-between items-center">
