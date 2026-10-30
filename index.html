@@ -75,7 +75,7 @@
 </head>
 <body class="min-h-screen flex flex-col font-sans pb-24 selection:bg-brand-lime selection:text-black">
 
-  <!-- ================= AUTH GATEWAY (TELA DE LOGIN/CADASTRO) ================= -->
+  <!-- ================= AUTH GATEWAY (ECRÃ DE LOGIN/REGISTO) ================= -->
   <div id="authGate" class="fixed inset-0 z-50 bg-[#07090c] flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-[#111620] tactical-border rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
       <!-- Glow superior de fundo -->
@@ -111,7 +111,7 @@
         </div>
 
         <div>
-          <label class="block text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-1">Senha</label>
+          <label class="block text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-1">Palavra-passe</label>
           <input type="password" id="authPassword" required minlength="6" placeholder="••••••••" class="w-full bg-slate-950/80 tactical-border rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-brand-lime transition-all" />
         </div>
 
@@ -138,12 +138,10 @@
       </div>
     </div>
     <div class="flex items-center gap-2">
-      <!-- Indicador Cloud Status -->
       <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800 text-[10px] font-mono text-slate-300">
         <span class="w-2 h-2 rounded-full bg-brand-lime animate-pulse"></span>
         <span id="topUserEmail" class="max-w-[110px] truncate">Conectado</span>
       </div>
-      <!-- Botão Sair -->
       <button onclick="handleLogout()" title="Sair da conta" class="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
       </button>
@@ -155,7 +153,6 @@
 
     <!-- 1. TELA: INÍCIO -->
     <section id="screen-home" class="space-y-5">
-      <!-- Card Hero de Próximo Treino -->
       <div class="bg-gradient-to-br from-[#111620] to-[#151c2a] rounded-2xl p-5 tactical-border relative overflow-hidden">
         <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-brand-lime/10 rounded-full blur-2xl pointer-events-none"></div>
         <div class="flex justify-between items-start mb-3">
@@ -172,7 +169,7 @@
         </button>
       </div>
 
-      <!-- Frequência Semanal (Heatmap dos 7 dias) -->
+      <!-- Frequência Semanal -->
       <div class="bg-[#111620] rounded-2xl p-4 tactical-border">
         <div class="flex justify-between items-center mb-3">
           <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400">Frequência Semanal</h3>
@@ -210,7 +207,6 @@
 
     <!-- 3. TELA: TREINAR (EXECUÇÃO) -->
     <section id="screen-workout" class="hidden space-y-4">
-      <!-- Cabeçalho do Treino Atual -->
       <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
         <div class="flex justify-between items-center">
           <input type="text" id="activeWorkoutName" value="Treino Força" class="bg-transparent text-lg font-display font-extrabold text-white focus:outline-none focus:border-b border-brand-lime w-2/3" />
@@ -228,8 +224,8 @@
 
       <!-- Botões de Ação do Treino -->
       <div class="flex gap-2">
-        <button onclick="openAddExerciseToWorkoutModal()" class="flex-1 py-2.5 bg-slate-900 border border-slate-800 hover:border-slate-700 text-white font-mono text-xs rounded-xl flex items-center justify-center gap-1.5">
-          + Adicionar Exercício
+        <button onclick="openExerciseLibraryModal('workout')" class="flex-1 py-2.5 bg-slate-900 border border-slate-800 hover:border-slate-700 text-white font-mono text-xs rounded-xl flex items-center justify-center gap-1.5">
+          + Biblioteca Visual
         </button>
         <button onclick="finishAndSaveWorkout()" class="flex-1 py-2.5 bg-brand-lime text-black font-mono font-bold text-xs rounded-xl hover:brightness-110 glow-lime">
           Finalizar Treino
@@ -244,7 +240,6 @@
         <p class="text-xs text-slate-400">Acompanhe a progressão das suas cargas e volume</p>
       </div>
 
-      <!-- Seletor de Exercício para o Gráfico -->
       <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
         <div class="flex justify-between items-center">
           <label class="text-[11px] font-mono uppercase text-slate-400">Exercício Monitorado</label>
@@ -256,13 +251,6 @@
         </div>
       </div>
 
-      <!-- Recordes Pessoais (PRs) -->
-      <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
-        <h3 class="text-xs font-mono uppercase text-slate-400">Quadro de Recordes (Melhor 1RM)</h3>
-        <div id="recordsList" class="space-y-2"></div>
-      </div>
-
-      <!-- Histórico de Sessões -->
       <div class="space-y-2">
         <h3 class="text-xs font-mono uppercase text-slate-400">Histórico de Treinos</h3>
         <div id="workoutsHistoryList" class="space-y-2"></div>
@@ -273,7 +261,7 @@
     <section id="screen-profile" class="hidden space-y-4">
       <div>
         <h2 class="text-lg font-display font-extrabold text-white">Perfil & Configurações</h2>
-        <p class="text-xs text-slate-400">Gerencie sua conta e sincronização</p>
+        <p class="text-xs text-slate-400">Gerencie a sua conta e sincronização</p>
       </div>
 
       <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
@@ -289,9 +277,9 @@
       </div>
 
       <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-2">
-        <span class="text-[10px] font-mono uppercase text-slate-500">Dados do Aplicativo</span>
+        <span class="text-[10px] font-mono uppercase text-slate-500">Dados da Aplicação</span>
         <div class="flex justify-between items-center py-2 border-b border-slate-800/60 text-xs font-mono">
-          <span class="text-slate-400">Treinos Registrados</span>
+          <span class="text-slate-400">Treinos Registados</span>
           <span id="profileWorkoutsCount" class="text-white font-bold">0</span>
         </div>
         <div class="flex justify-between items-center py-2 border-b border-slate-800/60 text-xs font-mono">
@@ -307,7 +295,7 @@
     </section>
   </main>
 
-  <!-- ================= CRONÔMETRO DE DESCANSO FLUTUANTE ================= -->
+  <!-- ================= CRONÓMETRO DE DESCANSO FLUTUANTE ================= -->
   <div id="restTimerWidget" class="fixed bottom-20 right-4 z-40 bg-[#111620] tactical-border rounded-2xl p-3 shadow-2xl flex items-center gap-3 hidden">
     <div class="relative w-11 h-11 flex items-center justify-center">
       <svg class="w-full h-full transform -rotate-90">
@@ -357,6 +345,54 @@
     </div>
   </nav>
 
+  <!-- ================= MODAL: BIBLIOTECA VISUAL DE EXERCÍCIOS ================= -->
+  <div id="modalExerciseLibrary" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-[#111620] tactical-border rounded-2xl w-full max-w-lg p-5 space-y-4 max-h-[85vh] flex flex-col">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-base font-display font-bold text-white">Biblioteca de Exercícios</h3>
+          <p class="text-xs text-slate-400">Selecione para ver a execução biomecânica</p>
+        </div>
+        <button onclick="closeExerciseLibraryModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+
+      <!-- Barra de Pesquisa e Filtros -->
+      <div class="space-y-2">
+        <input type="text" id="librarySearchInput" oninput="filterExerciseLibrary()" placeholder="Buscar por exercício..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-brand-lime" />
+        <div class="flex gap-1.5 overflow-x-auto pb-1 text-[11px] font-mono scrollbar-none" id="libraryFilterButtons">
+          <button onclick="filterByGroup('Todos')" class="px-2.5 py-1 rounded bg-brand-lime text-black font-bold">Todos</button>
+          <button onclick="filterByGroup('Peito')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">Peito</button>
+          <button onclick="filterByGroup('Costas')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">Costas</button>
+          <button onclick="filterByGroup('Pernas')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">Pernas</button>
+          <button onclick="filterByGroup('Ombros')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">Ombros</button>
+          <button onclick="filterByGroup('Braços')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">Braços</button>
+        </div>
+      </div>
+
+      <!-- Lista de Exercícios da Biblioteca -->
+      <div id="libraryListContainer" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: DETALHE VISUAL / EXECUÇÃO DO EXERCÍCIO ================= -->
+  <div id="modalExerciseDetail" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-[#111620] tactical-border rounded-2xl w-full max-w-sm p-5 space-y-4 relative">
+      <button onclick="closeExerciseDetailModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">&times;</button>
+      <div class="text-center pt-2">
+        <span id="detailGroupBadge" class="text-[10px] font-mono text-brand-lime border border-brand-lime/30 px-2 py-0.5 rounded uppercase">Peito</span>
+        <h3 id="detailExerciseName" class="text-lg font-display font-extrabold text-white mt-1">Supino Reto</h3>
+      </div>
+      <div class="w-full h-52 bg-slate-950 rounded-xl tactical-border flex items-center justify-center overflow-hidden">
+        <img id="detailExerciseGif" src="" alt="Execução do Exercício" class="w-full h-full object-contain" />
+      </div>
+      <div class="text-xs text-slate-300 space-y-2 bg-slate-900/60 p-3 rounded-xl tactical-border">
+        <p><strong class="text-brand-lime font-mono">Músculos:</strong> <span id="detailMuscles">Peitoral Maior, Tríceps</span></p>
+        <p><strong class="text-brand-lime font-mono">Postura:</strong> <span id="detailTips">Mantenha os ombros recuados e escápulas aduzidas durante a descida.</span></p>
+      </div>
+      <button onclick="closeExerciseDetailModal()" class="w-full py-2.5 bg-slate-800 text-white font-mono text-xs font-bold rounded-xl hover:bg-slate-700">Fechar</button>
+    </div>
+  </div>
+
   <!-- ================= MODAL DE NOVA FICHA ================= -->
   <div id="modalNewTemplate" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-[#111620] tactical-border rounded-2xl w-full max-w-md p-5 space-y-4">
@@ -370,9 +406,14 @@
       <div class="space-y-2">
         <label class="text-[11px] font-mono text-slate-400 uppercase">Exercícios da Ficha</label>
         <div id="tplExerciseInputs" class="space-y-2 max-h-48 overflow-y-auto"></div>
-        <button onclick="addTplExerciseRow()" class="w-full py-2 bg-slate-900 border border-dashed border-slate-700 text-slate-300 font-mono text-xs rounded-lg hover:border-brand-lime">
-          + Adicionar Exercício
-        </button>
+        <div class="flex gap-2">
+          <button onclick="addTplExerciseRow()" class="flex-1 py-2 bg-slate-900 border border-dashed border-slate-700 text-slate-300 font-mono text-xs rounded-lg hover:border-brand-lime">
+            + Escrever Manual
+          </button>
+          <button onclick="openExerciseLibraryModal('template')" class="flex-1 py-2 bg-slate-900 border border-brand-lime/30 text-brand-lime font-mono text-xs rounded-lg hover:border-brand-lime">
+            + Da Biblioteca
+          </button>
+        </div>
       </div>
 
       <div class="flex gap-2 pt-2">
@@ -385,12 +426,11 @@
   <!-- ================= JAVASCRIPT PRINCIPAL ================= -->
   <script>
     /* -------------------------------------------------------------
-       CONFIGURAÇÕES DO SUPABASE (COM SUAS CREDENCIAIS REAIS)
+       CREDENCIAIS OFICIAIS DO SUPABASE
     -------------------------------------------------------------- */
     const SUPABASE_URL = "https://pzygeoqjdyvtfpxuytvg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6eWdlb3FqZHl2dGZweHV5dHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNjczNzMsImV4cCI6MjEwODk0MzM3M30.lme2H9a6-QyI7Hf-7-tSIfr3DuvXMk03ZJoBnOemUYU";
 
-    // Inicialização do cliente Supabase
     let supabaseClient = null;
     try {
       supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -399,11 +439,97 @@
     }
 
     /* -------------------------------------------------------------
+       CATÁLOGO DE EXERCÍCIOS VISUAIS (CDN GRATUITA - ESPAÇO ZERO SUPABASE)
+    -------------------------------------------------------------- */
+    const EXERCISE_DATABASE = [
+      {
+        id: 'bench-press',
+        name: 'Supino Reto com Barra',
+        group: 'Peito',
+        muscles: 'Peitoral Maior, Deltóide Anterior, Tríceps',
+        tips: 'Desça a barra até à linha média do peito, mantendo as omoplatas retraídas.',
+        gif: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&auto=format&fit=crop&q=80'
+      },
+      {
+        id: 'incline-dumbbell-press',
+        name: 'Supino Inclinado com Halteres',
+        group: 'Peito',
+        muscles: 'Peitoral Superior, Deltóides',
+        tips: 'Mantenha o banco entre 30 e 45 graus para foco no feixe clavicular.',
+        gif: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&auto=format&fit=crop&q=80'
+      },
+      {
+        id: 'lat-pulldown',
+        name: 'Puxada Frontal na Polia',
+        group: 'Costas',
+        muscles: 'Grande Dorsal, Redondo Maior, Bíceps',
+        tips: 'Puxe direcionando os cotovelos para os quadris sem balançar o tronco.',
+        gif: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=600&auto=format&fit=crop&q=80'
+      },
+      {
+        id: 'barbell-row',
+        name: 'Remada Curvada com Barra',
+        group: 'Costas',
+        muscles: 'Dorsais, Trapézio, Rombóides',
+        tips: 'Mantenha as costas estáveis a 45 graus e puxe a barra na direção do umbigo.',
+        gif: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&auto=format&fit=crop&q=80'
+      },
+      {
+        id: 'squat',
+        name: 'Agachamento Livre com Barra',
+        group: 'Pernas',
+        muscles: 'Quadríceps, Glúteos, Isquiotibiais, Core',
+        tips: 'Mantenha os calcanhares firmes no solo e joelhos alinhados com a ponta dos pés.',
+        gif: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=600&auto=format&fit=crop&q=80'
+      },
+      {
+        id: 'leg-press',
+        name: 'Leg Press 45°',
+        group: 'Pernas',
+        muscles: 'Quadríceps e Glúteos',
+        tips: 'Não hiperestenda os joelhos no topo do movimento para proteger a articulação.',
+        gif: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600&auto=format&fit=crop&q=80'
+      },
+      {
+        id: 'military-press',
+        name: 'Desenvolvimento Militar',
+        group: 'Ombros',
+        muscles: 'Deltóide Anterior/Lateral, Tríceps',
+        tips: 'Trave os glúteos e o abdómen para proteger a região lombar.',
+        gif: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&auto=format&fit=crop&q=80'
+      },
+      {
+        id: 'lateral-raise',
+        name: 'Elevação Lateral com Halteres',
+        group: 'Ombros',
+        muscles: 'Deltóide Lateral',
+        tips: 'Suba os braços até à linha dos ombros mantendo ligeira flexão dos cotovelos.',
+        gif: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=600&auto=format&fit=crop&q=80'
+      },
+      {
+        id: 'biceps-curl',
+        name: 'Rosca Direta com Barra W',
+        group: 'Braços',
+        muscles: 'Bíceps Braquial, Braquiorradial',
+        tips: 'Mantenha os cotovelos fixos ao lado do corpo sem utilizar balanço lombar.',
+        gif: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&auto=format&fit=crop&q=80'
+      },
+      {
+        id: 'triceps-pushdown',
+        name: 'Tríceps Corda na Polia',
+        group: 'Braços',
+        muscles: 'Tríceps (todas as cabeças)',
+        tips: 'Abra a corda no ponto final da extensão com contração máxima de 1 segundo.',
+        gif: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&auto=format&fit=crop&q=80'
+      }
+    ];
+
+    /* -------------------------------------------------------------
        ESTADO CENTRAL DO FORJA
     -------------------------------------------------------------- */
     const state = {
       user: null,
-      authMode: 'login', // 'login' ou 'register'
+      authMode: 'login',
       templates: [],
       workouts: [],
       activeWorkout: {
@@ -414,14 +540,13 @@
         total: 60,
         remaining: 60,
         intervalId: null
-      }
+      },
+      libraryContext: 'workout', // 'workout' ou 'template'
+      activeGroupFilter: 'Todos'
     };
 
     let progressChartInstance = null;
 
-    /* -------------------------------------------------------------
-       INICIALIZAÇÃO & VERIFICAÇÃO DE SESSÃO
-    -------------------------------------------------------------- */
     document.addEventListener("DOMContentLoaded", async () => {
       checkSession();
       renderWeeklyHeatmap();
@@ -429,7 +554,6 @@
 
     async function checkSession() {
       if (!supabaseClient) return;
-
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session && session.user) {
         state.user = session.user;
@@ -480,7 +604,7 @@
           onAuthSuccess();
         }
       } catch (err) {
-        alert("Erro de autenticação: " + (err.message || "Verifique seus dados."));
+        alert("Erro de autenticação: " + (err.message || "Verifique os seus dados."));
       } finally {
         spinner.classList.add("hidden");
         submitBtn.disabled = false;
@@ -505,13 +629,9 @@
       document.getElementById("authGate").classList.remove("hidden");
     }
 
-    /* -------------------------------------------------------------
-       SINCRONIZAÇÃO SUPABASE (RLS POR USUÁRIO)
-    -------------------------------------------------------------- */
     async function fetchUserData() {
       if (!supabaseClient || !state.user) return;
 
-      // 1. Carrega Fichas
       const { data: tpls } = await supabaseClient
         .from('templates')
         .select('*')
@@ -520,7 +640,6 @@
       if (tpls && tpls.length > 0) {
         state.templates = tpls;
       } else {
-        // Mock inicial se usuário for novato
         state.templates = [
           {
             id: 'mock-tpl-1',
@@ -535,7 +654,6 @@
         ];
       }
 
-      // 2. Carrega Treinos
       const { data: wks } = await supabaseClient
         .from('workouts')
         .select('*')
@@ -547,7 +665,116 @@
     }
 
     /* -------------------------------------------------------------
-       CRONÔMETRO DE DESCANSO AUTOMÁTICO (AUTO-REST)
+       BIBLIOTECA VISUAL & MODAIS
+    -------------------------------------------------------------- */
+    function openExerciseLibraryModal(context = 'workout') {
+      state.libraryContext = context;
+      document.getElementById("modalExerciseLibrary").classList.remove("hidden");
+      renderExerciseLibraryList();
+    }
+
+    function closeExerciseLibraryModal() {
+      document.getElementById("modalExerciseLibrary").classList.add("hidden");
+    }
+
+    function filterByGroup(group) {
+      state.activeGroupFilter = group;
+      renderExerciseLibraryList();
+    }
+
+    function filterExerciseLibrary() {
+      renderExerciseLibraryList();
+    }
+
+    function renderExerciseLibraryList() {
+      const container = document.getElementById("libraryListContainer");
+      const searchTerm = document.getElementById("librarySearchInput").value.toLowerCase();
+      container.innerHTML = "";
+
+      const filtered = EXERCISE_DATABASE.filter(ex => {
+        const matchesGroup = (state.activeGroupFilter === 'Todos' || ex.group === state.activeGroupFilter);
+        const matchesSearch = ex.name.toLowerCase().includes(searchTerm) || ex.muscles.toLowerCase().includes(searchTerm);
+        return matchesGroup && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="p-6 text-center text-xs font-mono text-slate-500">Nenhum exercício encontrado.</div>`;
+        return;
+      }
+
+      filtered.forEach(ex => {
+        const div = document.createElement("div");
+        div.className = "bg-slate-900/80 p-3 rounded-xl tactical-border flex items-center justify-between gap-3";
+        div.innerHTML = `
+          <div class="flex items-center gap-3">
+            <img src="${ex.gif}" class="w-12 h-12 rounded-lg object-cover bg-slate-950 border border-slate-800" />
+            <div>
+              <span class="text-[9px] font-mono text-brand-lime uppercase">${ex.group}</span>
+              <h4 class="text-xs font-bold text-white leading-tight">${ex.name}</h4>
+              <p class="text-[10px] text-slate-400 truncate max-w-[170px]">${ex.muscles}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button onclick="showExerciseDetail('${ex.id}')" title="Ver execução biomecânica" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs">
+              👁️
+            </button>
+            <button onclick="selectExerciseFromLibrary('${ex.id}')" class="px-2.5 py-1.5 bg-brand-lime text-black font-mono font-bold text-xs rounded-lg hover:brightness-110">
+              + Usar
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function showExerciseDetail(exerciseId) {
+      const ex = EXERCISE_DATABASE.find(e => e.id === exerciseId);
+      if (!ex) return;
+
+      document.getElementById("detailGroupBadge").textContent = ex.group;
+      document.getElementById("detailExerciseName").textContent = ex.name;
+      document.getElementById("detailExerciseGif").src = ex.gif;
+      document.getElementById("detailMuscles").textContent = ex.muscles;
+      document.getElementById("detailTips").textContent = ex.tips;
+
+      document.getElementById("modalExerciseDetail").classList.remove("hidden");
+    }
+
+    function closeExerciseDetailModal() {
+      document.getElementById("modalExerciseDetail").classList.add("hidden");
+    }
+
+    function selectExerciseFromLibrary(exerciseId) {
+      const ex = EXERCISE_DATABASE.find(e => e.id === exerciseId);
+      if (!ex) return;
+
+      if (state.libraryContext === 'workout') {
+        state.activeWorkout.exercises.push({
+          name: ex.name,
+          rest: 60,
+          sets: [
+            { weight: getLastUsedWeight(ex.name) || 30, reps: 10, completed: false },
+            { weight: getLastUsedWeight(ex.name) || 30, reps: 10, completed: false },
+            { weight: getLastUsedWeight(ex.name) || 30, reps: 10, completed: false }
+          ]
+        });
+        renderActiveWorkout();
+        closeExerciseLibraryModal();
+      } else {
+        const container = document.getElementById("tplExerciseInputs");
+        const div = document.createElement("div");
+        div.className = "flex gap-2";
+        div.innerHTML = `
+          <input type="text" value="${ex.name}" class="flex-1 bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-white" />
+          <input type="number" value="3" class="w-16 bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-white text-center" />
+        `;
+        container.appendChild(div);
+        closeExerciseLibraryModal();
+      }
+    }
+
+    /* -------------------------------------------------------------
+       CRONÓMETRO DE DESCANSO AUTOMÁTICO (AUTO-REST)
     -------------------------------------------------------------- */
     function startAutoRest(seconds = 60) {
       const widget = document.getElementById("restTimerWidget");
@@ -603,13 +830,8 @@
     }
 
     /* -------------------------------------------------------------
-       EXECUÇÃO DO TREINO & ESTIMATIVA DE 1RM (BRZYCKI)
+       EXECUÇÃO DO TREINO
     -------------------------------------------------------------- */
-    function calculate1RM(weight, reps) {
-      if (reps <= 1) return weight;
-      return Math.round(weight / (1.0278 - 0.0278 * reps));
-    }
-
     function loadTemplateIntoWorkout(templateId) {
       const tpl = state.templates.find(t => t.id === templateId);
       if (!tpl) return;
@@ -645,7 +867,7 @@
       list.innerHTML = "";
 
       if (state.activeWorkout.exercises.length === 0) {
-        list.innerHTML = `<div class="p-8 text-center text-xs font-mono text-slate-500 border border-dashed border-slate-800 rounded-xl">Selecione uma ficha acima ou adicione exercícios para iniciar.</div>`;
+        list.innerHTML = `<div class="p-8 text-center text-xs font-mono text-slate-500 border border-dashed border-slate-800 rounded-xl">Selecione uma ficha acima ou abra a Biblioteca Visual para adicionar exercícios.</div>`;
         return;
       }
 
@@ -654,7 +876,10 @@
         div.className = "bg-[#111620] rounded-xl p-3.5 tactical-border space-y-3";
         div.innerHTML = `
           <div class="flex justify-between items-center">
-            <h4 class="text-sm font-display font-bold text-white">${ex.name}</h4>
+            <div class="flex items-center gap-2">
+              <h4 class="text-sm font-display font-bold text-white">${ex.name}</h4>
+              <button onclick="inspectExerciseByName('${ex.name}')" title="Ver postura" class="text-xs bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded text-slate-300 hover:text-white">👁️</button>
+            </div>
             <span class="text-[10px] font-mono text-slate-400">Descanso: ${ex.rest}s</span>
           </div>
 
@@ -687,6 +912,15 @@
       });
     }
 
+    function inspectExerciseByName(name) {
+      const found = EXERCISE_DATABASE.find(e => e.name.toLowerCase() === name.toLowerCase());
+      if (found) {
+        showExerciseDetail(found.id);
+      } else {
+        alert("Exercício adicionado manualmente sem ilustração registada na base.");
+      }
+    }
+
     function updateSetVal(exIdx, sIdx, field, val) {
       state.activeWorkout.exercises[exIdx].sets[sIdx][field] = parseFloat(val) || 0;
     }
@@ -702,7 +936,7 @@
 
     async function finishAndSaveWorkout() {
       if (state.activeWorkout.exercises.length === 0) {
-        alert("Adicione ao menos um exercício antes de finalizar.");
+        alert("Adicione pelo menos um exercício antes de finalizar.");
         return;
       }
 
@@ -722,11 +956,11 @@
 
       if (supabaseClient && state.user) {
         const { error } = await supabaseClient.from('workouts').insert([newWorkout]);
-        if (error) console.error("Erro ao salvar treino:", error);
+        if (error) console.error("Erro ao guardar treino:", error);
       }
 
       state.workouts.unshift(newWorkout);
-      alert("Treino forjado e salvo com sucesso!");
+      alert("Treino forjado e guardado com sucesso!");
       switchTab('progress');
       renderAll();
     }
@@ -777,13 +1011,11 @@
       select.innerHTML = '<option value="">Carregar de uma Ficha...</option>';
 
       state.templates.forEach(t => {
-        // No select
         const opt = document.createElement("option");
         opt.value = t.id;
         opt.textContent = `${t.division || '•'} - ${t.title}`;
         select.appendChild(opt);
 
-        // Na lista
         const div = document.createElement("div");
         div.className = "bg-[#111620] p-4 rounded-xl tactical-border flex justify-between items-center";
         div.innerHTML = `
@@ -831,7 +1063,7 @@
       list.innerHTML = "";
 
       if (state.workouts.length === 0) {
-        list.innerHTML = `<div class="p-4 text-center text-xs font-mono text-slate-500">Nenhum treino registrado ainda.</div>`;
+        list.innerHTML = `<div class="p-4 text-center text-xs font-mono text-slate-500">Nenhum treino registado ainda.</div>`;
         return;
       }
 
