@@ -1,14 +1,32 @@
 <!DOCTYPE html>
 <html lang="pt-BR" class="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>FORJA - High Performance Training</title>
-  <!-- Favicon e Ícones PWA para Telemóvel -->
-  <link rel="icon" type="image/png" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='28' fill='%23a3e635'/><path d='M52 24 C52 24 64 36 67 48 C70 59 64 71 52 72 C41 73 34 65 37 53 C38 48 43 44 43 44 C43 44 38 49 36 57 C34 65 40 70 49 70 C57 70 63 60 59 49 C55 38 45 30 52 24 Z' fill='%23111620'/></svg>" />
-<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='28' fill='%23a3e635'/><path d='M52 24 C52 24 64 36 67 48 C70 59 64 71 52 72 C41 73 34 65 37 53 C38 48 43 44 43 44 C43 44 38 49 36 57 C34 65 40 70 49 70 C57 70 63 60 59 49 C55 38 45 30 52 24 Z' fill='%23111620'/></svg>" />  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>FORJA — Construa sua evolução</title>
+  
+  <!-- Favicon e Ícones PWA para o Telemóvel e Navegador -->
+  <link rel="icon" type="image/png" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='28' fill='%23a3e635'/><path d='M52 24 C52 24 64 36 67 48 C70 59 64 71 52 72 C41 73 34 65 37 53 C38 48 43 44 43 44 C43 44 38 49 36 57 C34 65 40 70 49 70 C57 70 63 60 59 49 C55 38 45 30 52 24 Z' fill='%230a0d14'/></svg>" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='28' fill='%23a3e635'/><path d='M52 24 C52 24 64 36 67 48 C70 59 64 71 52 72 C41 73 34 65 37 53 C38 48 43 44 43 44 C43 44 38 49 36 57 C34 65 40 70 49 70 C57 70 63 60 59 49 C55 38 45 30 52 24 Z' fill='%230a0d14'/></svg>" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="FORJA">
-  <!-- Tailwind CSS CDN -->
+
+  <!-- Google Fonts: Syne (Display), Inter (UI), JetBrains Mono (Dados/Cargas/Timer) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700;800&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome 6 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Supabase JS Client Oficial -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -16,475 +34,1940 @@
       theme: {
         extend: {
           colors: {
-            brand: {
-              lime: '#a3e635',
-              dark: '#0a0d14',
-              card: '#111620'
+            forja: {
+              black: '#06080c',
+              dark: '#0c1017',
+              card: '#111620',
+              cardHover: '#161c28',
+              border: '#1b2434',
+              borderLight: '#26334a',
+              neon: '#a3e635',       // Verde Neon / Lima Elétrico
+              neonGlow: 'rgba(163, 230, 53, 0.25)',
+              neonHover: '#bef264',
+              gold: '#facc15'
             }
           },
           fontFamily: {
-            mono: ['JetBrains Mono', 'monospace'],
-            display: ['Inter', 'sans-serif']
+            display: ['Syne', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
           }
         }
       }
     }
   </script>
-  
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Supabase JS CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  
+
   <style>
-    body {
-      background-color: #0a0d14;
-      color: #f8fafc;
-      font-family: 'Inter', sans-serif;
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #06080c; }
+    ::-webkit-scrollbar-thumb { background: #1b2434; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #a3e635; }
+
+    /* Efeitos Visuais */
+    .neon-glow { box-shadow: 0 0 20px -3px rgba(163, 230, 53, 0.25); }
+
+    /* Remove spinners do input number */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
     }
-    .tactical-border {
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .glow-lime {
-      box-shadow: 0 0 15px rgba(163, 230, 53, 0.25);
-    }
+    input[type=number] { -moz-appearance: textfield; }
   </style>
 </head>
-<body class="pb-24 select-none antialiased min-h-screen">
+<body class="bg-forja-black text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-forja-neon selection:text-black">
 
-  <!-- TOP HEADER -->
-  <header class="sticky top-0 z-40 bg-[#0a0d14]/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 flex justify-between items-center">
-   <div class="flex items-center gap-2.5">
-  <!-- LOGO OFICIAL EXATA (HEADER) -->
-  <div class="w-9 h-9 rounded-xl bg-brand-lime flex items-center justify-center shadow-lg glow-lime">
-    <svg class="w-6 h-6 text-[#111620]" viewBox="0 0 100 100" fill="currentColor">
-      <path d="M52 24 C52 24 64 36 67 48 C70 59 64 71 52 72 C41 73 34 65 37 53 C38 48 43 44 43 44 C43 44 38 49 36 57 C34 65 40 70 49 70 C57 70 63 60 59 49 C55 38 45 30 52 24 Z"/>
-    </svg>
-  </div>
-  <div>
-    <h1 class="font-display font-extrabold text-sm tracking-widest text-white uppercase italic">FORJA</h1>
-    <span class="text-[9px] font-mono text-slate-400 block -mt-1 tracking-wider">HIGH PERFORMANCE</span>
-  </div>
-</div>
-    
-    <div class="flex items-center gap-2">
-      <span id="userRoleBadge" class="text-[10px] font-mono font-bold text-brand-lime bg-brand-lime/10 px-2 py-0.5 rounded border border-brand-lime/30">
-        🏋️ ALUNO
-      </span>
-      <span id="topUserEmail" class="text-xs font-mono text-slate-300">atleta</span>
+  <!-- CONTAINER DE TOASTS -->
+  <div id="toast-container" class="fixed top-5 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+  <!-- ============================================================== -->
+  <!-- TELA DE AUTENTICAÇÃO LIMPA E PROFISSIONAL                      -->
+  <!-- ============================================================== -->
+  <div id="auth-screen" class="fixed inset-0 z-50 bg-forja-black flex items-center justify-center p-4 overflow-y-auto">
+    <div class="w-full max-w-md my-auto relative">
+      <!-- Glow Decorativo -->
+      <div class="absolute -top-16 -left-16 w-56 h-56 bg-forja-neon/15 rounded-full blur-3xl pointer-events-none"></div>
+      
+      <div class="relative bg-forja-card border border-forja-border rounded-3xl p-6 sm:p-8 shadow-2xl">
+        <!-- Logo & Branding com a Chama Original -->
+        <div class="flex flex-col items-center text-center mb-6">
+          <div class="w-16 h-16 rounded-2xl bg-forja-neon flex items-center justify-center text-forja-black shadow-xl neon-glow mb-3">
+            <svg class="w-10 h-10 text-forja-black" viewBox="0 0 100 100" fill="currentColor">
+              <path d="M52 24 C52 24 64 36 67 48 C70 59 64 71 52 72 C41 73 34 65 37 53 C38 48 43 44 43 44 C43 44 38 49 36 57 C34 65 40 70 49 70 C57 70 63 60 59 49 C55 38 45 30 52 24 Z"/>
+            </svg>
+          </div>
+          <h1 class="text-3xl font-display font-black text-white tracking-wider">FORJA</h1>
+          <p class="text-xs text-forja-neon font-mono font-semibold uppercase tracking-widest mt-0.5">Construa sua evolução</p>
+          <p class="text-xs text-zinc-400 mt-2">Acesse sua conta para sincronizar treinos, cargas e recordes pessoais.</p>
+        </div>
+
+        <!-- Seletor Entrar / Cadastrar -->
+        <div class="grid grid-cols-2 p-1 bg-forja-dark border border-forja-border rounded-xl mb-5">
+          <button id="auth-mode-login" onclick="setAuthMode('login')" class="py-2.5 text-xs font-mono font-bold rounded-lg transition bg-forja-neon text-black">
+            ENTRAR
+          </button>
+          <button id="auth-mode-signup" onclick="setAuthMode('signup')" class="py-2.5 text-xs font-mono font-bold rounded-lg transition text-zinc-400 hover:text-white">
+            CRIAR CONTA
+          </button>
+        </div>
+
+        <!-- Formulário de Auth -->
+        <form onsubmit="handleAuthSubmit(event)" class="space-y-4">
+          <div>
+            <label class="block text-[11px] font-mono text-zinc-400 uppercase font-semibold mb-1">E-mail</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-zinc-500 text-xs">
+                <i class="fa-solid fa-envelope"></i>
+              </span>
+              <input type="email" id="auth-email" required placeholder="seu@email.com" class="w-full bg-forja-dark border border-forja-border rounded-xl pl-9 pr-3 py-2.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-forja-neon font-mono">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-mono text-zinc-400 uppercase font-semibold mb-1">Senha</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-zinc-500 text-xs">
+                <i class="fa-solid fa-lock"></i>
+              </span>
+              <input type="password" id="auth-password" required minlength="6" placeholder="Mínimo 6 dígitos" class="w-full bg-forja-dark border border-forja-border rounded-xl pl-9 pr-3 py-2.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-forja-neon font-mono">
+            </div>
+          </div>
+
+          <button type="submit" id="auth-submit-btn" class="w-full py-3.5 bg-gradient-to-r from-forja-neon to-lime-500 hover:from-forja-neonHover hover:to-lime-400 text-black font-display font-black text-xs tracking-wider rounded-xl transition neon-glow shadow-xl active:scale-95 flex items-center justify-center gap-2">
+            <span id="auth-submit-text">ACESSAR MINHA CONTA</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+        </form>
+
+        <p class="text-[11px] font-mono text-zinc-500 text-center mt-5">
+          Ambiente seguro com criptografia de ponta a ponta.
+        </p>
+      </div>
     </div>
-  </header>
+  </div>
 
-  <!-- CONTEÚDO PRINCIPAL (TELAS) -->
-  <main class="max-w-md mx-auto px-4 pt-4">
-
-    <!-- ================= 1. TELA: HOME / DASHBOARD ================= -->
-    <section id="screen-home" class="space-y-4">
-      <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
-        <div class="flex justify-between items-center">
-          <span class="text-xs font-mono text-slate-400 uppercase">Frequência Semanal</span>
-          <span id="weekSessionsCount" class="text-xs font-mono font-bold text-brand-lime">0 sessões</span>
-        </div>
-        <div id="weeklyHeatmap" class="grid grid-cols-7 gap-1.5 pt-1"></div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-3">
-        <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-1">
-          <span class="text-[10px] font-mono text-slate-400 uppercase">Volume Semanal</span>
-          <p id="statWeeklyVolume" class="text-xl font-mono font-extrabold text-white">0 <span class="text-xs text-slate-500">kg</span></p>
-        </div>
-        <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-1">
-          <span class="text-[10px] font-mono text-slate-400 uppercase">Treinos Concluídos</span>
-          <p id="profileWorkoutsCount" class="text-xl font-mono font-extrabold text-brand-lime">0</p>
-        </div>
-      </div>
-
-      <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
-        <div class="flex justify-between items-center">
-          <h3 class="text-xs font-mono uppercase text-slate-400">Acesso Rápido</h3>
-          <button onclick="quickStartTemplate()" class="text-xs font-mono text-brand-lime hover:underline">+ Iniciar Ficha</button>
-        </div>
-        <button onclick="switchTab('workout')" class="w-full py-3 bg-brand-lime text-black font-mono font-extrabold text-xs uppercase rounded-xl hover:brightness-110 shadow-lg glow-lime">
-          🔥 Iniciar Treino Livre
-        </button>
-      </div>
-
-      <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-2">
-        <h3 class="text-xs font-mono uppercase text-slate-400">Últimos Treinos</h3>
-        <div id="workoutsHistoryList" class="space-y-2 max-h-48 overflow-y-auto"></div>
-      </div>
-    </section>
-
-    <!-- ================= 2. TELA: FICHAS (TEMPLATES) ================= -->
-    <section id="screen-templates" class="hidden space-y-4">
-      <div class="flex justify-between items-center">
-        <div>
-          <h2 class="text-lg font-display font-extrabold text-white">Fichas de Treino</h2>
-          <p class="text-xs text-slate-400">Monte ou edite suas divisões de treino</p>
-        </div>
-        <button onclick="openCreateTemplateModal()" class="px-3 py-2 bg-brand-lime text-black font-mono font-bold text-xs rounded-xl hover:brightness-110">
-          + Criar Ficha
-        </button>
-      </div>
-
-      <div id="templatesList" class="space-y-3"></div>
-    </section>
-
-    <!-- ================= 3. TELA: TREINO ATIVO ================= -->
-    <section id="screen-workout" class="hidden space-y-4">
-      <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
-        <input type="text" id="activeWorkoutName" value="Treino Personalizado" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-sm font-bold text-white focus:outline-none focus:border-brand-lime" />
+  <!-- ============================================================== -->
+  <!-- APLICAÇÃO PRINCIPAL                                            -->
+  <!-- ============================================================== -->
+  <div id="main-app" class="hidden flex-1 flex flex-col pb-24 md:pb-6">
+    
+    <!-- TOP BAR -->
+    <header class="sticky top-0 z-40 bg-forja-dark/90 backdrop-blur-xl border-b border-forja-border">
+      <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         
-        <div class="flex gap-2">
-          <select id="workoutTemplateSelect" onchange="if(this.value) loadTemplateIntoWorkout(this.value)" class="flex-1 bg-slate-900 border border-slate-800 text-xs font-mono text-slate-300 rounded-xl p-2 focus:outline-none">
-            <option value="">Carregar de uma Ficha...</option>
-          </select>
-          <button type="button" onclick="openExerciseLibraryModal('workout')" class="px-3 py-2 bg-slate-800 text-brand-lime font-mono font-bold text-xs rounded-xl hover:bg-slate-700">
-            + Arsenal
+        <!-- LOGO COM A CHAMA ORIGINAL -->
+        <div class="flex items-center gap-3 cursor-pointer" onclick="navigateTab('home')">
+          <div class="w-10 h-10 rounded-xl bg-forja-neon flex items-center justify-center text-forja-black shadow-lg neon-glow">
+            <svg class="w-6 h-6 text-forja-black" viewBox="0 0 100 100" fill="currentColor">
+              <path d="M52 24 C52 24 64 36 67 48 C70 59 64 71 52 72 C41 73 34 65 37 53 C38 48 43 44 43 44 C43 44 38 49 36 57 C34 65 40 70 49 70 C57 70 63 60 59 49 C55 38 45 30 52 24 Z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-display font-black text-xl tracking-wider text-white">FORJA</span>
+              <span class="text-[9px] uppercase font-mono font-bold tracking-widest bg-forja-neon/15 text-forja-neon px-2 py-0.5 rounded-full border border-forja-neon/30">PRO</span>
+            </div>
+            <span class="text-[10px] text-zinc-400 font-mono tracking-tight -mt-0.5 block">CONSTRUA SUA EVOLUÇÃO</span>
+          </div>
+        </div>
+
+        <!-- STATUS, USER & LOGOUT -->
+        <div class="flex items-center gap-3">
+          <div onclick="navigateTab('profile')" class="cursor-pointer flex items-center gap-2 px-3 py-1.5 rounded-xl bg-forja-card border border-forja-border text-xs hover:border-forja-borderLight transition">
+            <span class="w-2 h-2 rounded-full bg-forja-neon" id="header-status-dot"></span>
+            <span class="font-mono text-[11px] text-zinc-300 max-w-[120px] sm:max-w-[200px] truncate" id="header-user-email">Carregando...</span>
+          </div>
+
+          <button onclick="handleLogout()" class="p-2 text-zinc-400 hover:text-rose-400 hover:bg-forja-card border border-transparent hover:border-forja-border rounded-xl transition" title="Sair da Conta">
+            <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
           </button>
         </div>
       </div>
+    </header>
 
-      <!-- Widget de Cronômetro de Descanso -->
-      <div id="restTimerWidget" class="hidden bg-slate-900 border border-brand-lime/40 rounded-2xl p-3 flex items-center justify-between shadow-lg glow-lime">
-        <div class="flex items-center gap-3">
-          <svg class="w-8 h-8 transform -rotate-90">
-            <circle cx="16" cy="16" r="14" stroke="#1e293b" stroke-width="3" fill="none" />
-            <circle id="timerProgressCircle" cx="16" cy="16" r="14" stroke="#a3e635" stroke-width="3" fill="none" stroke-dasharray="88" stroke-dashoffset="0" />
-          </svg>
-          <div>
-            <span class="text-[10px] font-mono text-slate-400 block">DESCANSO ATIVO</span>
-            <span id="restTimerSeconds" class="text-base font-mono font-extrabold text-white">60s</span>
-          </div>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <button type="button" onclick="addRestTime(30)" class="px-2 py-1 bg-slate-800 text-xs font-mono text-slate-300 rounded hover:text-white">+30s</button>
-          <button type="button" onclick="cancelRestTimer()" class="px-2 py-1 bg-red-950/40 text-xs font-mono text-red-400 rounded hover:bg-red-900/40">&times;</button>
-        </div>
+    <!-- CRONÔMETRO PERSISTENTE FLUTUANTE (AUTO-REST) -->
+    <div id="floating-rest-timer" class="fixed bottom-24 md:bottom-8 right-4 md:right-8 z-40 bg-forja-card/95 border border-forja-neon/60 rounded-2xl p-4 text-white backdrop-blur-xl shadow-2xl neon-glow flex items-center gap-4 transition-all duration-300 hidden">
+      <div class="relative w-12 h-12 flex items-center justify-center">
+        <svg class="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
+          <path class="text-zinc-800" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path id="timer-progress-ring" class="text-forja-neon transition-all duration-300" stroke-dasharray="100, 100" stroke-dashoffset="0" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        </svg>
+        <i class="fa-solid fa-stopwatch absolute text-forja-neon text-xs"></i>
       </div>
-
-      <!-- Lista Dinâmica de Exercícios -->
-      <div id="activeExercisesList" class="space-y-3"></div>
-
-      <button type="button" onclick="finishAndSaveWorkout()" class="w-full py-3.5 bg-brand-lime text-black font-mono font-extrabold text-xs uppercase rounded-xl hover:brightness-110 shadow-lg glow-lime">
-        🏁 Finalizar e Salvar Treino
-      </button>
-    </section>
-
-    <!-- ================= 4. TELA: EVOLUÇÃO / GRÁFICOS ================= -->
-    <section id="screen-progress" class="hidden space-y-4">
+      
       <div>
-        <h2 class="text-lg font-display font-extrabold text-white">Evolução de Cargas</h2>
-        <p class="text-xs text-slate-400">Rastreamento biomecânico de 1RM e Carga Máxima</p>
+        <div class="text-[10px] font-mono uppercase tracking-wider text-zinc-400 font-semibold flex items-center gap-1">
+          <span>DESCANSO</span>
+          <span class="text-forja-neon truncate max-w-[110px]" id="timer-exercise-name"></span>
+        </div>
+        <div id="timer-display" class="font-mono text-2xl font-black text-forja-neon leading-tight">01:30</div>
       </div>
 
-      <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
-        <div class="space-y-1">
-          <label class="text-[10px] font-mono uppercase text-slate-400">Selecione o Exercício</label>
-          <select id="progressExerciseSelect" onchange="updateProgressChart()" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs font-mono text-white focus:outline-none focus:border-brand-lime"></select>
-        </div>
+      <div class="flex items-center gap-1.5 ml-2 border-l border-forja-border pl-3">
+        <button onclick="adjustRestTimer(30)" class="px-2 py-1 bg-forja-dark hover:bg-zinc-800 text-zinc-300 border border-forja-border rounded text-xs font-mono font-bold" title="+30 segundos">+30s</button>
+        <button id="timer-pause-btn" onclick="togglePauseRestTimer()" class="w-8 h-8 flex items-center justify-center bg-forja-dark hover:bg-zinc-800 text-zinc-200 border border-forja-border rounded-lg text-xs" title="Pausar / Retomar">
+          <i class="fa-solid fa-pause"></i>
+        </button>
+        <button onclick="stopRestTimer()" class="w-8 h-8 flex items-center justify-center bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg text-xs" title="Encerrar descanso">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
 
-        <div class="flex items-center justify-between pt-1">
-          <span class="text-[10px] font-mono text-slate-400 uppercase">Métrica do Gráfico</span>
-          <div class="flex gap-1">
-            <button id="btnMetricMax" onclick="toggleMetricMode('maxWeight')" class="px-2.5 py-1 rounded bg-brand-lime text-black font-bold text-[10px] font-mono">Carga Máxima</button>
-            <button id="btnMetricRM" onclick="toggleMetricMode('estimated1RM')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white text-[10px] font-mono">1RM Estimado</button>
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 pt-6">
+
+      <!-- ABA 1: INÍCIO -->
+      <section id="view-home" class="space-y-6">
+        <div class="bg-gradient-to-r from-forja-card to-forja-dark border border-forja-border rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-2xl">
+          <div class="absolute -right-16 -top-16 w-64 h-64 bg-forja-neon/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="space-y-2">
+              <span class="text-xs font-mono text-forja-neon uppercase tracking-wider font-semibold">Painel Tático do Atleta</span>
+              <h2 class="text-2xl sm:text-3xl font-display font-black text-white">Construa sua força.</h2>
+              <p class="text-zinc-400 text-sm max-w-lg">Supere a última sessão. Cada repetição registrada é forjada com sobrecarga progressiva.</p>
+            </div>
+
+            <div id="home-next-routine-card" class="bg-forja-black/80 border border-forja-border rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 min-w-[300px]">
+              <div>
+                <span class="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block mb-1">Próxima Ficha Sugerida</span>
+                <h3 id="home-next-routine-title" class="font-bold text-white text-base">Nenhuma ficha salva</h3>
+                <p id="home-next-routine-details" class="text-xs text-zinc-400 font-mono mt-0.5">Crie sua primeira ficha</p>
+              </div>
+              <button id="home-start-next-btn" onclick="startRecommendedWorkout()" class="w-full sm:w-auto px-5 py-2.5 bg-forja-neon hover:bg-forja-neonHover text-black font-display font-extrabold text-xs tracking-wider rounded-xl transition shadow-lg shadow-forja-neon/20 flex items-center justify-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-play"></i> INICIAR AGORA
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="h-64 pt-2">
-          <canvas id="progressChart"></canvas>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================= 5. TELA: PERFIL & AVALIAÇÃO FÍSICA ================= -->
-    <section id="screen-profile" class="hidden space-y-5">
-      <div>
-        <h2 class="text-lg font-display font-extrabold text-white">Perfil & Avaliação Física</h2>
-        <p class="text-xs text-slate-400">Controle de composição corporal e histórico biométrico</p>
-      </div>
-
-      <div class="bg-[#111620] rounded-2xl p-4 tactical-border flex justify-between items-center">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-brand-lime font-mono font-bold text-sm">
-            ⚡
+        <div class="bg-forja-card border border-forja-border rounded-2xl p-5 shadow-lg">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-calendar-check text-forja-neon text-sm"></i>
+              <h3 class="font-bold text-white text-sm">Frequência Semanal</h3>
+            </div>
+            <span id="weekly-frequency-summary" class="text-xs font-mono text-zinc-400">0 treinos nos últimos 7 dias</span>
           </div>
+          <div id="weekly-heatmap" class="grid grid-cols-7 gap-2"></div>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div class="bg-forja-card border border-forja-border rounded-2xl p-4">
+            <span class="text-[11px] font-mono uppercase text-zinc-500 font-semibold block">Volume Semana</span>
+            <div class="mt-2 flex items-baseline gap-1.5">
+              <h4 id="stat-weekly-volume" class="font-mono text-xl sm:text-2xl font-bold text-white">0</h4>
+              <span class="text-xs text-zinc-400 font-mono">kg</span>
+            </div>
+            <span class="text-[10px] text-forja-neon mt-1 block font-mono">Total movimentado</span>
+          </div>
+
+          <div class="bg-forja-card border border-forja-border rounded-2xl p-4">
+            <span class="text-[11px] font-mono uppercase text-zinc-500 font-semibold block">Sessões Totais</span>
+            <div class="mt-2 flex items-baseline gap-1.5">
+              <h4 id="stat-total-workouts" class="font-mono text-xl sm:text-2xl font-bold text-white">0</h4>
+              <span class="text-xs text-zinc-400 font-mono">treinos</span>
+            </div>
+            <span class="text-[10px] text-zinc-400 mt-1 block font-mono">Histórico completo</span>
+          </div>
+
+          <div class="bg-forja-card border border-forja-border rounded-2xl p-4">
+            <span class="text-[11px] font-mono uppercase text-zinc-500 font-semibold block">Séries Concluídas</span>
+            <div class="mt-2 flex items-baseline gap-1.5">
+              <h4 id="stat-total-sets" class="font-mono text-xl sm:text-2xl font-bold text-white">0</h4>
+              <span class="text-xs text-zinc-400 font-mono">séries</span>
+            </div>
+            <span class="text-[10px] text-zinc-400 mt-1 block font-mono">Disciplina em execução</span>
+          </div>
+
+          <div class="bg-forja-card border border-forja-border rounded-2xl p-4">
+            <span class="text-[11px] font-mono uppercase text-zinc-500 font-semibold block">Exercícios no Banco</span>
+            <div class="mt-2 flex items-baseline gap-1.5">
+              <h4 id="stat-total-prs" class="font-mono text-xl sm:text-2xl font-bold text-forja-gold">0</h4>
+              <span class="text-xs text-zinc-400 font-mono">únicos</span>
+            </div>
+            <span class="text-[10px] text-amber-400 mt-1 block font-mono">Variedade de força</span>
+          </div>
+        </div>
+
+        <div class="bg-forja-card border border-forja-border rounded-2xl p-5 shadow-lg">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-white text-sm flex items-center gap-2">
+              <i class="fa-solid fa-clock-rotate-left text-forja-neon"></i> Treinos Recentes
+            </h3>
+            <button onclick="navigateTab('evolution')" class="text-xs font-mono text-forja-neon hover:underline">Ver tudo &rarr;</button>
+          </div>
+          <div id="home-recent-workouts-list" class="space-y-3"></div>
+        </div>
+      </section>
+
+      <!-- ABA 2: MINHAS FICHAS -->
+      <section id="view-routines" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p id="profileUserEmail" class="text-xs font-mono font-bold text-white">atleta@forja.app</p>
-            <span class="text-[10px] text-brand-lime font-mono">Sincronizado com Supabase</span>
+            <h2 class="text-xl sm:text-2xl font-display font-extrabold text-white flex items-center gap-2">
+              <i class="fa-solid fa-folder-closed text-forja-neon"></i> Fichas & Rotinas
+            </h2>
+            <p class="text-xs sm:text-sm text-zinc-400">Monte suas divisões de treino (A, B, C, D...) sincronizadas no banco.</p>
+          </div>
+
+          <button onclick="openRoutineModal()" class="px-4 py-2.5 bg-forja-neon hover:bg-forja-neonHover text-black font-display font-extrabold text-xs tracking-wider rounded-xl transition neon-glow flex items-center justify-center gap-2">
+            <i class="fa-solid fa-plus"></i> NOVA FICHA
+          </button>
+        </div>
+
+        <div id="routines-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </section>
+
+      <!-- ABA 3: TREINAR -->
+      <section id="view-workout" class="hidden space-y-6">
+        <div class="bg-forja-card border border-forja-border rounded-2xl p-4 sm:p-5 shadow-xl">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-forja-border">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="w-2.5 h-2.5 rounded-full bg-forja-neon animate-pulse"></span>
+                <span class="text-[10px] font-mono uppercase tracking-widest text-forja-neon font-bold">Sessão em Andamento</span>
+              </div>
+              <input type="text" id="active-session-name" placeholder="Nome do Treino (ex: Treino A - Peito)" class="bg-transparent text-lg sm:text-xl font-display font-black text-white focus:outline-none focus:border-b focus:border-forja-neon w-full">
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <select id="active-routine-selector" onchange="loadRoutineIntoActiveSession(this.value)" class="bg-forja-dark text-zinc-300 text-xs font-mono border border-forja-border rounded-xl px-3 py-2 focus:outline-none focus:ring-1 focus:ring-forja-neon">
+                <option value="">Carregar Ficha...</option>
+              </select>
+
+              <button onclick="saveActiveSessionAsTemplate()" class="px-3 py-2 bg-forja-dark hover:bg-zinc-800 text-zinc-300 border border-forja-border rounded-xl text-xs font-mono font-semibold transition" title="Salvar sessão atual como uma nova ficha">
+                <i class="fa-regular fa-bookmark"></i> Salvar Ficha
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-3 text-xs font-mono text-zinc-400">
+            <div>Data: <input type="date" id="active-session-date" class="bg-forja-dark text-zinc-200 border border-forja-border rounded px-2 py-0.5 text-xs"></div>
+            <div>Volume: <span id="active-live-volume" class="text-forja-neon font-bold">0 kg</span></div>
           </div>
         </div>
-        <button onclick="handleLogout()" class="px-3 py-1.5 bg-red-950/40 border border-red-800/40 text-red-400 font-mono text-[11px] rounded-lg hover:bg-red-900/30">
-          Sair
+
+        <div id="active-exercises-container" class="space-y-4"></div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-forja-border">
+          <button onclick="addExerciseToActiveWorkout()" class="w-full sm:w-auto px-4 py-3 rounded-xl border border-dashed border-forja-neon/50 text-forja-neon hover:bg-forja-neon/10 font-bold text-xs font-display tracking-wider flex items-center justify-center gap-2 transition">
+            <i class="fa-solid fa-plus-circle"></i> ADICIONAR EXERCÍCIO
+          </button>
+
+          <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <button onclick="cancelActiveWorkout()" class="px-4 py-3 rounded-xl text-zinc-500 hover:text-rose-400 text-xs font-mono font-bold transition">
+              Descartar
+            </button>
+            <button onclick="finishActiveWorkout()" class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-forja-neon to-lime-500 hover:from-forja-neonHover hover:to-lime-400 text-black font-display font-black text-xs tracking-wider rounded-xl transition neon-glow shadow-xl active:scale-95 flex items-center justify-center gap-2">
+              <i class="fa-solid fa-flag-checkered"></i> FINALIZAR TREINO
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 4: EVOLUÇÃO -->
+      <section id="view-evolution" class="hidden space-y-6">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-display font-extrabold text-white flex items-center gap-2">
+            <i class="fa-solid fa-chart-line text-forja-neon"></i> Evolução & Sobrecarga
+          </h2>
+          <p class="text-xs sm:text-sm text-zinc-400">Analise seu ganho de força, recordes pessoais (PRs) e histórico detalhado.</p>
+        </div>
+
+        <div class="bg-forja-card border border-forja-border rounded-2xl p-4 sm:p-6 shadow-xl">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-forja-border">
+            <div>
+              <h3 class="font-bold text-white text-base">Progressão por Exercício</h3>
+              <span class="text-xs text-zinc-400">Evolução registrada nas sessões</span>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <select id="evo-exercise-select" onchange="renderEvolutionChart()" class="bg-forja-dark text-zinc-200 text-xs font-mono border border-forja-border rounded-xl px-3 py-2 focus:outline-none focus:ring-1 focus:ring-forja-neon"></select>
+              <select id="evo-metric-select" onchange="renderEvolutionChart()" class="bg-forja-dark text-zinc-200 text-xs font-mono border border-forja-border rounded-xl px-3 py-2 focus:outline-none focus:ring-1 focus:ring-forja-neon">
+                <option value="maxWeight">Carga Máxima (kg)</option>
+                <option value="estimated1RM">1RM Estimado (kg)</option>
+                <option value="volume">Volume da Sessão (kg)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="w-full h-72 sm:h-80 relative mt-4">
+            <canvas id="evolutionChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-forja-card border border-forja-border rounded-2xl p-5 shadow-lg">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-white text-sm flex items-center gap-2">
+              <i class="fa-solid fa-trophy text-forja-gold"></i> Vitrine de Recordes (PRs)
+            </h3>
+            <span class="text-xs font-mono text-zinc-500">Estimativas 1RM & Cargas Absolutas</span>
+          </div>
+          <div id="prs-showcase-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+        </div>
+
+        <div class="bg-forja-card border border-forja-border rounded-2xl p-5 shadow-lg">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <h3 class="font-bold text-white text-sm flex items-center gap-2">
+              <i class="fa-solid fa-calendar-days text-forja-neon"></i> Histórico de Sessões
+            </h3>
+            <input type="text" id="history-search-input" oninput="renderHistorySection()" placeholder="Buscar treino ou exercício..." class="bg-forja-dark text-xs text-zinc-200 border border-forja-border rounded-xl px-3 py-2 w-full sm:w-60 focus:outline-none focus:ring-1 focus:ring-forja-neon">
+          </div>
+          <div id="history-sessions-accordion" class="space-y-3"></div>
+        </div>
+      </section>
+
+      <!-- ABA 5: PERFIL -->
+      <section id="view-profile" class="hidden space-y-6">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-display font-extrabold text-white flex items-center gap-2">
+            <i class="fa-solid fa-sliders text-forja-neon"></i> Perfil & Configurações
+          </h2>
+          <p class="text-xs sm:text-sm text-zinc-400">Informações da sua conta e integridade dos dados.</p>
+        </div>
+
+        <div class="bg-forja-card border border-forja-border rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-forja-neon flex items-center justify-center text-forja-black shadow-lg neon-glow">
+              <svg class="w-8 h-8 text-forja-black" viewBox="0 0 100 100" fill="currentColor">
+                <path d="M52 24 C52 24 64 36 67 48 C70 59 64 71 52 72 C41 73 34 65 37 53 C38 48 43 44 43 44 C43 44 38 49 36 57 C34 65 40 70 49 70 C57 70 63 60 59 49 C55 38 45 30 52 24 Z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-white text-base" id="profile-user-email-label">atleta@forja.app</h3>
+              <p class="text-xs text-zinc-400 font-mono mt-0.5" id="profile-user-mode-label">Conectado via Supabase Cloud</p>
+            </div>
+          </div>
+          <button onclick="handleLogout()" class="px-4 py-2 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Encerrar Sessão
+          </button>
+        </div>
+
+        <div class="bg-forja-card border border-forja-border rounded-2xl p-5 space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-forja-border">
+            <div>
+              <h4 class="font-bold text-white text-sm flex items-center gap-2">
+                <i class="fa-solid fa-cloud text-sky-400"></i> Banco de Dados na Nuvem
+              </h4>
+              <span class="text-xs text-zinc-400">Sincronização em tempo real das suas fichas e treinos.</span>
+            </div>
+            <span id="profile-cloud-badge" class="text-[10px] font-mono px-2.5 py-1 rounded-full bg-forja-neon/15 text-forja-neon border border-forja-neon/40">Sincronizado</span>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <button onclick="manualSyncUserData()" class="px-4 py-2 bg-sky-500/15 text-sky-400 border border-sky-500/30 hover:bg-sky-500/25 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2">
+              <i class="fa-solid fa-rotate"></i> Forçar Sincronização Agora
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-forja-card border border-forja-border rounded-2xl p-5 space-y-3">
+          <h4 class="font-bold text-white text-sm flex items-center gap-2">
+            <i class="fa-solid fa-database text-forja-neon"></i> Exportação e Backup
+          </h4>
+          <p class="text-xs text-zinc-400">Baixe uma cópia segura dos seus treinos em JSON ou restaure quando quiser.</p>
+          
+          <div class="flex flex-wrap items-center gap-3 pt-1">
+            <button onclick="exportDataJSON()" class="px-4 py-2.5 bg-forja-dark hover:bg-zinc-800 border border-forja-border text-zinc-200 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2">
+              <i class="fa-solid fa-download"></i> Baixar Backup JSON
+            </button>
+            <label class="px-4 py-2.5 bg-forja-dark hover:bg-zinc-800 border border-forja-border text-zinc-200 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2 cursor-pointer">
+              <i class="fa-solid fa-upload"></i> Importar Backup JSON
+              <input type="file" onchange="importDataJSON(event)" accept=".json" class="hidden">
+            </label>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- NAVEGAÇÃO INFERIOR DOCK -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-forja-dark/95 backdrop-blur-xl border-t border-forja-border">
+      <div class="max-w-md mx-auto px-4 h-16 flex items-center justify-around">
+        <button onclick="navigateTab('home')" id="tab-btn-home" class="flex flex-col items-center gap-1 text-forja-neon transition">
+          <i class="fa-solid fa-house text-lg"></i>
+          <span class="text-[10px] font-mono font-bold">Início</span>
+        </button>
+
+        <button onclick="navigateTab('routines')" id="tab-btn-routines" class="flex flex-col items-center gap-1 text-zinc-400 hover:text-zinc-200 transition">
+          <i class="fa-solid fa-layer-group text-lg"></i>
+          <span class="text-[10px] font-mono font-bold">Fichas</span>
+        </button>
+
+        <button onclick="navigateTab('workout')" id="tab-btn-workout" class="relative -top-2 flex flex-col items-center">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-forja-neon to-lime-400 flex items-center justify-center text-black font-black text-xl shadow-lg shadow-forja-neon/30 active:scale-95 transition">
+            <i class="fa-solid fa-dumbbell"></i>
+          </div>
+          <span class="text-[10px] font-mono font-bold text-forja-neon mt-0.5">Treinar</span>
+        </button>
+
+        <button onclick="navigateTab('evolution')" id="tab-btn-evolution" class="flex flex-col items-center gap-1 text-zinc-400 hover:text-zinc-200 transition">
+          <i class="fa-solid fa-chart-simple text-lg"></i>
+          <span class="text-[10px] font-mono font-bold">Evolução</span>
+        </button>
+
+        <button onclick="navigateTab('profile')" id="tab-btn-profile" class="flex flex-col items-center gap-1 text-zinc-400 hover:text-zinc-200 transition">
+          <i class="fa-solid fa-user-gear text-lg"></i>
+          <span class="text-[10px] font-mono font-bold">Perfil</span>
+        </button>
+      </div>
+    </nav>
+
+  </div>
+
+  <!-- MODAL: CRIAR / EDITAR FICHA -->
+  <div id="routine-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-forja-card border border-forja-border rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-5 border-b border-forja-border flex items-center justify-between">
+        <h3 class="font-display font-extrabold text-lg text-white flex items-center gap-2">
+          <i class="fa-solid fa-pen-ruler text-forja-neon"></i> Configurar Ficha de Treino
+        </h3>
+        <button onclick="closeRoutineModal()" class="text-zinc-400 hover:text-white p-1 text-base">
+          <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <!-- FORMULÁRIO DE NOVA AVALIAÇÃO FÍSICA -->
-      <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-4">
-        <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
-          <h3 class="text-xs font-mono uppercase text-brand-lime font-bold">Nova Avaliação Física</h3>
-          <span class="text-[10px] font-mono text-slate-500">Data: Hoje</span>
-        </div>
-
-        <!-- 1. Dados Gerais -->
-        <div class="space-y-2">
-          <span class="text-[10px] font-mono uppercase text-slate-400 block">1. Dados Gerais</span>
-          <div class="grid grid-cols-2 gap-2 font-mono text-xs">
-            <div>
-              <label class="block text-[10px] text-slate-500 mb-1">Peso (kg)</label>
-              <input type="number" step="0.1" id="evalPeso" placeholder="Ex: 78.5" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-brand-lime" />
-            </div>
-            <div>
-              <label class="block text-[10px] text-slate-500 mb-1">Altura (cm)</label>
-              <input type="number" id="evalAltura" placeholder="Ex: 175" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-brand-lime" />
-            </div>
+      <div class="p-5 overflow-y-auto space-y-4 flex-1">
+        <input type="hidden" id="modal-routine-id">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-mono text-zinc-400 mb-1">Nome da Ficha</label>
+            <input type="text" id="modal-routine-name" placeholder="Ex: Treino A - Peitoral & Tríceps" class="w-full bg-forja-dark border border-forja-border rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-forja-neon font-sans">
           </div>
-        </div>
-
-        <!-- 2. Circunferências Corporais -->
-        <div class="space-y-2">
-          <span class="text-[10px] font-mono uppercase text-slate-400 block">2. Circunferências Corporais (cm)</span>
-          <div class="grid grid-cols-2 gap-2 font-mono text-xs">
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Cintura</label><input type="number" step="0.5" id="evalCintura" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Abdômen</label><input type="number" step="0.5" id="evalAbdomen" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Quadril</label><input type="number" step="0.5" id="evalQuadril" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Peitoral</label><input type="number" step="0.5" id="evalPeitoral" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Braço Direito</label><input type="number" step="0.5" id="evalBracoDir" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Braço Esquerdo</label><input type="number" step="0.5" id="evalBracoEsq" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Coxa Direita</label><input type="number" step="0.5" id="evalCoxaDir" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Coxa Esquerda</label><input type="number" step="0.5" id="evalCoxaEsq" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Panturrilha Direita</label><input type="number" step="0.5" id="evalPantsDir" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Panturrilha Esquerda</label><input type="number" step="0.5" id="evalPantsEsq" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-          </div>
-        </div>
-
-        <!-- 3. Composição Corporal -->
-        <div class="space-y-2">
-          <span class="text-[10px] font-mono uppercase text-slate-400 block">3. Composição Corporal</span>
-          <div class="grid grid-cols-2 gap-2 font-mono text-xs">
-            <div>
-              <label class="block text-[10px] text-slate-500 mb-1">Gordura Corporal (%)</label>
-              <input type="number" step="0.1" id="evalGordura" placeholder="Ex: 15.5" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white" />
-            </div>
-            <div>
-              <label class="block text-[10px] text-slate-500 mb-1">Massa Muscular (kg)</label>
-              <input type="number" step="0.1" id="evalMassa" placeholder="Ex: 36" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white" />
-            </div>
-          </div>
-          <div class="pt-1">
-            <label class="block text-[10px] font-mono uppercase text-slate-400 mb-1">Método de Avaliação</label>
-            <select id="evalMetodo" class="w-full bg-slate-900 border border-slate-800 text-xs text-white rounded-lg p-2 focus:outline-none">
-              <option value="Bioimpedância">Bioimpedância</option>
-              <option value="Adipômetro (Dobras Cutâneas)">Adipômetro (Dobras Cutâneas)</option>
-              <option value="Outro método">Outro método</option>
+          <div>
+            <label class="block text-xs font-mono text-zinc-400 mb-1">Divisão</label>
+            <select id="modal-routine-division" class="w-full bg-forja-dark border border-forja-border rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-forja-neon font-mono">
+              <option value="A">Divisão A</option>
+              <option value="B">Divisão B</option>
+              <option value="C">Divisão C</option>
+              <option value="D">Divisão D</option>
+              <option value="E">Divisão E</option>
+              <option value="FULL">Full Body</option>
             </select>
           </div>
         </div>
 
-        <!-- 4. Observações -->
-        <div class="space-y-1">
-          <span class="text-[10px] font-mono uppercase text-slate-400 block">4. Observações</span>
-          <textarea id="evalObs" rows="2" placeholder="Descreva observações, metas ou pontos de atenção..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none"></textarea>
-        </div>
-
-        <button type="button" onclick="savePhysicalEvaluation()" class="w-full py-2.5 bg-brand-lime text-black font-mono font-bold text-xs uppercase rounded-xl hover:brightness-110 shadow-lg glow-lime">
-          Salvar Avaliação Física Completa
-        </button>
-      </div>
-
-      <!-- Histórico de Avaliações Salvas -->
-      <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-2">
-        <h3 class="text-xs font-mono uppercase text-slate-400">Histórico de Avaliações</h3>
-        <div id="evaluationsHistoryList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
-      </div>
-      <!-- BLOCO DE VÍNCULO COM O PROFESSOR -->
-<div id="teacherConnectionBox" class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
-  <div class="flex justify-between items-center">
-    <h3 class="text-xs font-mono uppercase text-slate-400">Meu Treinador / Personal</h3>
-    <span id="teacherStatusBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800">
-      Sem Treinador
-    </span>
-  </div>
-
-  <div id="connectTeacherForm" class="space-y-2">
-    <p class="text-[11px] text-slate-400">Insira o E-mail ou Código do teu professor para receberes fichas e avaliações personalizadas:</p>
-    <div class="flex gap-2 font-mono text-xs">
-      <input type="email" id="teacherCodeInput" placeholder="email.professor@forja.app" class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-lime" />
-      <button type="button" onclick="connectToTeacher()" class="px-4 py-2 bg-brand-lime text-black font-bold rounded-xl hover:brightness-110">
-        Vincular
-      </button>
-    </div>
-  </div>
-
-  <div id="connectedTeacherInfo" class="hidden text-xs font-mono text-brand-lime flex items-center justify-between">
-    <span id="connectedTeacherName">Vinculado a: prof@forja.app</span>
-    <button type="button" onclick="unlinkTeacher()" class="text-[10px] text-red-400 hover:underline">Desvincular</button>
-  </div>
-</div>
-    </section>
-
-  </main>
-
-  <!-- BARRA DE NAVEGAÇÃO INFERIOR -->
-  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-[#0a0d14]/95 backdrop-blur-lg border-t border-slate-800 px-4 py-2">
-    <div class="max-w-md mx-auto flex justify-between items-center font-mono text-[10px]">
-      <button id="tab-home" onclick="switchTab('home')" class="flex flex-col items-center gap-1 text-brand-lime">
-        <span class="text-base">🏠</span> Início
-      </button>
-      <button id="tab-templates" onclick="switchTab('templates')" class="flex flex-col items-center gap-1 text-slate-400">
-        <span class="text-base">📋</span> Fichas
-      </button>
-      <button id="tab-workout" onclick="switchTab('workout')" class="flex flex-col items-center gap-1 text-slate-400">
-        <span class="text-base">⚡</span> Treino
-      </button>
-      <button id="tab-progress" onclick="switchTab('progress')" class="flex flex-col items-center gap-1 text-slate-400">
-        <span class="text-base">📈</span> Evolução
-      </button>
-      <button id="tab-profile" onclick="switchTab('profile')" class="flex flex-col items-center gap-1 text-slate-400">
-        <span class="text-base">👤</span> Perfil
-      </button>
-    </div>
-  </nav>
-
-  <!-- MODAL: AUTENTICAÇÃO GATE -->
-  <div id="authGate" class="fixed inset-0 z-50 bg-[#0a0d14] flex items-center justify-center p-4">
-    <div class="w-full max-w-sm bg-[#111620] rounded-2xl p-6 tactical-border space-y-5">
-      <div class="text-center space-y-1">
-        <div class="w-16 h-16 rounded-2xl bg-brand-lime flex items-center justify-center mx-auto shadow-2xl glow-lime mb-2">
-  <svg class="w-10 h-10 text-[#111620]" viewBox="0 0 100 100" fill="currentColor">
-    <path d="M52 24 C52 24 64 36 67 48 C70 59 64 71 52 72 C41 73 34 65 37 53 C38 48 43 44 43 44 C43 44 38 49 36 57 C34 65 40 70 48 70 C57 70 63 60 59 49 C55 38 45 30 52 24 Z"/>
-  </svg>
-</div>
-        <h2 class="text-lg font-display font-black text-white uppercase tracking-wider pt-2">FORJA SYSTEM</h2>
-        <p class="text-xs text-slate-400">Acesse sua conta para sincronizar seus treinos</p>
-      </div>
-
-      <div class="flex bg-slate-900 p-1 rounded-xl">
-        <button id="btnTabLogin" onclick="switchAuthMode('login')" class="flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg bg-brand-lime text-black">LOGIN</button>
-        <button id="btnTabRegister" onclick="switchAuthMode('register')" class="flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg text-slate-400">CADASTRO</button>
-      </div>
-
-      <form onsubmit="handleAuthSubmit(event)" class="space-y-3 font-mono text-xs">
         <div>
-          <label class="block text-[10px] text-slate-400 uppercase mb-1">E-mail</label>
-          <input type="email" id="authEmail" required placeholder="seu@email.com" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-brand-lime" />
-        </div>
-        <div>
-          <label class="block text-[10px] text-slate-400 uppercase mb-1">Senha</label>
-          <input type="password" id="authPassword" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-brand-lime" />
+          <label class="block text-xs font-mono text-zinc-400 mb-1">Foco Muscular / Descrição</label>
+          <input type="text" id="modal-routine-focus" placeholder="Ex: Push / Ênfase em Peitoral Superior" class="w-full bg-forja-dark border border-forja-border rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-forja-neon font-sans">
         </div>
 
-        <!-- Seletor de Tipo de Conta no Cadastro -->
-        <div id="roleSelectionContainer" class="hidden space-y-1 mt-3">
-          <label class="block text-[10px] font-mono text-slate-400 uppercase">Tipo de Conta</label>
-          <div class="grid grid-cols-2 gap-2 font-mono text-xs">
-            <button type="button" id="btnRoleAluno" onclick="selectAuthRole('aluno')" class="py-2 px-3 rounded-lg border border-brand-lime bg-brand-lime/10 text-brand-lime font-bold transition-all">
-              🏋️ Sou Aluno
-            </button>
-            <button type="button" id="btnRoleProf" onclick="selectAuthRole('professor')" class="py-2 px-3 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 font-bold transition-all">
-              📋 Sou Professor
+        <div class="pt-2">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-mono uppercase text-zinc-400 font-bold">Exercícios da Ficha</span>
+            <button type="button" onclick="addExerciseRowToRoutineModal()" class="text-xs font-mono text-forja-neon hover:underline flex items-center gap-1 font-bold">
+              <i class="fa-solid fa-plus"></i> Adicionar Exercício
             </button>
           </div>
+          <div id="modal-exercises-list" class="space-y-2"></div>
         </div>
-
-        <button type="submit" id="authSubmitBtn" class="w-full py-3 bg-brand-lime text-black font-mono font-extrabold text-xs uppercase rounded-xl hover:brightness-110 glow-lime flex items-center justify-center gap-2">
-          <span id="authSpinner" class="hidden w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
-          <span id="authSubmitText">ACESSAR MINHA CONTA</span>
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL: ARSENAL DE EXERCÍCIOS -->
-  <div id="modalExerciseLibrary" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-[#111620] rounded-2xl p-4 tactical-border space-y-3 max-h-[85vh] flex flex-col">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-        <h3 class="text-sm font-display font-bold text-white uppercase">Arsenal de Exercícios</h3>
-        <button onclick="closeExerciseLibraryModal()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
-      </div>
-      
-      <input type="text" id="librarySearchInput" oninput="filterExerciseLibrary()" placeholder="Buscar por nome, músculo ou equipamento..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-brand-lime font-mono" />
-      
-      <div class="flex gap-1 overflow-x-auto pb-1 text-[10px] font-mono scrollbar-none">
-        <button onclick="filterByGroup('Todos')" class="px-2.5 py-1 bg-brand-lime text-black font-bold rounded-lg whitespace-nowrap">Todos</button>
-        <button onclick="filterByGroup('Peitoral')" class="px-2.5 py-1 bg-slate-900 text-slate-300 rounded-lg whitespace-nowrap hover:text-white">Peitoral</button>
-        <button onclick="filterByGroup('Costas')" class="px-2.5 py-1 bg-slate-900 text-slate-300 rounded-lg whitespace-nowrap hover:text-white">Costas</button>
-        <button onclick="filterByGroup('Quadríceps')" class="px-2.5 py-1 bg-slate-900 text-slate-300 rounded-lg whitespace-nowrap hover:text-white">Quadríceps</button>
-        <button onclick="filterByGroup('Cardio')" class="px-2.5 py-1 bg-slate-900 text-slate-300 rounded-lg whitespace-nowrap hover:text-white">Cardio</button>
       </div>
 
-      <div id="libraryListContainer" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
-    </div>
-  </div>
-
-  <!-- MODAL: DETALHES DO EXERCÍCIO -->
-  <div id="modalExerciseDetail" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="w-full max-w-sm bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
-      <div class="flex justify-between items-start">
-        <div>
-          <span id="detailGroupBadge" class="text-[9px] font-mono text-brand-lime uppercase font-bold">PEITORAL</span>
-          <h3 id="detailExerciseName" class="text-base font-display font-bold text-white">Supino Reto</h3>
-        </div>
-        <button onclick="closeExerciseDetailModal()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
-      </div>
-
-      <img id="detailExerciseImg" src="" alt="Postura" class="w-full h-40 rounded-xl object-cover bg-slate-950 border border-slate-800" />
-      
-      <div class="space-y-2 text-xs font-mono">
-        <div>
-          <span class="text-[10px] text-slate-500 block">EQUIPAMENTO & MÚSCULOS</span>
-          <p id="detailEquipment" class="text-slate-300"></p>
-          <p id="detailMuscles" class="text-brand-lime text-[11px]"></p>
-        </div>
-        <div>
-          <span class="text-[10px] text-slate-500 block">DICAS DE EXECUÇÃO</span>
-          <p id="detailTips" class="text-slate-400 text-[11px] leading-relaxed"></p>
-        </div>
+      <div class="p-4 border-t border-forja-border bg-forja-dark flex items-center justify-end gap-3">
+        <button onclick="closeRoutineModal()" class="px-4 py-2 text-zinc-400 hover:text-white text-xs font-mono font-bold">Cancelar</button>
+        <button onclick="saveRoutineFromModal()" class="px-5 py-2.5 bg-forja-neon hover:bg-forja-neonHover text-black font-display font-extrabold text-xs tracking-wider rounded-xl transition neon-glow">SALVAR FICHA</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: CRIAR / EDITAR FICHA -->
-  <div id="modalNewTemplate" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-[#111620] rounded-2xl p-4 tactical-border space-y-3 max-h-[90vh] flex flex-col">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-        <h3 id="tplModalTitle" class="text-sm font-display font-bold text-white uppercase">Criar Nova Ficha</h3>
-        <button onclick="closeCreateTemplateModal()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
-      </div>
+  <!-- ============================================================== -->
+  <!-- JAVASCRIPT: SUPABASE DIRETO NO CÓDIGO (PRODUÇÃO)                -->
+  <!-- ============================================================== -->
+  <script>
+    // ====================================================================
+    // CREDENCIAIS DO SUPABASE
+    // ====================================================================
+    const SUPABASE_URL = "https://pzygeoqjdyvtfpxuytvg.supabase.co"; 
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6eWdlb3FqZHl2dGZweHV5dHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNjczNzMsImV4cCI6MjEwODk0MzM3M30.lme2H9a6-QyI7Hf-7-tSIfr3DuvXMk03ZJoBnOemUYU";
+    // ====================================================================
 
-      <div class="space-y-2 font-mono text-xs">
-        <div class="grid grid-cols-3 gap-2">
-          <div class="col-span-2">
-            <label class="block text-[10px] text-slate-400 uppercase mb-1">Nome da Ficha</label>
-            <input type="text" id="tplNameInput" placeholder="Ex: Treino A - Peito e Tríceps" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-brand-lime" />
-          </div>
+    // --- BANCO DE EXERCÍCIOS BASE SUGERIDOS ---
+    const STANDARD_EXERCISES = [
+      { name: "Supino Reto com Barra", group: "Peito", rest: 90 },
+      { name: "Supino Inclinado com Halteres", group: "Peito", rest: 90 },
+      { name: "Crucifixo na Polia", group: "Peito", rest: 60 },
+      { name: "Puxada Frontal", group: "Costas", rest: 90 },
+      { name: "Remada Curvada com Barra", group: "Costas", rest: 90 },
+      { name: "Remada Baixa Triângulo", group: "Costas", rest: 60 },
+      { name: "Levantamento Terra", group: "Costas", rest: 120 },
+      { name: "Agachamento Livre", group: "Pernas", rest: 120 },
+      { name: "Leg Press 45°", group: "Pernas", rest: 90 },
+      { name: "Cadeira Extensora", group: "Pernas", rest: 60 },
+      { name: "Mesa Flexora", group: "Pernas", rest: 60 },
+      { name: "Elevação Pélvica", group: "Pernas", rest: 90 },
+      { name: "Desenvolvimento com Halteres", group: "Ombros", rest: 90 },
+      { name: "Elevação Lateral na Polia", group: "Ombros", rest: 60 },
+      { name: "Rosca Direta Barra W", group: "Braços", rest: 60 },
+      { name: "Rosca Martelo", group: "Braços", rest: 60 },
+      { name: "Tríceps Corda no Cross", group: "Braços", rest: 60 },
+      { name: "Tríceps Testa com Barra", group: "Braços", rest: 60 },
+      { name: "Abdominal na Polia Alta", group: "Core", rest: 45 },
+      { name: "Prancha Isométrica", group: "Core", rest: 45 }
+    ];
+
+    // --- ESTADO GLOBAL ---
+    let state = {
+      user: null,
+      workouts: [],
+      routines: [],
+      supabase: null,
+      chartInstance: null
+    };
+
+    let authMode = 'login';
+    let timerInterval = null;
+    let timerTotal = 90;
+    let timerRemaining = 90;
+    let isTimerPaused = false;
+    let activeExerciseCounter = 0;
+
+    // --- INICIALIZAÇÃO ---
+    window.addEventListener('DOMContentLoaded', async () => {
+      initSupabaseClient();
+      await checkAuthSession();
+    });
+
+    function initSupabaseClient() {
+      const url = (SUPABASE_URL && !SUPABASE_URL.includes("SEU-PROJETO")) 
+        ? SUPABASE_URL 
+        : (localStorage.getItem('forja_supabase_url') || '');
+        
+      const key = (SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes("sua-chave-anon")) 
+        ? SUPABASE_ANON_KEY 
+        : (localStorage.getItem('forja_supabase_key') || '');
+
+      if (url && key && typeof supabase !== 'undefined') {
+        try {
+          state.supabase = supabase.createClient(url, key);
+        } catch (e) {
+          console.error("Falha ao inicializar o Supabase:", e);
+        }
+      }
+    }
+
+    async function checkAuthSession() {
+      if (state.supabase) {
+        try {
+          const { data: { session }, error } = await state.supabase.auth.getSession();
+          if (session && session.user) {
+            setupAuthenticatedUser(session.user);
+            return;
+          }
+        } catch (e) {
+          console.warn("Nenhuma sessão ativa:", e);
+        }
+      }
+      showAuthScreen();
+    }
+
+    function showAuthScreen() {
+      document.getElementById('auth-screen').classList.remove('hidden');
+      document.getElementById('main-app').classList.add('hidden');
+    }
+
+    function hideAuthScreen() {
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('main-app').classList.remove('hidden');
+    }
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      const loginBtn = document.getElementById('auth-mode-login');
+      const signupBtn = document.getElementById('auth-mode-signup');
+      const submitText = document.getElementById('auth-submit-text');
+
+      if (mode === 'login') {
+        loginBtn.className = "py-2.5 text-xs font-mono font-bold rounded-lg transition bg-forja-neon text-black";
+        signupBtn.className = "py-2.5 text-xs font-mono font-bold rounded-lg transition text-zinc-400 hover:text-white";
+        submitText.innerText = "ACESSAR MINHA CONTA";
+      } else {
+        signupBtn.className = "py-2.5 text-xs font-mono font-bold rounded-lg transition bg-forja-neon text-black";
+        loginBtn.className = "py-2.5 text-xs font-mono font-bold rounded-lg transition text-zinc-400 hover:text-white";
+        submitText.innerText = "CRIAR NOVA CONTA";
+      }
+    }
+
+    async function handleAuthSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value.trim();
+
+      if (!state.supabase) {
+        showToast("Insira as credenciais do Supabase no código do app.", "error");
+        return;
+      }
+
+      const submitBtn = document.getElementById('auth-submit-btn');
+      submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-70');
+
+      try {
+        if (authMode === 'login') {
+          const { data, error } = await state.supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          showToast("Acesso autorizado! Carregando dados...", "success");
+          setupAuthenticatedUser(data.user);
+        } else {
+          const { data, error } = await state.supabase.auth.signUp({ email, password });
+          if (error) throw error;
+          
+          if (data.session) {
+            showToast("Conta criada com sucesso!", "success");
+            setupAuthenticatedUser(data.user);
+          } else {
+            showToast("Conta criada! Caso necessário, confirme no seu e-mail.", "info");
+          }
+        }
+      } catch (err) {
+        showToast(err.message || "Erro na autenticação.", "error");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-70');
+      }
+    }
+
+    async function setupAuthenticatedUser(user) {
+      state.user = user;
+      document.getElementById('header-user-email').innerText = user.email;
+      document.getElementById('profile-user-email-label').innerText = user.email;
+      document.getElementById('profile-user-mode-label').innerText = `ID: ${user.id.substring(0, 8)}... (Nuvem Ativa)`;
+
+      hideAuthScreen();
+      await fetchUserDataFromSupabase();
+      renderAllScreens();
+    }
+
+    async function handleLogout() {
+      if (state.supabase) {
+        await state.supabase.auth.signOut();
+      }
+      state.user = null;
+      state.workouts = [];
+      state.routines = [];
+      showToast("Sessão finalizada com sucesso.", "info");
+      showAuthScreen();
+    }
+
+    // --- SINCRONIZAÇÃO SUPABASE (RLS PROTEGIDO) ---
+    async function fetchUserDataFromSupabase() {
+      if (!state.supabase || !state.user) return;
+
+      try {
+        const { data: workoutsData, error: wError } = await state.supabase
+          .from('workouts')
+          .select('*')
+          .order('date', { ascending: false });
+
+        if (wError) throw wError;
+        state.workouts = workoutsData || [];
+
+        const { data: templatesData, error: tError } = await state.supabase
+          .from('templates')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (tError) throw tError;
+
+        if (!templatesData || templatesData.length === 0) {
+          await seedDefaultRoutinesForNewUser();
+        } else {
+          state.routines = templatesData.map(t => ({
+            id: t.id,
+            division: t.division || 'A',
+            name: t.title || t.name,
+            focus: t.notes || t.focus || '',
+            exercises: t.exercises_config || t.exercises || []
+          }));
+        }
+
+        document.getElementById('profile-cloud-badge').innerText = "Sincronizado";
+        document.getElementById('profile-cloud-badge').className = "text-[10px] font-mono px-2.5 py-1 rounded-full bg-forja-neon/15 text-forja-neon border border-forja-neon/40";
+      } catch (err) {
+        console.error("Erro na sincronização:", err);
+        showToast("Erro ao sincronizar com banco: " + err.message, "error");
+        document.getElementById('profile-cloud-badge').innerText = "Falha de Conexão";
+        document.getElementById('profile-cloud-badge').className = "text-[10px] font-mono px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/40";
+      }
+    }
+
+    async function seedDefaultRoutinesForNewUser() {
+      const defaultA = {
+        title: "Treino A - Peitoral & Tríceps",
+        division: "A",
+        notes: "Push / Foco Peitoral",
+        exercises_config: [
+          { name: "Supino Reto com Barra", group: "Peito", setsCount: 4, rest: 90 },
+          { name: "Supino Inclinado com Halteres", group: "Peito", setsCount: 3, rest: 90 },
+          { name: "Crucifixo na Polia", group: "Peito", setsCount: 3, rest: 60 },
+          { name: "Desenvolvimento com Halteres", group: "Ombros", setsCount: 3, rest: 90 },
+          { name: "Tríceps Corda no Cross", group: "Braços", setsCount: 4, rest: 60 }
+        ]
+      };
+
+      const defaultB = {
+        title: "Treino B - Costas & Bíceps",
+        division: "B",
+        notes: "Pull / Foco Dorsal",
+        exercises_config: [
+          { name: "Puxada Frontal", group: "Costas", setsCount: 4, rest: 90 },
+          { name: "Remada Curvada com Barra", group: "Costas", setsCount: 4, rest: 90 },
+          { name: "Remada Baixa Triângulo", group: "Costas", setsCount: 3, rest: 60 },
+          { name: "Elevação Lateral na Polia", group: "Ombros", setsCount: 4, rest: 60 },
+          { name: "Rosca Direta Barra W", group: "Braços", setsCount: 3, rest: 60 }
+        ]
+      };
+
+      if (state.supabase && state.user) {
+        await state.supabase.from('templates').insert([
+          { ...defaultA, user_id: state.user.id },
+          { ...defaultB, user_id: state.user.id }
+        ]);
+
+        const { data } = await state.supabase.from('templates').select('*');
+        state.routines = (data || []).map(t => ({
+          id: t.id,
+          division: t.division,
+          name: t.title,
+          focus: t.notes,
+          exercises: t.exercises_config
+        }));
+      }
+    }
+
+    async function manualSyncUserData() {
+      showToast("Atualizando dados com a nuvem...", "info");
+      await fetchUserDataFromSupabase();
+      renderAllScreens();
+      showToast("Dados atualizados com sucesso!", "success");
+    }
+
+    // --- RENDERIZAÇÃO GERAL ---
+    function renderAllScreens() {
+      renderHomeScreen();
+      renderRoutinesGrid();
+      refreshRoutineDropdown();
+      populateEvolutionSelects();
+      renderEvolutionChart();
+      renderPRsShowcase();
+      renderHistorySection();
+    }
+
+    function navigateTab(tabKey) {
+      const tabs = ['home', 'routines', 'workout', 'evolution', 'profile'];
+      
+      tabs.forEach(t => {
+        const viewEl = document.getElementById(`view-${t}`);
+        const btnEl = document.getElementById(`tab-btn-${t}`);
+        
+        if (t === tabKey) {
+          viewEl.classList.remove('hidden');
+          if (btnEl && t !== 'workout') {
+            btnEl.classList.remove('text-zinc-400');
+            btnEl.classList.add('text-forja-neon');
+          }
+        } else {
+          viewEl.classList.add('hidden');
+          if (btnEl && t !== 'workout') {
+            btnEl.classList.remove('text-forja-neon');
+            btnEl.classList.add('text-zinc-400');
+          }
+        }
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (tabKey === 'home') renderHomeScreen();
+      if (tabKey === 'routines') renderRoutinesGrid();
+      if (tabKey === 'evolution') {
+        populateEvolutionSelects();
+        renderEvolutionChart();
+        renderPRsShowcase();
+        renderHistorySection();
+      }
+    }
+
+    function calculate1RM(weight, reps) {
+      if (!weight || !reps || reps <= 0) return 0;
+      if (reps === 1) return weight;
+      return Math.round(weight / (1.0278 - (0.0278 * reps)));
+    }
+
+    function getLastExercisePerformance(exerciseName) {
+      for (const sess of state.workouts) {
+        const found = sess.exercises.find(e => e.name.toLowerCase() === exerciseName.toLowerCase());
+        if (found && found.sets && found.sets.length > 0) {
+          const validSet = [...found.sets].reverse().find(s => s.completed && s.weight > 0);
+          if (validSet) {
+            return { weight: validSet.weight, reps: validSet.reps, date: sess.date };
+          }
+        }
+      }
+      return null;
+    }
+
+    function getExerciseHistoricalPR(exerciseName) {
+      let max1RM = 0;
+      let maxSet = null;
+
+      state.workouts.forEach(s => {
+        const ex = s.exercises.find(e => e.name.toLowerCase() === exerciseName.toLowerCase());
+        if (ex) {
+          ex.sets.forEach(st => {
+            if (st.completed && st.weight > 0) {
+              const current1RM = calculate1RM(st.weight, st.reps);
+              if (current1RM > max1RM) {
+                max1RM = current1RM;
+                maxSet = { weight: st.weight, reps: st.reps, date: s.date, oneRM: current1RM };
+              }
+            }
+          });
+        }
+      });
+
+      return maxSet;
+    }
+
+    // --- ABA 1: INÍCIO ---
+    function renderHomeScreen() {
+      renderWeeklyHeatmap();
+
+      const nextRoutine = state.routines[0] || null;
+      if (nextRoutine) {
+        document.getElementById('home-next-routine-title').innerText = nextRoutine.name;
+        document.getElementById('home-next-routine-details').innerText = `${nextRoutine.exercises.length} Exercícios • Divisão ${nextRoutine.division}`;
+      } else {
+        document.getElementById('home-next-routine-title').innerText = "Nenhuma ficha criada";
+        document.getElementById('home-next-routine-details').innerText = "Acesse a aba Fichas para começar";
+      }
+
+      let weeklyVolume = 0;
+      let totalSets = 0;
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+      state.workouts.forEach(w => {
+        const wDate = new Date(w.date + "T00:00:00");
+        const isThisWeek = wDate >= oneWeekAgo;
+
+        w.exercises.forEach(ex => {
+          ex.sets.forEach(st => {
+            if (st.completed) {
+              totalSets++;
+              const vol = (st.weight || 0) * (st.reps || 0);
+              if (isThisWeek) weeklyVolume += vol;
+            }
+          });
+        });
+      });
+
+      document.getElementById('stat-weekly-volume').innerText = weeklyVolume.toLocaleString();
+      document.getElementById('stat-total-workouts').innerText = state.workouts.length;
+      document.getElementById('stat-total-sets').innerText = totalSets;
+      document.getElementById('stat-total-prs').innerText = getAllUniqueExercises().length;
+
+      const recentContainer = document.getElementById('home-recent-workouts-list');
+      recentContainer.innerHTML = '';
+
+      const recentThree = [...state.workouts].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
+      if (recentThree.length === 0) {
+        recentContainer.innerHTML = `<p class="text-xs text-zinc-500 font-mono py-2">Nenhum treino concluído ainda. Inicie sua primeira sessão!</p>`;
+        return;
+      }
+
+      recentThree.forEach(s => {
+        let vol = 0;
+        s.exercises.forEach(e => e.sets.forEach(st => vol += ((st.weight || 0) * (st.reps || 0))));
+        const card = document.createElement('div');
+        card.className = "flex items-center justify-between p-3.5 bg-forja-dark border border-forja-border rounded-xl";
+        card.innerHTML = `
           <div>
-            <label class="block text-[10px] text-slate-400 uppercase mb-1">Divisão</label>
-            <input type="text" id="tplDivisionInput" placeholder="A" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white text-center focus:outline-none focus:border-brand-lime" />
+            <h4 class="font-bold text-white text-xs sm:text-sm">${s.name}</h4>
+            <span class="text-[10px] font-mono text-zinc-400">${formatDateBR(s.date)} • ${s.exercises.length} exercícios</span>
           </div>
+          <div class="text-right">
+            <span class="text-xs font-mono font-bold text-forja-neon">${vol.toLocaleString()} kg</span>
+            <span class="block text-[9px] font-mono text-zinc-500 uppercase">Volume</span>
+          </div>
+        `;
+        recentContainer.appendChild(card);
+      });
+    }
+
+    function renderWeeklyHeatmap() {
+      const container = document.getElementById('weekly-heatmap');
+      container.innerHTML = '';
+      const daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      const today = new Date();
+      let trainedCount = 0;
+
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(today.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const dayName = daysOfWeek[d.getDay()];
+
+        const hasTrained = state.workouts.some(w => w.date === dateStr);
+        if (hasTrained) trainedCount++;
+
+        const box = document.createElement('div');
+        box.className = `flex flex-col items-center justify-center p-2 rounded-xl border text-center transition ${
+          hasTrained ? 'bg-forja-neon/15 border-forja-neon/50 text-forja-neon font-bold' : 'bg-forja-dark border-forja-border text-zinc-500'
+        }`;
+        box.innerHTML = `
+          <span class="text-[10px] font-mono uppercase">${dayName}</span>
+          <span class="text-xs font-mono mt-0.5">${d.getDate()}</span>
+          <i class="fa-solid fa-${hasTrained ? 'circle-check' : 'minus'} text-[10px] mt-1"></i>
+        `;
+        container.appendChild(box);
+      }
+
+      document.getElementById('weekly-frequency-summary').innerText = `${trainedCount} treinos nos últimos 7 dias`;
+    }
+
+    function startRecommendedWorkout() {
+      if (state.routines.length > 0) {
+        startWorkoutFromRoutine(state.routines[0].id);
+      } else {
+        initActiveSession("Treino Livre");
+        addExerciseToActiveWorkout("Supino Reto com Barra");
+        navigateTab('workout');
+      }
+    }
+
+    // --- ABA 2: FICHAS ---
+    function renderRoutinesGrid() {
+      const grid = document.getElementById('routines-grid');
+      grid.innerHTML = '';
+
+      if (state.routines.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full bg-forja-card border border-forja-border rounded-2xl p-8 text-center text-zinc-400">
+            <i class="fa-regular fa-folder-open text-3xl mb-3 text-zinc-600"></i>
+            <p class="font-mono text-sm">Nenhuma ficha criada. Clique no botão acima para montar seu treino.</p>
+          </div>
+        `;
+        return;
+      }
+
+      state.routines.forEach(rt => {
+        const card = document.createElement('div');
+        card.className = "bg-forja-card border border-forja-border rounded-2xl p-5 flex flex-col justify-between hover:border-forja-borderLight transition shadow-lg";
+        card.innerHTML = `
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <div>
+                <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-forja-neon/15 text-forja-neon border border-forja-neon/30 font-bold">Divisão ${rt.division}</span>
+                <h3 class="font-display font-bold text-white text-base mt-2">${rt.name}</h3>
+                <span class="text-xs text-zinc-400 font-mono">${rt.focus || 'Geral'}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <button onclick="editRoutine('${rt.id}')" class="text-zinc-500 hover:text-forja-neon p-1.5 transition" title="Editar Ficha">
+                  <i class="fa-solid fa-pen text-xs"></i>
+                </button>
+                <button onclick="deleteRoutine('${rt.id}')" class="text-zinc-500 hover:text-rose-400 p-1.5 transition" title="Excluir Ficha">
+                  <i class="fa-regular fa-trash-can text-xs"></i>
+                </button>
+              </div>
+            </div>
+
+            <ul class="text-xs text-zinc-300 space-y-1.5 my-4 border-t border-forja-border pt-3">
+              ${rt.exercises.map(e => `
+                <li class="flex items-center justify-between text-zinc-400">
+                  <span class="truncate pr-2 font-mono text-[11px]"><i class="fa-solid fa-dumbbell text-zinc-600 text-[10px] mr-1.5"></i>${e.name}</span>
+                  <span class="font-mono text-[11px] text-zinc-300">${e.setsCount || 3}x • ${e.rest || 60}s</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+
+          <button onclick="startWorkoutFromRoutine('${rt.id}')" class="w-full py-2.5 bg-forja-neon/15 hover:bg-forja-neon text-forja-neon hover:text-black font-display font-extrabold text-xs tracking-wider rounded-xl border border-forja-neon/30 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-play"></i> INICIAR TREINO
+          </button>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function refreshRoutineDropdown() {
+      const select = document.getElementById('active-routine-selector');
+      if (!select) return;
+      select.innerHTML = '<option value="">Carregar Ficha...</option>';
+      state.routines.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.id;
+        opt.innerText = `${r.division} - ${r.name}`;
+        select.appendChild(opt);
+      });
+    }
+
+    function openRoutineModal(routineData = null) {
+      document.getElementById('modal-routine-id').value = routineData ? routineData.id : '';
+      document.getElementById('modal-routine-name').value = routineData ? routineData.name : '';
+      document.getElementById('modal-routine-division').value = routineData ? routineData.division : 'A';
+      document.getElementById('modal-routine-focus').value = routineData ? routineData.focus : '';
+
+      const list = document.getElementById('modal-exercises-list');
+      list.innerHTML = '';
+
+      if (routineData && routineData.exercises.length > 0) {
+        routineData.exercises.forEach(ex => addExerciseRowToRoutineModal(ex.name, ex.setsCount, ex.rest));
+      } else {
+        addExerciseRowToRoutineModal("Supino Reto com Barra", 4, 90);
+        addExerciseRowToRoutineModal("Crucifixo na Polia", 3, 60);
+      }
+
+      document.getElementById('routine-modal').classList.remove('hidden');
+    }
+
+    function closeRoutineModal() {
+      document.getElementById('routine-modal').classList.add('hidden');
+    }
+
+    function addExerciseRowToRoutineModal(defaultName = '', defaultSets = 3, defaultRest = 60) {
+      const list = document.getElementById('modal-exercises-list');
+      const row = document.createElement('div');
+      row.className = "flex items-center gap-2 bg-forja-dark p-2.5 rounded-xl border border-forja-border";
+
+      let options = STANDARD_EXERCISES.map(e => `<option value="${e.name}">${e.name}</option>`).join('');
+
+      row.innerHTML = `
+        <input type="text" list="modal-predefined-list" value="${defaultName}" placeholder="Exercício..." class="modal-row-name bg-forja-card text-white text-xs font-mono rounded-lg px-2.5 py-1.5 flex-1 border border-forja-border focus:outline-none focus:ring-1 focus:ring-forja-neon">
+        <datalist id="modal-predefined-list">${options}</datalist>
+        <input type="number" min="1" max="10" value="${defaultSets}" class="modal-row-sets bg-forja-card text-white text-xs font-mono rounded-lg px-2 py-1.5 w-14 border border-forja-border text-center" title="Séries">
+        <select class="modal-row-rest bg-forja-card text-white text-xs font-mono rounded-lg px-2 py-1.5 border border-forja-border" title="Descanso">
+          <option value="45" ${defaultRest == 45 ? 'selected':''}>45s</option>
+          <option value="60" ${defaultRest == 60 ? 'selected':''}>60s</option>
+          <option value="90" ${defaultRest == 90 ? 'selected':''}>90s</option>
+          <option value="120" ${defaultRest == 120 ? 'selected':''}>120s</option>
+        </select>
+        <button type="button" onclick="this.closest('div').remove()" class="text-zinc-500 hover:text-rose-400 p-1">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      `;
+      list.appendChild(row);
+    }
+
+    async function saveRoutineFromModal() {
+      const id = document.getElementById('modal-routine-id').value;
+      const name = document.getElementById('modal-routine-name').value.trim();
+      const division = document.getElementById('modal-routine-division').value;
+      const focus = document.getElementById('modal-routine-focus').value.trim();
+
+      if (!name) {
+        showToast("Dê um nome para a sua ficha.", "error");
+        return;
+      }
+
+      const rows = document.querySelectorAll('#modal-exercises-list > div');
+      const exercises = [];
+
+      rows.forEach(r => {
+        const exName = r.querySelector('.modal-row-name').value.trim();
+        const setsCount = parseInt(r.querySelector('.modal-row-sets').value, 10) || 3;
+        const rest = parseInt(r.querySelector('.modal-row-rest').value, 10) || 60;
+        if (exName) {
+          const matched = STANDARD_EXERCISES.find(e => e.name.toLowerCase() === exName.toLowerCase());
+          exercises.push({
+            name: exName,
+            group: matched ? matched.group : "Outro",
+            setsCount,
+            rest
+          });
+        }
+      });
+
+      if (exercises.length === 0) {
+        showToast("Adicione pelo menos um exercício.", "error");
+        return;
+      }
+
+      if (state.supabase && state.user) {
+        try {
+          const payload = {
+            title: name,
+            division: division,
+            notes: focus,
+            exercises_config: exercises,
+            user_id: state.user.id
+          };
+
+          if (id) {
+            await state.supabase.from('templates').update(payload).eq('id', id);
+          } else {
+            await state.supabase.from('templates').insert([payload]);
+          }
+
+          await fetchUserDataFromSupabase();
+        } catch (err) {
+          showToast("Erro ao salvar no banco: " + err.message, "error");
+          return;
+        }
+      }
+
+      renderRoutinesGrid();
+      refreshRoutineDropdown();
+      closeRoutineModal();
+      showToast("Ficha salva com sucesso!", "success");
+    }
+
+    function editRoutine(id) {
+      const routine = state.routines.find(r => r.id === id);
+      if (routine) openRoutineModal(routine);
+    }
+
+    async function deleteRoutine(id) {
+      if (!confirm("Excluir esta ficha de treino?")) return;
+
+      if (state.supabase && state.user) {
+        try {
+          await state.supabase.from('templates').delete().eq('id', id);
+          await fetchUserDataFromSupabase();
+        } catch (err) {
+          showToast("Erro ao excluir: " + err.message, "error");
+        }
+      }
+
+      renderRoutinesGrid();
+      refreshRoutineDropdown();
+      showToast("Ficha removida.", "info");
+    }
+
+    // --- ABA 3: TREINAR ---
+    function startWorkoutFromRoutine(routineId) {
+      const routine = state.routines.find(r => r.id === routineId);
+      if (!routine) return;
+
+      initActiveSession(routine.name);
+      routine.exercises.forEach(ex => addExerciseToActiveWorkout(ex.name, ex.setsCount, ex.rest));
+      navigateTab('workout');
+      showToast(`Ficha "${routine.name}" carregada!`, "success");
+    }
+
+    function loadRoutineIntoActiveSession(routineId) {
+      if (!routineId) return;
+      startWorkoutFromRoutine(routineId);
+    }
+
+    function initActiveSession(name = "Novo Treino") {
+      document.getElementById('active-session-name').value = name;
+      document.getElementById('active-session-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('active-exercises-container').innerHTML = '';
+      updateActiveLiveVolume();
+    }
+
+    function addExerciseToActiveWorkout(defaultName = '', setsCount = 3, restSeconds = 60) {
+      activeExerciseCounter++;
+      const id = `act-ex-${activeExerciseCounter}`;
+      const container = document.getElementById('active-exercises-container');
+
+      const card = document.createElement('div');
+      card.id = id;
+      card.className = "bg-forja-card border border-forja-border rounded-2xl p-4 sm:p-5 transition hover:border-forja-borderLight shadow-lg";
+
+      const ghost = defaultName ? getLastExercisePerformance(defaultName) : null;
+      const ghostText = ghost ? `Último: ${ghost.weight} kg × ${ghost.reps} reps` : 'Sem histórico prévio';
+
+      const matchedEx = STANDARD_EXERCISES.find(e => e.name.toLowerCase() === defaultName.toLowerCase());
+      const group = matchedEx ? matchedEx.group : 'Geral';
+      const rest = restSeconds || (matchedEx ? matchedEx.rest : 60);
+
+      let options = STANDARD_EXERCISES.map(e => `<option value="${e.name}">${e.name} (${e.group})</option>`).join('');
+
+      card.innerHTML = `
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-forja-border mb-3">
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <input type="text" list="act-ex-list-${id}" value="${defaultName}" placeholder="Nome do Exercício..." onchange="onActiveExerciseNameChange('${id}')" class="act-name-input bg-transparent font-display font-bold text-white text-base focus:outline-none focus:border-b focus:border-forja-neon w-full sm:w-80">
+              <datalist id="act-ex-list-${id}">${options}</datalist>
+              <span class="act-group-badge text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-forja-dark text-zinc-400 border border-forja-border font-bold">${group}</span>
+            </div>
+            <div class="flex items-center gap-3 mt-1">
+              <span class="act-ghost-label text-[11px] font-mono text-zinc-500"><i class="fa-solid fa-ghost mr-1 text-[10px]"></i>${ghostText}</span>
+              <span class="text-[11px] font-mono text-forja-neon"><i class="fa-solid fa-stopwatch mr-1 text-[10px]"></i>Descanso: <span class="act-rest-val font-bold">${rest}</span>s</span>
+            </div>
+          </div>
+          <button type="button" onclick="this.closest('#${id}').remove(); updateActiveLiveVolume();" class="text-zinc-500 hover:text-rose-400 p-1.5 transition self-end sm:self-center" title="Remover Exercício">
+            <i class="fa-regular fa-trash-can text-sm"></i>
+          </button>
         </div>
 
-        <div class="flex justify-between items-center pt-2">
-          <span class="text-[10px] uppercase text-slate-400">Exercícios da Ficha</span>
-          <div class="flex gap-1">
-            <button type="button" onclick="openExerciseLibraryModal('template')" class="px-2 py-1 bg-slate-800 text-brand-lime text-[10px] rounded hover:bg-slate-700">+ Arsenal</button>
-            <button type="button" onclick="addTplExerciseRow()" class="px-2 py-1 bg-slate-800 text-white text-[10px] rounded hover:bg-slate-700">+ Linha</button>
-          </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs font-mono text-zinc-300">
+            <thead>
+              <tr class="text-zinc-500 border-b border-forja-border/60 text-[10px] uppercase">
+                <th class="py-2 px-2 w-10 text-center">SET</th>
+                <th class="py-2 px-2">CARGA (KG)</th>
+                <th class="py-2 px-2">REPS</th>
+                <th class="py-2 px-2 text-center">CHECK / AUTO-REST</th>
+                <th class="py-2 px-2 w-10 text-center"></th>
+              </tr>
+            </thead>
+            <tbody id="sets-tbody-${id}"></tbody>
+          </table>
         </div>
 
-        <datalist id="exerciseSuggestionsList"></datalist>
-        <div id="tplExerciseInputs" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
-      </div>
+        <div class="mt-3 flex items-center justify-between">
+          <button type="button" onclick="addSetRowToActiveExercise('${id}', ${rest})" class="text-xs font-mono font-bold text-forja-neon hover:underline flex items-center gap-1.5 py-1 px-2 rounded bg-forja-neon/10 border border-forja-neon/20 transition">
+            <i class="fa-solid fa-plus text-[10px]"></i> Adicionar Série
+          </button>
+          
+          <div id="pr-badge-box-${id}" class="hidden flex items-center gap-1 px-2.5 py-1 bg-amber-400/10 border border-amber-400/40 rounded-lg text-amber-300 text-[11px] font-mono font-bold">
+            <i class="fa-solid fa-crown text-[10px]"></i> NOVO PR: <span class="pr-val-display font-black"></span>kg
+          </div>
+        </div>
+      `;
 
-      <button type="button" onclick="saveNewTemplate()" class="w-full py-3 bg-brand-lime text-black font-mono font-bold text-xs uppercase rounded-xl hover:brightness-110 shadow-lg glow-lime mt-2">
-        Salvar Ficha Permanente
-      </button>
-    </div>
-  </div>
+      container.appendChild(card);
 
-  <!-- Scripts -->
-  <script src="js/exercises-data.js"></script>
-  <script src="js/app.js"></script>
+      const targetCount = setsCount || 3;
+      for (let i = 0; i < targetCount; i++) {
+        addSetRowToActiveExercise(id, rest, ghost ? ghost.weight : '', ghost ? ghost.reps : '');
+      }
+    }
+
+    function onActiveExerciseNameChange(cardId) {
+      const card = document.getElementById(cardId);
+      const name = card.querySelector('.act-name-input').value.trim();
+      const matched = STANDARD_EXERCISES.find(e => e.name.toLowerCase() === name.toLowerCase());
+
+      if (matched) {
+        card.querySelector('.act-group-badge').innerText = matched.group;
+        card.querySelector('.act-rest-val').innerText = matched.rest;
+      }
+
+      const ghost = getLastExercisePerformance(name);
+      card.querySelector('.act-ghost-label').innerHTML = `<i class="fa-solid fa-ghost mr-1 text-[10px]"></i>` + 
+        (ghost ? `Último: ${ghost.weight} kg × ${ghost.reps} reps` : 'Sem histórico prévio');
+    }
+
+    function addSetRowToActiveExercise(exerciseCardId, restSeconds = 60, defaultWeight = '', defaultReps = '') {
+      const tbody = document.getElementById(`sets-tbody-${exerciseCardId}`);
+      if (!tbody) return;
+
+      const setNum = tbody.children.length + 1;
+      const row = document.createElement('tr');
+      row.className = "border-b border-forja-border/40 hover:bg-forja-dark/50 transition";
+      row.innerHTML = `
+        <td class="py-2.5 px-2 text-center font-bold text-zinc-400">${setNum}</td>
+        
+        <td class="py-2.5 px-2">
+          <div class="flex items-center gap-1">
+            <input type="number" step="0.5" min="0" value="${defaultWeight}" placeholder="0" oninput="onSetInputChange('${exerciseCardId}')" class="set-weight-input bg-forja-dark border border-forja-border rounded-lg px-2 py-1.5 w-20 text-white font-mono text-sm focus:outline-none focus:ring-1 focus:ring-forja-neon">
+            <div class="flex flex-col gap-0.5">
+              <button type="button" onclick="incrementSetWeight(this, 2)" class="px-1 py-0.5 bg-forja-dark hover:bg-zinc-800 border border-forja-border rounded text-[9px] text-zinc-400 font-mono">+2</button>
+              <button type="button" onclick="incrementSetWeight(this, 5)" class="px-1 py-0.5 bg-forja-dark hover:bg-zinc-800 border border-forja-border rounded text-[9px] text-zinc-400 font-mono">+5</button>
+            </div>
+          </div>
+        </td>
+
+        <td class="py-2.5 px-2">
+          <input type="number" step="1" min="1" value="${defaultReps}" placeholder="0" oninput="onSetInputChange('${exerciseCardId}')" class="set-reps-input bg-forja-dark border border-forja-border rounded-lg px-2 py-1.5 w-16 text-white font-mono text-sm focus:outline-none focus:ring-1 focus:ring-forja-neon">
+        </td>
+
+        <td class="py-2.5 px-2 text-center">
+          <button type="button" onclick="toggleSetComplete(this, '${exerciseCardId}', ${restSeconds})" class="set-check-btn px-3 py-1.5 rounded-lg border border-forja-border bg-forja-dark text-zinc-400 hover:text-white transition font-mono font-bold text-xs flex items-center justify-center gap-1.5 mx-auto">
+            <i class="fa-solid fa-check text-xs"></i> <span>Pronto</span>
+          </button>
+        </td>
+
+        <td class="py-2.5 px-2 text-center">
+          <button type="button" onclick="this.closest('tr').remove(); renumberSets('${exerciseCardId}'); updateActiveLiveVolume();" class="text-zinc-600 hover:text-rose-400 p-1">
+            <i class="fa-solid fa-xmark text-xs"></i>
+          </button>
+        </td>
+      `;
+
+      tbody.appendChild(row);
+      updateActiveLiveVolume();
+    }
+
+    function incrementSetWeight(btn, amount) {
+      const input = btn.closest('tr').querySelector('.set-weight-input');
+      const cur = parseFloat(input.value) || 0;
+      input.value = cur + amount;
+      input.dispatchEvent(new Event('input'));
+    }
+
+    function renumberSets(cardId) {
+      const tbody = document.getElementById(`sets-tbody-${cardId}`);
+      if (!tbody) return;
+      Array.from(tbody.children).forEach((tr, index) => {
+        tr.children[0].innerText = index + 1;
+      });
+    }
+
+    function onSetInputChange(cardId) {
+      updateActiveLiveVolume();
+      checkIfNewPR(cardId);
+    }
+
+    function toggleSetComplete(btn, cardId, restSeconds) {
+      const row = btn.closest('tr');
+      const isCompleted = row.classList.toggle('bg-forja-neon/10');
+
+      if (isCompleted) {
+        btn.classList.remove('bg-forja-dark', 'text-zinc-400', 'border-forja-border');
+        btn.classList.add('bg-forja-neon', 'text-black', 'border-forja-neon', 'font-black');
+        btn.innerHTML = `<i class="fa-solid fa-check-double text-xs"></i> <span>Feito</span>`;
+
+        const card = document.getElementById(cardId);
+        const exName = card.querySelector('.act-name-input').value.trim() || 'Exercício';
+        startRestTimer(restSeconds, exName);
+      } else {
+        btn.classList.remove('bg-forja-neon', 'text-black', 'border-forja-neon', 'font-black');
+        btn.classList.add('bg-forja-dark', 'text-zinc-400', 'border-forja-border');
+        btn.innerHTML = `<i class="fa-solid fa-check text-xs"></i> <span>Pronto</span>`;
+      }
+
+      updateActiveLiveVolume();
+      checkIfNewPR(cardId);
+    }
+
+    function checkIfNewPR(cardId) {
+      const card = document.getElementById(cardId);
+      const exName = card.querySelector('.act-name-input').value.trim();
+      if (!exName) return;
+
+      const histPR = getExerciseHistoricalPR(exName);
+      const histMax1RM = histPR ? histPR.oneRM : 0;
+
+      let currentMax1RM = 0;
+      const rows = card.querySelectorAll('tbody tr');
+      rows.forEach(tr => {
+        const weight = parseFloat(tr.querySelector('.set-weight-input').value) || 0;
+        const reps = parseInt(tr.querySelector('.set-reps-input').value, 10) || 0;
+        const est = calculate1RM(weight, reps);
+        if (est > currentMax1RM) currentMax1RM = est;
+      });
+
+      const prBox = document.getElementById(`pr-badge-box-${cardId}`);
+      if (currentMax1RM > histMax1RM && histMax1RM > 0) {
+        prBox.classList.remove('hidden');
+        prBox.querySelector('.pr-val-display').innerText = currentMax1RM;
+      } else {
+        prBox.classList.add('hidden');
+      }
+    }
+
+    function updateActiveLiveVolume() {
+      let total = 0;
+      const rows = document.querySelectorAll('#active-exercises-container tbody tr');
+      rows.forEach(tr => {
+        const w = parseFloat(tr.querySelector('.set-weight-input').value) || 0;
+        const r = parseInt(tr.querySelector('.set-reps-input').value, 10) || 0;
+        total += (w * r);
+      });
+      document.getElementById('active-live-volume').innerText = `${total.toLocaleString()} kg`;
+    }
+
+    function cancelActiveWorkout() {
+      if (confirm("Deseja descartar as alterações deste treino?")) {
+        initActiveSession();
+        navigateTab('home');
+      }
+    }
+
+    async function finishActiveWorkout() {
+      const sessionName = document.getElementById('active-session-name').value.trim() || "Treino Geral";
+      const date = document.getElementById('active-session-date').value || new Date().toISOString().split('T')[0];
+
+      const cards = document.querySelectorAll('#active-exercises-container > div');
+      if (cards.length === 0) {
+        showToast("Adicione exercícios antes de finalizar.", "error");
+        return;
+      }
+
+      const exercises = [];
+      let totalVolume = 0;
+
+      for (let card of cards) {
+        const name = card.querySelector('.act-name-input').value.trim();
+        const group = card.querySelector('.act-group-badge').innerText.trim() || "Outro";
+
+        if (!name) {
+          showToast("Preencha o nome de todos os exercícios.", "error");
+          return;
+        }
+
+        const sets = [];
+        const rows = card.querySelectorAll('tbody tr');
+        rows.forEach(r => {
+          const weight = parseFloat(r.querySelector('.set-weight-input').value) || 0;
+          const reps = parseInt(r.querySelector('.set-reps-input').value, 10) || 0;
+          const completed = r.classList.contains('bg-forja-neon/10');
+          if (reps > 0) {
+            sets.push({ weight, reps, completed: completed || true });
+            totalVolume += (weight * reps);
+          }
+        });
+
+        if (sets.length > 0) {
+          exercises.push({ name, group, sets, notes: "" });
+        }
+      }
+
+      if (exercises.length === 0) {
+        showToast("Preencha ao menos uma série válida com repetições.", "error");
+        return;
+      }
+
+      const newSession = {
+        name: sessionName,
+        date: date,
+        total_volume_kg: totalVolume,
+        exercises: exercises
+      };
+
+      if (state.supabase && state.user) {
+        try {
+          await state.supabase.from('workouts').insert([{
+            ...newSession,
+            user_id: state.user.id
+          }]);
+          await fetchUserDataFromSupabase();
+        } catch (err) {
+          showToast("Erro ao gravar no banco: " + err.message, "error");
+          return;
+        }
+      }
+
+      showToast("Treino finalizado e forjado no histórico!", "success");
+      stopRestTimer();
+      initActiveSession();
+      renderAllScreens();
+      navigateTab('evolution');
+    }
+
+    async function saveActiveSessionAsTemplate() {
+      const sessionName = document.getElementById('active-session-name').value.trim() || "Minha Ficha";
+      const cards = document.querySelectorAll('#active-exercises-container > div');
+      if (cards.length === 0) {
+        showToast("Adicione exercícios antes de salvar.", "error");
+        return;
+      }
+
+      const exercises = [];
+      cards.forEach(c => {
+        const name = c.querySelector('.act-name-input').value.trim();
+        const group = c.querySelector('.act-group-badge').innerText.trim();
+        const rest = parseInt(c.querySelector('.act-rest-val').innerText, 10) || 60;
+        const setsCount = c.querySelectorAll('tbody tr').length || 3;
+        if (name) {
+          exercises.push({ name, group, setsCount, rest });
+        }
+      });
+
+      if (state.supabase && state.user) {
+        try {
+          await state.supabase.from('templates').insert([{
+            title: sessionName,
+            division: "Personalizada",
+            notes: exercises[0] ? exercises[0].group : "Geral",
+            exercises_config: exercises,
+            user_id: state.user.id
+          }]);
+          await fetchUserDataFromSupabase();
+        } catch (err) {
+          showToast("Erro ao salvar ficha: " + err.message, "error");
+          return;
+        }
+      }
+
+      refreshRoutineDropdown();
+      showToast(`Ficha "${sessionName}" criada com sucesso!`, "success");
+    }
+
+    // --- CRONÔMETRO DE DESCANSO INTELIGENTE ---
+    function startRestTimer(seconds = 90, exerciseName = '') {
+      clearInterval(timerInterval);
+      timerTotal = seconds;
+      timerRemaining = seconds;
+      isTimerPaused = false;
+
+      document.getElementById('floating-rest-timer').classList.remove('hidden');
+      document.getElementById('timer-exercise-name').innerText = exerciseName ? `• ${exerciseName}` : '';
+      updateTimerUI();
+
+      timerInterval = setInterval(() => {
+        if (!isTimerPaused) {
+          timerRemaining--;
+          updateTimerUI();
+
+          if (timerRemaining <= 0) {
+            clearInterval(timerInterval);
+            playTimerSound();
+            showToast("Descanso finalizado! Próxima série.", "success");
+            if ('vibrate' in navigator) navigator.vibrate([200, 100, 300]);
+            setTimeout(() => stopRestTimer(), 3500);
+          }
+        }
+      }, 1000);
+    }
+
+    function updateTimerUI() {
+      const mins = Math.floor(timerRemaining / 60);
+      const secs = timerRemaining % 60;
+      document.getElementById('timer-display').innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      const ring = document.getElementById('timer-progress-ring');
+      const percent = Math.max(0, (timerRemaining / timerTotal) * 100);
+      ring.setAttribute('stroke-dasharray', `${percent}, 100`);
+    }
+
+    function adjustRestTimer(delta) {
+      timerRemaining = Math.max(0, timerRemaining + delta);
+      timerTotal = Math.max(timerTotal, timerRemaining);
+      updateTimerUI();
+    }
+
+    function togglePauseRestTimer() {
+      isTimerPaused = !isTimerPaused;
+      const btn = document.getElementById('timer-pause-btn');
+      btn.innerHTML = isTimerPaused ? '<i class="fa-solid fa-play"></i>' : '<i class="fa-solid fa-pause"></i>';
+    }
+
+    function stopRestTimer() {
+      clearInterval(timerInterval);
+      document.getElementById('floating-rest-timer').classList.add('hidden');
+    }
+
+    function playTimerSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.3);
+
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.35);
+      } catch (e) {
+        console.warn("Audio restrito no navegador.");
+      }
+    }
+
+    // --- ABA 4: EVOLUÇÃO ---
+    function getAllUniqueExercises() {
+      const set = new Set();
+      state.workouts.forEach(s => s.exercises.forEach(e => set.add(e.name)));
+      return Array.from(set).sort();
+    }
+
+    function populateEvolutionSelects() {
+      const select = document.getElementById('evo-exercise-select');
+      select.innerHTML = '';
+      const list = getAllUniqueExercises();
+
+      if (list.length === 0) {
+        select.innerHTML = '<option value="">Sem exercícios registrados</option>';
+        return;
+      }
+
+      list.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.innerText = name;
+        select.appendChild(opt);
+      });
+    }
+
+    function renderEvolutionChart() {
+      const exerciseName = document.getElementById('evo-exercise-select').value;
+      const metric = document.getElementById('evo-metric-select').value;
+      if (!exerciseName) return;
+
+      const sorted = [...state.workouts].sort((a, b) => new Date(a.date) - new Date(b.date));
+      const labels = [];
+      const values = [];
+
+      sorted.forEach(s => {
+        const match = s.exercises.find(e => e.name.toLowerCase() === exerciseName.toLowerCase());
+        if (match && match.sets.length > 0) {
+          labels.push(formatDateBR(s.date, true));
+
+          let maxWeight = 0;
+          let max1RM = 0;
+          let volume = 0;
+
+          match.sets.forEach(st => {
+            if (st.weight > maxWeight) maxWeight = st.weight;
+            const est1RM = calculate1RM(st.weight, st.reps);
+            if (est1RM > max1RM) max1RM = est1RM;
+            volume += (st.weight * st.reps);
+          });
+
+          if (metric === 'maxWeight') values.push(maxWeight);
+          else if (metric === 'estimated1RM') values.push(max1RM);
+          else values.push(volume);
+        }
+      });
+
+      const ctx = document.getElementById('evolutionChartCanvas').getContext('2d');
+      if (state.chartInstance) state.chartInstance.destroy();
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+      gradient.addColorStop(0, 'rgba(163, 230, 53, 0.35)');
+      gradient.addColorStop(1, 'rgba(163, 230, 53, 0.0)');
+
+      const labelNames = {
+        maxWeight: 'Carga Máxima (kg)',
+        estimated1RM: '1RM Estimado (kg)',
+        volume: 'Volume Total da Sessão (kg)'
+      };
+
+      state.chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: labelNames[metric],
+            data: values,
+            borderColor: '#a3e635',
+            backgroundColor: gradient,
+            borderWidth: 3,
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#a3e635',
+            pointBorderColor: '#06080c',
+            pointBorderWidth: 2,
+            pointRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#a1a1aa', font: { family: 'JetBrains Mono' } } },
+            tooltip: {
+              backgroundColor: '#111620',
+              titleColor: '#fff',
+              bodyColor: '#a3e635',
+              borderColor: '#1b2434',
+              borderWidth: 1,
+              padding: 10
+            }
+          },
+          scales: {
+            x: { grid: { color: 'rgba(27, 36, 52, 0.4)' }, ticks: { color: '#71717a' } },
+            y: { grid: { color: 'rgba(27, 36, 52, 0.4)' }, ticks: { color: '#71717a' } }
+          }
+        }
+      });
+    }
+
+    function renderPRsShowcase() {
+      const container = document.getElementById('prs-showcase-grid');
+      container.innerHTML = '';
+      const list = getAllUniqueExercises();
+
+      if (list.length === 0) {
+        container.innerHTML = `<p class="col-span-full text-xs font-mono text-zinc-500 py-2">Nenhum PR registrado ainda.</p>`;
+        return;
+      }
+
+      list.forEach(name => {
+        const pr = getExerciseHistoricalPR(name);
+        if (!pr) return;
+
+        const card = document.createElement('div');
+        card.className = "bg-forja-dark border border-forja-border p-3.5 rounded-xl flex items-center justify-between";
+        card.innerHTML = `
+          <div>
+            <h4 class="font-bold text-white text-xs sm:text-sm">${name}</h4>
+            <span class="text-[10px] font-mono text-zinc-500">${formatDateBR(pr.date)}</span>
+            <div class="text-[11px] font-mono text-zinc-300 mt-0.5">Executado: <strong class="text-white">${pr.weight}kg</strong> × ${pr.reps} reps</div>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] font-mono text-amber-400 font-bold uppercase block">1RM Estimado</span>
+            <span class="font-mono text-lg font-black text-amber-400">${pr.oneRM} kg</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderHistorySection() {
+      const container = document.getElementById('history-sessions-accordion');
+      const query = document.getElementById('history-search-input').value.toLowerCase().trim();
+      container.innerHTML = '';
+
+      const filtered = state.workouts.filter(w => {
+        const matchesName = w.name.toLowerCase().includes(query);
+        const matchesEx = w.exercises.some(e => e.name.toLowerCase() === query);
+        return matchesName || matchesEx;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<p class="text-xs font-mono text-zinc-500 p-4">Nenhum treino encontrado.</p>`;
+        return;
+      }
+
+      filtered.forEach(s => {
+        let vol = 0;
+        let setsCount = 0;
+        s.exercises.forEach(e => e.sets.forEach(st => {
+          vol += ((st.weight || 0) * (st.reps || 0));
+          setsCount++;
+        }));
+
+        const item = document.createElement('div');
+        item.className = "bg-forja-dark border border-forja-border rounded-xl p-4 transition";
+        item.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-forja-border">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-mono font-bold text-forja-neon px-2 py-0.5 rounded bg-forja-neon/15">${formatDateBR(s.date)}</span>
+                <h4 class="font-bold text-white text-sm">${s.name}</h4>
+              </div>
+              <span class="text-[11px] font-mono text-zinc-400 mt-1 block">Volume: <strong class="text-white">${vol.toLocaleString()} kg</strong> • ${s.exercises.length} Exercícios • ${setsCount} Séries</span>
+            </div>
+            <button onclick="deleteWorkoutSession('${s.id}')" class="text-zinc-500 hover:text-rose-400 self-end sm:self-center p-1 transition" title="Excluir do Histórico">
+              <i class="fa-regular fa-trash-can text-xs"></i>
+            </button>
+          </div>
+
+          <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
+            ${s.exercises.map(e => `
+              <div class="bg-forja-card p-3 rounded-lg border border-forja-border/60">
+                <div class="flex items-center justify-between text-xs font-bold text-zinc-200 mb-1.5">
+                  <span>${e.name}</span>
+                  <span class="text-[9px] font-mono uppercase bg-forja-dark px-1.5 py-0.5 rounded text-zinc-400">${e.group}</span>
+                </div>
+                <div class="flex flex-wrap gap-1 font-mono text-[11px]">
+                  ${e.sets.map((st, idx) => `
+                    <span class="px-2 py-0.5 bg-forja-dark border border-forja-border rounded text-zinc-300">
+                      #${idx + 1}: <strong class="text-forja-neon">${st.weight}kg</strong> × ${st.reps}
+                    </span>
+                  `).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    async function deleteWorkoutSession(id) {
+      if (!confirm("Excluir este treino permanentemente?")) return;
+
+      if (state.supabase && state.user) {
+        try {
+          await state.supabase.from('workouts').delete().eq('id', id);
+          await fetchUserDataFromSupabase();
+        } catch (err) {
+          showToast("Erro ao excluir: " + err.message, "error");
+        }
+      }
+
+      renderAllScreens();
+      showToast("Treino removido.", "info");
+    }
+
+    // --- BACKUP JSON ---
+    function exportDataJSON() {
+      const data = {
+        app: "FORJA",
+        version: "3.0",
+        exportedAt: new Date().toISOString(),
+        user: state.user ? state.user.email : 'guest',
+        workouts: state.workouts,
+        routines: state.routines
+      };
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `FORJA_Backup_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("Backup baixado com sucesso!", "success");
+    }
+
+    function importDataJSON(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(evt) {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (parsed.workouts && Array.isArray(parsed.workouts)) {
+            state.workouts = parsed.workouts;
+          }
+          if (parsed.routines && Array.isArray(parsed.routines)) {
+            state.routines = parsed.routines;
+          }
+
+          if (state.supabase && state.user) {
+            for (const w of state.workouts) {
+              await state.supabase.from('workouts').upsert({
+                name: w.name,
+                date: w.date,
+                exercises: w.exercises,
+                user_id: state.user.id
+              });
+            }
+          }
+
+          renderAllScreens();
+          showToast("Dados restaurados com sucesso!", "success");
+        } catch (err) {
+          showToast("Arquivo de backup inválido.", "error");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // --- FORMATADORES ---
+    function formatDateBR(dateStr, short = false) {
+      if (!dateStr) return '';
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return dateStr;
+      return short ? `${parts[2]}/${parts[1]}` : `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+
+      let icon = 'fa-circle-info';
+      let border = 'border-forja-border';
+      let accent = 'text-sky-400';
+
+      if (type === 'success') {
+        icon = 'fa-circle-check';
+        border = 'border-forja-neon/60';
+        accent = 'text-forja-neon';
+      } else if (type === 'error') {
+        icon = 'fa-circle-exclamation';
+        border = 'border-rose-500/60';
+        accent = 'text-rose-400';
+      }
+
+      toast.className = `pointer-events-auto flex items-center gap-3 bg-forja-dark/95 text-white text-xs font-mono px-4 py-3 rounded-xl border ${border} shadow-2xl backdrop-blur-md transition-all duration-300 transform -translate-y-2 opacity-0`;
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} ${accent} text-base"></i>
+        <span class="flex-1 text-zinc-200">${message}</span>
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => toast.classList.remove('-translate-y-2', 'opacity-0'), 10);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+  </script>
 </body>
 </html>
