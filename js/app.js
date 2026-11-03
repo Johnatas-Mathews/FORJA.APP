@@ -143,7 +143,7 @@ async function fetchUserData() {
     }));
   }
 
-  // Carregar todo o histórico de treinos em ordem cronológica
+  // Carregar Histórico de Treinos ordenados por data
   const { data: wks, error: wkErr } = await supabaseClient
     .from('workouts')
     .select('*')
@@ -151,7 +151,11 @@ async function fetchUserData() {
     .order('date', { ascending: true });
 
   if (!wkErr && wks) {
-    state.workouts = wks;
+    // Garante que os exercícios salvos em JSON sejam interpretados corretamente
+    state.workouts = wks.map(w => ({
+      ...w,
+      exercises: typeof w.exercises === 'string' ? JSON.parse(w.exercises) : (w.exercises || [])
+    }));
   }
 }
 
