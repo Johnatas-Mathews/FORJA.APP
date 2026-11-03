@@ -292,6 +292,30 @@
         <h3 class="text-xs font-mono uppercase text-slate-400">Histórico de Avaliações</h3>
         <div id="evaluationsHistoryList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
       </div>
+      <!-- BLOCO DE VÍNCULO COM O PROFESSOR -->
+<div id="teacherConnectionBox" class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
+  <div class="flex justify-between items-center">
+    <h3 class="text-xs font-mono uppercase text-slate-400">Meu Treinador / Personal</h3>
+    <span id="teacherStatusBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800">
+      Sem Treinador
+    </span>
+  </div>
+
+  <div id="connectTeacherForm" class="space-y-2">
+    <p class="text-[11px] text-slate-400">Insira o E-mail ou Código do teu professor para receberes fichas e avaliações personalizadas:</p>
+    <div class="flex gap-2 font-mono text-xs">
+      <input type="email" id="teacherCodeInput" placeholder="email.professor@forja.app" class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-lime" />
+      <button type="button" onclick="connectToTeacher()" class="px-4 py-2 bg-brand-lime text-black font-bold rounded-xl hover:brightness-110">
+        Vincular
+      </button>
+    </div>
+  </div>
+
+  <div id="connectedTeacherInfo" class="hidden text-xs font-mono text-brand-lime flex items-center justify-between">
+    <span id="connectedTeacherName">Vinculado a: prof@forja.app</span>
+    <button type="button" onclick="unlinkTeacher()" class="text-[10px] text-red-400 hover:underline">Desvincular</button>
+  </div>
+</div>
     </section>
 
   </main>
