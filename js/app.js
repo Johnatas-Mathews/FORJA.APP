@@ -1,4 +1,4 @@
-// js/app.js (ou js/apps.js)
+// js/app.js
 const SUPABASE_URL = "https://pzygeoqjdyvtfpxuytvg.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6eWdlb3FqZHl2dGZweHV5dHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNjczNzMsImV4cCI6MjEwODk0MzM3M30.lme2H9a6-QyI7Hf-7-tSIfr3DuvXMk03ZJoBnOemUYU";
 
@@ -14,7 +14,8 @@ const state = {
   authMode: 'login',
   templates: [],
   workouts: [],
-  editingTemplateId: null, // Guarda o ID quando estiver editando uma ficha existente
+  editingTemplateId: null,
+  metricMode: 'maxWeight', // 'maxWeight' ou 'estimated1RM'
   activeWorkout: {
     name: "Treino Personalizado",
     exercises: []
@@ -35,7 +36,6 @@ const DEFAULT_FALLBACK_IMG = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='htt
 document.addEventListener("DOMContentLoaded", async () => {
   populateExerciseSuggestions();
   await checkSession();
-  renderWeeklyHeatmap();
 });
 
 function populateExerciseSuggestions() {
@@ -129,41 +129,40 @@ async function handleLogout() {
 async function fetchUserData() {
   if (!supabaseClient || !state.user) return;
 
+  // Carregar Fichas
   const { data: tpls, error: tplErr } = await supabaseClient
     .from('templates')
     .select('*')
     .eq('user_id', state.user.id)
     .order('created_at', { ascending: false });
 
-  if (!tplErr && tpls && tpls.length > 0) {
+  if (!tplErr && tpls) {
     state.templates = tpls.map(t => ({
       ...t,
       title: t.title || t.name || 'Sem título'
     }));
-  } else {
-    state.templates = [
-      {
-        id: 'mock-tpl-1',
-        title: 'Treino A - Peito, Ombros e Tríceps',
-        division: 'A',
-        exercises_config: [
-          { name: 'Supino Reto com Barra', sets: 4, reps: '8-10', rest: 90 },
-          { name: 'Desenvolvimento Militar com Barra', sets: 3, reps: '10-12', rest: 90 },
-          { name: 'Tríceps Corda na Polia Alta', sets: 3, reps: '12-15', rest: 60 }
-        ]
-      }
-    ];
   }
 
+  // Carregar todo o histórico de treinos em ordem cronológica
   const { data: wks, error: wkErr } = await supabaseClient
     .from('workouts')
     .select('*')
     .eq('user_id', state.user.id)
-    .order('date', { ascending: false });
+    .order('date', { ascending: true });
 
   if (!wkErr && wks) {
     state.workouts = wks;
   }
+}
+
+/* -------------------------------------------------------------
+   CÁLCULOS BIOMECÂNICOS DE RM E EVOLUÇÃO
+-------------------------------------------------------------- */
+// Fórmula de Epley para cálculo de 1RM Estimado
+function calculate1RM(weight, reps) {
+  if (!weight || weight <= 0) return 0;
+  if (!reps || reps <= 1) return weight;
+  return Math.round(weight * (1 + reps / 30));
 }
 
 /* -------------------------------------------------------------
@@ -390,7 +389,6 @@ async function saveNewTemplate() {
     exercises_config: exercises
   };
 
-  // MODO EDIÇÃO (UPDATE)
   if (state.editingTemplateId) {
     if (supabaseClient && state.user) {
       const { error } = await supabaseClient
@@ -410,9 +408,7 @@ async function saveNewTemplate() {
       state.templates[index] = { ...state.templates[index], ...tplPayload };
     }
     alert("Ficha atualizada com sucesso!");
-  } 
-  // MODO CRIAÇÃO (INSERT)
-  else {
+  } else {
     if (supabaseClient && state.user) {
       const { data, error } = await supabaseClient.from('templates').insert([tplPayload]).select();
       if (error) {
@@ -660,7 +656,7 @@ async function finishAndSaveWorkout() {
     if (error) console.error("Erro ao salvar treino no Supabase:", error);
   }
 
-  state.workouts.unshift(newWorkout);
+  state.workouts.push(newWorkout);
   alert("Treino forjado e salvo com sucesso!");
   switchTab('progress');
   renderAll();
@@ -700,6 +696,7 @@ function switchTab(tab) {
 function renderAll() {
   renderTemplates();
   renderHomeMetrics();
+  renderWeeklyHeatmap();
   renderWorkoutsHistory();
   renderProgressExercisesDropdown();
   renderProfileStats();
@@ -748,23 +745,55 @@ function renderHomeMetrics() {
   let weeklyVol = 0;
   state.workouts.forEach(w => weeklyVol += (w.total_volume_kg || 0));
   document.getElementById("statWeeklyVolume").innerHTML = `${weeklyVol} <span class="text-xs text-slate-500">kg</span>`;
-  document.getElementById("weekSessionsCount").textContent = `${state.workouts.length} sessões`;
 }
 
 function renderWeeklyHeatmap() {
   const container = document.getElementById("weeklyHeatmap");
-  const days = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+  if (!container) return;
   container.innerHTML = "";
-  days.forEach((d, idx) => {
+
+  const daysLabels = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+  const today = new Date();
+  
+  const currentSunday = new Date(today);
+  currentSunday.setDate(today.getDate() - today.getDay());
+  currentSunday.setHours(0, 0, 0, 0);
+
+  const activeDaysIndexes = new Set();
+
+  state.workouts.forEach(w => {
+    if (!w.date) return;
+    const wDate = new Date(w.date);
+    if (typeof w.date === 'string' && w.date.length === 10) {
+      const parts = w.date.split('-');
+      wDate.setFullYear(parts[0], parts[1] - 1, parts[2]);
+    }
+    wDate.setHours(0, 0, 0, 0);
+
+    const diffTime = wDate.getTime() - currentSunday.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 3600 * 24));
+
+    if (diffDays >= 0 && diffDays < 7) {
+      activeDaysIndexes.add(diffDays);
+    }
+  });
+
+  daysLabels.forEach((d, idx) => {
+    const isCompleted = activeDaysIndexes.has(idx);
     const div = document.createElement("div");
     div.className = "flex flex-col items-center gap-1";
     div.innerHTML = `
-      <div class="w-8 h-8 rounded-lg flex items-center justify-center font-mono text-xs ${idx === 1 || idx === 3 ? 'bg-brand-lime text-black font-bold' : 'bg-slate-900 text-slate-500 border border-slate-800'}">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center font-mono text-xs ${isCompleted ? 'bg-brand-lime text-black font-extrabold shadow-sm glow-lime' : 'bg-slate-900 text-slate-500 border border-slate-800'}">
         ${d}
       </div>
     `;
     container.appendChild(div);
   });
+
+  const weekCountEl = document.getElementById("weekSessionsCount");
+  if (weekCountEl) {
+    weekCountEl.textContent = `${activeDaysIndexes.size} sessões`;
+  }
 }
 
 function renderWorkoutsHistory() {
@@ -776,7 +805,7 @@ function renderWorkoutsHistory() {
     return;
   }
 
-  state.workouts.forEach(w => {
+  state.workouts.slice().reverse().forEach(w => {
     const div = document.createElement("div");
     div.className = "bg-[#111620] p-3 rounded-xl tactical-border flex justify-between items-center font-mono text-xs";
     div.innerHTML = `
@@ -792,6 +821,7 @@ function renderWorkoutsHistory() {
 
 function renderProgressExercisesDropdown() {
   const select = document.getElementById("progressExerciseSelect");
+  if (!select) return;
   select.innerHTML = "";
   const set = new Set();
 
@@ -814,21 +844,58 @@ function renderProgressExercisesDropdown() {
   });
 }
 
+function toggleMetricMode(mode) {
+  state.metricMode = mode;
+  const btnMax = document.getElementById("btnMetricMax");
+  const btnRM = document.getElementById("btnMetricRM");
+  
+  if (mode === 'maxWeight') {
+    btnMax.className = "px-2.5 py-1 rounded bg-brand-lime text-black font-bold text-[10px] font-mono";
+    btnRM.className = "px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white text-[10px] font-mono";
+  } else {
+    btnRM.className = "px-2.5 py-1 rounded bg-brand-lime text-black font-bold text-[10px] font-mono";
+    btnMax.className = "px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white text-[10px] font-mono";
+  }
+  
+  updateProgressChart();
+}
+
 function updateProgressChart() {
   const select = document.getElementById("progressExerciseSelect");
+  if (!select) return;
   const exerciseName = select.value || "Supino Reto com Barra";
-  const ctx = document.getElementById("progressChart").getContext("2d");
+  const ctx = document.getElementById("progressChart")?.getContext("2d");
+  if (!ctx) return;
 
   const labels = [];
-  const dataWeights = [];
+  const dataValues = [];
 
-  state.workouts.slice().reverse().forEach(w => {
+  state.workouts.forEach(w => {
     if (!w.exercises) return;
     const found = w.exercises.find(e => e.name === exerciseName);
-    if (found && found.sets) {
-      const maxWeight = Math.max(...found.sets.map(s => s.weight || 0));
-      labels.push(w.date || 'Sessão');
-      dataWeights.push(maxWeight);
+    if (found && found.sets && found.sets.length > 0) {
+      let metricValue = 0;
+      
+      if (state.metricMode === 'maxWeight') {
+        metricValue = Math.max(...found.sets.map(s => s.weight || 0));
+      } else {
+        // Calcula a maior 1RM estimada entre todas as séries daquela sessão
+        const rmValues = found.sets.map(s => calculate1RM(s.weight, s.reps));
+        metricValue = Math.max(...rmValues);
+      }
+
+      let formattedDate = "Sessão";
+      if (w.date) {
+        const d = new Date(w.date);
+        if (typeof w.date === 'string' && w.date.length === 10) {
+          const parts = w.date.split('-');
+          d.setFullYear(parts[0], parts[1] - 1, parts[2]);
+        }
+        formattedDate = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+      }
+
+      labels.push(formattedDate);
+      dataValues.push(metricValue);
     }
   });
 
@@ -836,26 +903,35 @@ function updateProgressChart() {
     progressChartInstance.destroy();
   }
 
+  const metricLabel = state.metricMode === 'maxWeight' ? 'Carga Máxima (kg)' : '1RM Estimado (kg)';
+
   progressChartInstance = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: labels.length ? labels : ['Treino 1', 'Treino 2', 'Treino 3'],
+      labels: labels.length ? labels : ['Sem dados'],
       datasets: [{
-        label: 'Carga Máxima (kg)',
-        data: dataWeights.length ? dataWeights : [60, 65, 70],
+        label: metricLabel,
+        data: dataValues.length ? dataValues : [0],
         borderColor: '#a3e635',
         backgroundColor: 'rgba(163, 230, 53, 0.1)',
         tension: 0.3,
         fill: true,
-        pointBackgroundColor: '#a3e635'
+        pointBackgroundColor: '#a3e635',
+        pointRadius: 4
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { family: 'JetBrains Mono' } } },
-        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { family: 'JetBrains Mono' } } }
+        y: { 
+          grid: { color: 'rgba(255,255,255,0.05)' }, 
+          ticks: { color: '#64748b', font: { family: 'JetBrains Mono' } } 
+        },
+        x: { 
+          grid: { color: 'rgba(255,255,255,0.05)' }, 
+          ticks: { color: '#64748b', font: { family: 'JetBrains Mono' } } 
+        }
       },
       plugins: {
         legend: { display: false }
