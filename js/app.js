@@ -867,7 +867,7 @@ function toggleMetricMode(mode) {
 function updateProgressChart() {
   const select = document.getElementById("progressExerciseSelect");
   if (!select) return;
-  const exerciseName = select.value || "Supino Reto com Barra";
+  const exerciseName = select.value;
   const ctx = document.getElementById("progressChart")?.getContext("2d");
   if (!ctx) return;
 
@@ -875,27 +875,29 @@ function updateProgressChart() {
   const dataValues = [];
 
   state.workouts.forEach(w => {
-    if (!w.exercises) return;
-    const found = w.exercises.find(e => e.name === exerciseName);
+    if (!w.exercises || !Array.isArray(w.exercises)) return;
+    
+    // Procura o exercício pelo nome (ignorando maiúsculas/minúsculas para evitar falhas)
+    const found = w.exercises.find(e => e.name && e.name.trim().toLowerCase() === exerciseName.trim().toLowerCase());
+    
     if (found && found.sets && found.sets.length > 0) {
       let metricValue = 0;
       
       if (state.metricMode === 'maxWeight') {
-        metricValue = Math.max(...found.sets.map(s => s.weight || 0));
+        metricValue = Math.max(...found.sets.map(s => parseFloat(s.weight) || 0));
       } else {
-        // Calcula a maior 1RM estimada entre todas as séries daquela sessão
-        const rmValues = found.sets.map(s => calculate1RM(s.weight, s.reps));
+        const rmValues = found.sets.map(s => calculate1RM(parseFloat(s.weight) || 0, parseFloat(s.reps) || 0));
         metricValue = Math.max(...rmValues);
       }
 
+      // Formatação robusta de data
       let formattedDate = "Sessão";
       if (w.date) {
-        const d = new Date(w.date);
-        if (typeof w.date === 'string' && w.date.length === 10) {
-          const parts = w.date.split('-');
-          d.setFullYear(parts[0], parts[1] - 1, parts[2]);
+        const cleanDateStr = w.date.split('T')[0]; // Pega apenas YYYY-MM-DD
+        const parts = cleanDateStr.split('-');
+        if (parts.length === 3) {
+          formattedDate = `${parts[2]}/${parts[1]}`; // DD/MM
         }
-        formattedDate = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
       }
 
       labels.push(formattedDate);
@@ -921,7 +923,7 @@ function updateProgressChart() {
         tension: 0.3,
         fill: true,
         pointBackgroundColor: '#a3e635',
-        pointRadius: 4
+        pointRadius: 5
       }]
     },
     options: {
@@ -930,7 +932,8 @@ function updateProgressChart() {
       scales: {
         y: { 
           grid: { color: 'rgba(255,255,255,0.05)' }, 
-          ticks: { color: '#64748b', font: { family: 'JetBrains Mono' } } 
+          ticks: { color: '#64748b', font: { family: 'JetBrains Mono' } },
+          beginAtZero: true
         },
         x: { 
           grid: { color: 'rgba(255,255,255,0.05)' }, 
