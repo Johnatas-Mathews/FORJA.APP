@@ -14,6 +14,7 @@ const state = {
   authMode: 'login',
   templates: [],
   workouts: [],
+  measurements: [],
   editingTemplateId: null,
   metricMode: 'maxWeight', // 'maxWeight' ou 'estimated1RM'
   activeWorkout: {
@@ -1003,4 +1004,87 @@ function updateProgressChart() {
 function renderProfileStats() {
   document.getElementById("profileWorkoutsCount").textContent = state.workouts.length;
   document.getElementById("profileTemplatesCount").textContent = state.templates.length;
+}
+/* -------------------------------------------------------------
+   BIOMETRIA E MEDIDAS CORPORAIS
+-------------------------------------------------------------- */
+async function fetchMeasurements() {
+  if (!supabaseClient || !state.user) return;
+  const { data, error } = await supabaseClient
+    .from('body_measurements')
+    .select('*')
+    .eq('user_id', state.user.id)
+    .order('date', { ascending: false });
+
+  if (!error && data) {
+    state.measurements = data;
+    renderMeasurementsHistory();
+  }
+}
+
+async function saveBodyMeasurements() {
+  const weight = parseFloat(document.getElementById("bioWeight").value) || null;
+  const waist = parseFloat(document.getElementById("bioWaist").value) || null;
+  const arms = parseFloat(document.getElementById("bioArms").value) || null;
+  const thighs = parseFloat(document.getElementById("bioThighs").value) || null;
+
+  if (!weight && !waist && !arms && !thighs) {
+    alert("Preencha pelo menos uma medida antes de salvar.");
+    return;
+  }
+
+  const payload = {
+    user_id: state.user.id,
+    date: new Date().toISOString().split('T')[0],
+    weight,
+    waist,
+    arms,
+    thighs
+  };
+
+  if (supabaseClient) {
+    const { error } = await supabaseClient.from('body_measurements').insert([payload]);
+    if (error) {
+      alert("Erro ao salvar medidas: " + error.message);
+      return;
+    }
+  }
+
+  state.measurements.unshift(payload);
+  alert("Medidas corporais salvas com sucesso!");
+  
+  // Limpa os campos
+  document.getElementById("bioWeight").value = "";
+  document.getElementById("bioWaist").value = "";
+  document.getElementById("bioArms").value = "";
+  document.getElementById("bioThighs").value = "";
+
+  renderMeasurementsHistory();
+}
+
+function renderMeasurementsHistory() {
+  const container = document.getElementById("measurementsHistoryList");
+  if (!container) return;
+  container.innerHTML = "";
+
+  if (state.measurements.length === 0) {
+    container.innerHTML = `<div class="p-3 text-center text-xs font-mono text-slate-500">Nenhuma medida registrada.</div>`;
+    return;
+  }
+
+  state.measurements.forEach(m => {
+    const div = document.createElement("div");
+    div.className = "bg-slate-900/80 p-2.5 rounded-xl tactical-border flex justify-between items-center text-xs font-mono";
+    div.innerHTML = `
+      <div>
+        <span class="text-[10px] text-slate-400 block">${m.date}</span>
+        <div class="flex gap-2 mt-0.5 text-white">
+          ${m.weight ? `<span>Peso: <b>${m.weight}kg</b></span>` : ''}
+          ${m.waist ? `<span>Cintura: <b>${m.waist}cm</b></span>` : ''}
+          ${m.arms ? `<span>Braço: <b>${m.arms}cm</b></span>` : ''}
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
 }
