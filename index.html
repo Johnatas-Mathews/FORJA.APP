@@ -4,10 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>FORJA - High Performance Training</title>
+  
   <!-- Favicon e Ícones PWA para Telemóvel -->
-  <link rel="icon" type="image/png" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='28' fill='%23a3e635'/><path d='M52 24 C52 24 64 36 67 48 C70 59 64 71 52 72 C41 73 34 65 37 53 C38 48 43 44 43 44 C43 44 38 49 36 57 C34 65 40 70 49 70 C57 70 63 60 59 49 C55 38 45 30 52 24 Z' fill='%23111620'/></svg>" />
-<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='28' fill='%23a3e635'/><path d='M52 24 C52 24 64 36 67 48 C70 59 64 71 52 72 C41 73 34 65 37 53 C38 48 43 44 43 44 C43 44 38 49 36 57 C34 65 40 70 49 70 C57 70 63 60 59 49 C55 38 45 30 52 24 Z' fill='%23111620'/></svg>" />  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="FORJA">
+  <link rel="icon" type="image/svg+xml" href="assets/icons/LOGO-FORJA.svg" />
+  <link rel="apple-touch-icon" href="assets/icons/LOGO-FORJA.svg" />
+  
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -54,18 +55,14 @@
 
   <!-- TOP HEADER -->
   <header class="sticky top-0 z-40 bg-[#0a0d14]/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 flex justify-between items-center">
-   <div class="flex items-center gap-2.5">
-  <!-- LOGO OFICIAL EXATA (HEADER) -->
-  <div class="w-9 h-9 rounded-xl bg-brand-lime flex items-center justify-center shadow-lg glow-lime">
-    <svg class="w-6 h-6 text-[#111620]" viewBox="0 0 100 100" fill="currentColor">
-      <path d="M52 24 C52 24 64 36 67 48 C70 59 64 71 52 72 C41 73 34 65 37 53 C38 48 43 44 43 44 C43 44 38 49 36 57 C34 65 40 70 49 70 C57 70 63 60 59 49 C55 38 45 30 52 24 Z"/>
-    </svg>
-  </div>
-  <div>
-    <h1 class="font-display font-extrabold text-sm tracking-widest text-white uppercase italic">FORJA</h1>
-    <span class="text-[9px] font-mono text-slate-400 block -mt-1 tracking-wider">HIGH PERFORMANCE</span>
-  </div>
-</div>
+    <div class="flex items-center gap-2.5">
+      <!-- LOGO OFICIAL VETORIAL (HEADER) -->
+      <img src="assets/icons/LOGO-FORJA.svg" alt="FORJA Logo" class="w-9 h-9 drop-shadow-[0_0_10px_rgba(163,230,53,0.25)]" />
+      <div>
+        <h1 class="font-display font-extrabold text-sm tracking-widest text-white uppercase italic">FORJA</h1>
+        <span class="text-[9px] font-mono text-slate-400 block -mt-1 tracking-wider">HIGH PERFORMANCE</span>
+      </div>
+    </div>
     
     <div class="flex items-center gap-2">
       <span id="userRoleBadge" class="text-[10px] font-mono font-bold text-brand-lime bg-brand-lime/10 px-2 py-0.5 rounded border border-brand-lime/30">
@@ -298,30 +295,31 @@
         <h3 class="text-xs font-mono uppercase text-slate-400">Histórico de Avaliações</h3>
         <div id="evaluationsHistoryList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
       </div>
+
       <!-- BLOCO DE VÍNCULO COM O PROFESSOR -->
-<div id="teacherConnectionBox" class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
-  <div class="flex justify-between items-center">
-    <h3 class="text-xs font-mono uppercase text-slate-400">Meu Treinador / Personal</h3>
-    <span id="teacherStatusBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800">
-      Sem Treinador
-    </span>
-  </div>
+      <div id="teacherConnectionBox" class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xs font-mono uppercase text-slate-400">Meu Treinador / Personal</h3>
+          <span id="teacherStatusBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800">
+            Sem Treinador
+          </span>
+        </div>
 
-  <div id="connectTeacherForm" class="space-y-2">
-    <p class="text-[11px] text-slate-400">Insira o E-mail ou Código do teu professor para receberes fichas e avaliações personalizadas:</p>
-    <div class="flex gap-2 font-mono text-xs">
-      <input type="email" id="teacherCodeInput" placeholder="email.professor@forja.app" class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-lime" />
-      <button type="button" onclick="connectToTeacher()" class="px-4 py-2 bg-brand-lime text-black font-bold rounded-xl hover:brightness-110">
-        Vincular
-      </button>
-    </div>
-  </div>
+        <div id="connectTeacherForm" class="space-y-2">
+          <p class="text-[11px] text-slate-400">Insira o E-mail ou Código do teu professor para receberes fichas e avaliações personalizadas:</p>
+          <div class="flex gap-2 font-mono text-xs">
+            <input type="email" id="teacherCodeInput" placeholder="email.professor@forja.app" class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-lime" />
+            <button type="button" onclick="connectToTeacher()" class="px-4 py-2 bg-brand-lime text-black font-bold rounded-xl hover:brightness-110">
+              Vincular
+            </button>
+          </div>
+        </div>
 
-  <div id="connectedTeacherInfo" class="hidden text-xs font-mono text-brand-lime flex items-center justify-between">
-    <span id="connectedTeacherName">Vinculado a: prof@forja.app</span>
-    <button type="button" onclick="unlinkTeacher()" class="text-[10px] text-red-400 hover:underline">Desvincular</button>
-  </div>
-</div>
+        <div id="connectedTeacherInfo" class="hidden text-xs font-mono text-brand-lime flex items-center justify-between">
+          <span id="connectedTeacherName">Vinculado a: prof@forja.app</span>
+          <button type="button" onclick="unlinkTeacher()" class="text-[10px] text-red-400 hover:underline">Desvincular</button>
+        </div>
+      </div>
     </section>
 
   </main>
@@ -351,11 +349,8 @@
   <div id="authGate" class="fixed inset-0 z-50 bg-[#0a0d14] flex items-center justify-center p-4">
     <div class="w-full max-w-sm bg-[#111620] rounded-2xl p-6 tactical-border space-y-5">
       <div class="text-center space-y-1">
-        <div class="w-16 h-16 rounded-2xl bg-brand-lime flex items-center justify-center mx-auto shadow-2xl glow-lime mb-2">
-  <svg class="w-10 h-10 text-[#111620]" viewBox="0 0 100 100" fill="currentColor">
-    <path d="M52 24 C52 24 64 36 67 48 C70 59 64 71 52 72 C41 73 34 65 37 53 C38 48 43 44 43 44 C43 44 38 49 36 57 C34 65 40 70 48 70 C57 70 63 60 59 49 C55 38 45 30 52 24 Z"/>
-  </svg>
-</div>
+        <!-- LOGO OFICIAL VETORIAL (MODAL DE LOGIN) -->
+        <img src="assets/icons/LOGO-FORJA.svg" alt="FORJA Logo" class="w-16 h-16 mx-auto mb-2 drop-shadow-[0_0_15px_rgba(163,230,53,0.3)]" />
         <h2 class="text-lg font-display font-black text-white uppercase tracking-wider pt-2">FORJA SYSTEM</h2>
         <p class="text-xs text-slate-400">Acesse sua conta para sincronizar seus treinos</p>
       </div>
