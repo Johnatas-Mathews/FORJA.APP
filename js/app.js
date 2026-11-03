@@ -1,4 +1,4 @@
-// js/app.js
+// js/app.js - FORJA High Performance Engine
 const SUPABASE_URL = "https://pzygeoqjdyvtfpxuytvg.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6eWdlb3FqZHl2dGZweHV5dHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNjczNzMsImV4cCI6MjEwODk0MzM3M30.lme2H9a6-QyI7Hf-7-tSIfr3DuvXMk03ZJoBnOemUYU";
 
@@ -11,6 +11,8 @@ try {
 
 const state = {
   user: null,
+  userProfile: null,
+  selectedRole: 'aluno', // 'aluno' ou 'professor'
   authMode: 'login',
   templates: [],
   workouts: [],
@@ -31,8 +33,7 @@ const state = {
 };
 
 let progressChartInstance = null;
-
-const DEFAULT_FALLBACK_IMG = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%23a3e635' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6.5 6.5h11M6.5 17.5h11M4 9.5h16M4 14.5h16M2 12h20'/%3E%3C/svg%3E";
+const DEFAULT_FALLBACK_IMG = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%23a3e635' stroke-width='1.5'%3E%3Cpath d='M6.5 6.5h11M6.5 17.5h11M4 9.5h16M4 14.5h16M2 12h20'/%3E%3C/svg%3E";
 
 document.addEventListener("DOMContentLoaded", async () => {
   populateExerciseSuggestions();
@@ -61,20 +62,40 @@ async function checkSession() {
   }
 }
 
+/* -------------------------------------------------------------
+   AUTENTICAÇÃO E PERFIL (ALUNO / PROFESSOR)
+-------------------------------------------------------------- */
+function selectAuthRole(role) {
+  state.selectedRole = role;
+  const btnAluno = document.getElementById("btnRoleAluno");
+  const btnProf = document.getElementById("btnRoleProf");
+
+  if (role === 'aluno') {
+    btnAluno.className = "py-2 px-3 rounded-lg border border-brand-lime bg-brand-lime/10 text-brand-lime font-bold transition-all";
+    btnProf.className = "py-2 px-3 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 font-bold transition-all";
+  } else {
+    btnProf.className = "py-2 px-3 rounded-lg border border-brand-lime bg-brand-lime/10 text-brand-lime font-bold transition-all";
+    btnAluno.className = "py-2 px-3 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 font-bold transition-all";
+  }
+}
+
 function switchAuthMode(mode) {
   state.authMode = mode;
   const btnLogin = document.getElementById("btnTabLogin");
   const btnRegister = document.getElementById("btnTabRegister");
   const submitText = document.getElementById("authSubmitText");
+  const roleContainer = document.getElementById("roleSelectionContainer");
 
   if (mode === 'login') {
     btnLogin.className = "flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all bg-brand-lime text-black";
     btnRegister.className = "flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all text-slate-400 hover:text-white";
     submitText.textContent = "ACESSAR MINHA CONTA";
+    if (roleContainer) roleContainer.classList.add("hidden");
   } else {
     btnRegister.className = "flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all bg-brand-lime text-black";
     btnLogin.className = "flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all text-slate-400 hover:text-white";
     submitText.textContent = "CRIAR CONTA NA FORJA";
+    if (roleContainer) roleContainer.classList.remove("hidden");
   }
 }
 
@@ -95,17 +116,50 @@ async function handleAuthSubmit(e) {
       state.user = data.user;
       await onAuthSuccess();
     } else {
-      const { data, error } = await supabaseClient.auth.signUp({ email, password });
+      const { data, error } = await supabaseClient.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          data: {
+            role: state.selectedRole,
+            full_name: email.split('@')[0]
+          }
+        }
+      });
       if (error) throw error;
       state.user = data.user;
-      alert("Conta forjada com sucesso! Bem-vindo à FORJA.");
+      alert(`Conta de ${state.selectedRole.toUpperCase()} criada com sucesso!`);
       await onAuthSuccess();
     }
   } catch (err) {
-    alert("Erro de autenticação: " + (err.message || "Verifique os seus dados."));
+    alert("Erro de autenticação: " + (err.message || "Verifique seus dados."));
   } finally {
     spinner.classList.add("hidden");
     submitBtn.disabled = false;
+  }
+}
+
+async function fetchUserProfile() {
+  if (!supabaseClient || !state.user) return;
+  const { data, error } = await supabaseClient
+    .from('profiles')
+    .select('*')
+    .eq('id', state.user.id)
+    .single();
+
+  if (!error && data) {
+    state.userProfile = data;
+    applyRoleUI(data.role);
+  }
+}
+
+function applyRoleUI(role) {
+  const roleBadge = document.getElementById("userRoleBadge");
+  if (roleBadge) {
+    roleBadge.textContent = role === 'professor' ? '📋 PROFESSOR' : '🏋️ ALUNO';
+    roleBadge.className = role === 'professor' 
+      ? 'text-[10px] font-mono font-bold text-amber-400 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-800/40'
+      : 'text-[10px] font-mono font-bold text-brand-lime bg-brand-lime/10 px-2 py-0.5 rounded border border-brand-lime/30';
   }
 }
 
@@ -113,6 +167,8 @@ async function onAuthSuccess() {
   document.getElementById("authGate").classList.add("hidden");
   document.getElementById("topUserEmail").textContent = state.user.email.split('@')[0];
   document.getElementById("profileUserEmail").textContent = state.user.email;
+  
+  await fetchUserProfile();
   await fetchUserData();
   await fetchEvaluations();
   renderAll();
@@ -125,32 +181,29 @@ async function handleLogout() {
   state.user = null;
   state.workouts = [];
   state.templates = [];
+  state.evaluations = [];
   document.getElementById("authGate").classList.remove("hidden");
 }
 
 async function fetchUserData() {
   if (!supabaseClient || !state.user) return;
 
-  const { data: tpls, error: tplErr } = await supabaseClient
+  const { data: tpls } = await supabaseClient
     .from('templates')
     .select('*')
     .eq('user_id', state.user.id);
 
-  if (!tplErr && tpls) {
+  if (tpls) {
     state.templates = tpls.map(t => ({
       ...t,
       title: t.title || t.name || 'Sem título'
     }));
   }
 
-  const { data: wks, error: wkErr } = await supabaseClient
+  const { data: wks } = await supabaseClient
     .from('workouts')
     .select('*')
     .eq('user_id', state.user.id);
-
-  if (wkErr) {
-    console.error("Erro ao buscar workouts:", wkErr);
-  }
 
   if (wks && wks.length > 0) {
     state.workouts = wks.map(w => ({
@@ -163,7 +216,7 @@ async function fetchUserData() {
 }
 
 /* -------------------------------------------------------------
-   CÁLCULOS BIOMECÂNICOS (1RM & PR)
+   CÁLCULOS BIOMECÂNICOS (1RM, PR & CARDIO)
 -------------------------------------------------------------- */
 function calculate1RM(weight, reps) {
   if (!weight || weight <= 0) return 0;
@@ -248,7 +301,7 @@ function renderExerciseLibraryList() {
         </div>
       </div>
       <div class="flex items-center gap-1.5 flex-shrink-0">
-        <button type="button" onclick="showExerciseDetail('${ex.id}')" title="Ver biomecânica" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs">
+        <button type="button" onclick="showExerciseDetail('${ex.id}')" title="Ver postura" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs">
           👁️
         </button>
         <button type="button" onclick="selectExerciseFromLibrary('${ex.id}')" class="px-2.5 py-1.5 bg-brand-lime text-black font-mono font-bold text-xs rounded-lg hover:brightness-110">
@@ -429,7 +482,6 @@ async function saveNewTemplate() {
         .eq('id', state.editingTemplateId);
 
       if (error) {
-        console.error("Erro ao atualizar ficha no Supabase:", error);
         alert("Erro ao atualizar no banco: " + error.message);
         return;
       }
@@ -444,7 +496,6 @@ async function saveNewTemplate() {
     if (supabaseClient && state.user) {
       const { data, error } = await supabaseClient.from('templates').insert([tplPayload]).select();
       if (error) {
-        console.error("Erro ao salvar ficha no Supabase:", error);
         alert("Erro ao salvar no banco: " + error.message);
         return;
       }
@@ -453,7 +504,7 @@ async function saveNewTemplate() {
       }
     }
     state.templates.unshift(tplPayload);
-    alert("Ficha forjada e salva permanentemente na sua conta!");
+    alert("Ficha criada e salva com sucesso!");
   }
 
   closeCreateTemplateModal();
@@ -465,9 +516,7 @@ async function deleteTemplate(templateId) {
   const tpl = state.templates.find(t => t.id === templateId);
   const tplName = tpl ? (tpl.title || tpl.name) : "esta ficha";
 
-  if (!confirm(`Deseja realmente apagar a ficha "${tplName}"? Essa ação não pode ser desfeita.`)) {
-    return;
-  }
+  if (!confirm(`Deseja apagar a ficha "${tplName}"?`)) return;
 
   if (supabaseClient && state.user) {
     const { error } = await supabaseClient
@@ -476,7 +525,6 @@ async function deleteTemplate(templateId) {
       .eq('id', templateId);
 
     if (error) {
-      console.error("Erro ao excluir ficha no Supabase:", error);
       alert("Erro ao excluir do banco: " + error.message);
       return;
     }
@@ -485,11 +533,10 @@ async function deleteTemplate(templateId) {
   state.templates = state.templates.filter(t => t.id !== templateId);
   renderTemplates();
   renderProfileStats();
-  alert("Ficha removida com sucesso!");
 }
 
 /* -------------------------------------------------------------
-   CRONÔMETRO DE DESCANSO AUTOMÁTICO (AUTO-REST)
+   CRONÔMETRO DE DESCANSO AUTOMÁTICO
 -------------------------------------------------------------- */
 function startAutoRest(seconds = 60) {
   const widget = document.getElementById("restTimerWidget");
@@ -503,8 +550,8 @@ function startAutoRest(seconds = 60) {
   widget.classList.remove("hidden");
 
   const updateUI = () => {
-    secondsDisplay.textContent = state.restTimer.remaining;
-    const offset = 113 - (113 * state.restTimer.remaining) / state.restTimer.total;
+    secondsDisplay.textContent = state.restTimer.remaining + "s";
+    const offset = 88 - (88 * state.restTimer.remaining) / state.restTimer.total;
     circle.style.strokeDashoffset = offset;
 
     if (state.restTimer.remaining <= 0) {
@@ -545,7 +592,7 @@ function playBeep() {
 }
 
 /* -------------------------------------------------------------
-   EXECUÇÃO DO TREINO
+   EXECUÇÃO DO TREINO ATIVO
 -------------------------------------------------------------- */
 function loadTemplateIntoWorkout(templateId) {
   const tpl = state.templates.find(t => t.id === templateId);
@@ -671,7 +718,7 @@ function inspectExerciseByName(name) {
   if (found) {
     showExerciseDetail(found.id);
   } else {
-    alert("Exercício adicionado manualmente sem dados cadastrados no arsenal.");
+    alert("Exercício adicionado manualmente.");
   }
 }
 
@@ -717,7 +764,7 @@ async function finishAndSaveWorkout() {
   }
 
   state.workouts.push(newWorkout);
-  alert("Treino forjado e salvo com sucesso!");
+  alert("Treino salvo com sucesso!");
   switchTab('progress');
   renderAll();
 }
@@ -730,7 +777,121 @@ function quickStartTemplate() {
 }
 
 /* -------------------------------------------------------------
-   INTERFACE & NAVEGAÇÃO
+   AVALIAÇÃO FÍSICA E MEDIDAS CORPORAIS
+-------------------------------------------------------------- */
+async function fetchEvaluations() {
+  if (!supabaseClient || !state.user) return;
+
+  const { data: evals, error: evalErr } = await supabaseClient
+    .from('avaliacoes_fisicas')
+    .select(`*, medidas_corporais (*)`)
+    .eq('user_id', state.user.id)
+    .order('data_avaliacao', { ascending: false });
+
+  if (!evalErr && evals) {
+    state.evaluations = evals;
+    renderEvaluationsHistory();
+  }
+}
+
+async function savePhysicalEvaluation() {
+  if (!state.user) return;
+
+  const peso = parseFloat(document.getElementById("evalPeso").value) || null;
+  const altura = parseFloat(document.getElementById("evalAltura").value) || null;
+  const gordura = parseFloat(document.getElementById("evalGordura").value) || null;
+  const massa = parseFloat(document.getElementById("evalMassa").value) || null;
+  const metodo = document.getElementById("evalMetodo").value;
+  const obs = document.getElementById("evalObs").value.trim();
+
+  if (!peso) {
+    alert("Informe pelo menos o peso para registrar a avaliação.");
+    return;
+  }
+
+  const payloadEval = {
+    user_id: state.user.id,
+    data_avaliacao: new Date().toISOString().split('T')[0],
+    peso_kg: peso,
+    altura_cm: altura,
+    gordura_percentual: gordura,
+    massa_muscular_kg: massa,
+    metodo_avaliacao: metodo,
+    observacoes: obs
+  };
+
+  const { data: evalData, error: evalErr } = await supabaseClient
+    .from('avaliacoes_fisicas')
+    .insert([payloadEval])
+    .select();
+
+  if (evalErr || !evalData || evalData.length === 0) {
+    alert("Erro ao salvar avaliação: " + (evalErr?.message || "Erro desconhecido"));
+    return;
+  }
+
+  const newEvalId = evalData[0].id;
+
+  const payloadMedidas = {
+    avaliacao_id: newEvalId,
+    user_id: state.user.id,
+    cintura_cm: parseFloat(document.getElementById("evalCintura").value) || null,
+    abdomen_cm: parseFloat(document.getElementById("evalAbdomen").value) || null,
+    quadril_cm: parseFloat(document.getElementById("evalQuadril").value) || null,
+    peitoral_cm: parseFloat(document.getElementById("evalPeitoral").value) || null,
+    braco_direito_cm: parseFloat(document.getElementById("evalBracoDir").value) || null,
+    braco_esquerdo_cm: parseFloat(document.getElementById("evalBracoEsq").value) || null,
+    coxa_direita_cm: parseFloat(document.getElementById("evalCoxaDir").value) || null,
+    coxa_esquerda_cm: parseFloat(document.getElementById("evalCoxaEsq").value) || null,
+    panturrilha_direita_cm: parseFloat(document.getElementById("evalPantsDir").value) || null,
+    panturrilha_esquerda_cm: parseFloat(document.getElementById("evalPantsEsq").value) || null
+  };
+
+  await supabaseClient.from('medidas_corporais').insert([payloadMedidas]);
+
+  alert("Avaliação física completa salva com sucesso!");
+
+  document.querySelectorAll('#screen-profile input, #screen-profile textarea').forEach(el => {
+    if(el.type !== 'button') el.value = '';
+  });
+
+  await fetchEvaluations();
+}
+
+function renderEvaluationsHistory() {
+  const container = document.getElementById("evaluationsHistoryList");
+  if (!container) return;
+  container.innerHTML = "";
+
+  if (state.evaluations.length === 0) {
+    container.innerHTML = `<div class="p-3 text-center text-xs font-mono text-slate-500">Nenhuma avaliação física registrada.</div>`;
+    return;
+  }
+
+  state.evaluations.forEach(ev => {
+    const med = ev.medidas_corporais && ev.medidas_corporais.length > 0 ? ev.medidas_corporais[0] : {};
+    const div = document.createElement("div");
+    div.className = "bg-slate-900/80 p-3 rounded-xl tactical-border space-y-1.5 font-mono text-xs";
+    div.innerHTML = `
+      <div class="flex justify-between items-center text-slate-400 border-b border-slate-800 pb-1">
+        <span class="text-brand-lime font-bold">📅 ${ev.data_avaliacao}</span>
+        <span>Método: ${ev.metodo_avaliacao || 'Geral'}</span>
+      </div>
+      <div class="grid grid-cols-2 gap-2 text-white pt-1">
+        <div>Peso: <b class="text-brand-lime">${ev.peso_kg || '-'} kg</b></div>
+        <div>Altura: <b>${ev.altura_cm || '-'} cm</b></div>
+        <div>Gordura: <b>${ev.gordura_percentual || '-'}%</b></div>
+        <div>Massa M.: <b>${ev.massa_muscular_kg || '-'} kg</b></div>
+      </div>
+      ${med.cintura_cm ? `<div class="text-[11px] text-slate-400 pt-1">Cintura: ${med.cintura_cm}cm | Abdômen: ${med.abdomen_cm || '-'}cm | Braço Dir: ${med.braco_direito_cm || '-'}cm</div>` : ''}
+      ${ev.observacoes ? `<p class="text-[11px] text-slate-500 italic pt-1">"${ev.observacoes}"</p>` : ''}
+    `;
+    container.appendChild(div);
+  });
+}
+
+/* -------------------------------------------------------------
+   INTERFACE & RENDERIZAÇÃO DE DASHBOARDS
 -------------------------------------------------------------- */
 function switchTab(tab) {
   const screens = ['home', 'templates', 'workout', 'progress', 'profile'];
@@ -783,15 +944,9 @@ function renderTemplates() {
         <span class="text-xs text-slate-400">${t.exercises_config ? t.exercises_config.length : 0} exercícios</span>
       </div>
       <div class="flex items-center gap-1.5">
-        <button type="button" onclick="openEditTemplateModal('${t.id}')" title="Editar Ficha" class="p-2 bg-slate-900 border border-slate-800 text-slate-300 hover:text-brand-lime hover:border-brand-lime/40 rounded-lg text-xs transition-all">
-          ✏️
-        </button>
-        <button type="button" onclick="deleteTemplate('${t.id}')" title="Apagar Ficha" class="p-2 bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/40 rounded-lg text-xs transition-all">
-          🗑️
-        </button>
-        <button type="button" onclick="switchTab('workout'); loadTemplateIntoWorkout('${t.id}')" class="px-3 py-1.5 bg-slate-900 border border-slate-800 text-xs font-mono text-brand-lime rounded-lg hover:border-brand-lime transition-all">
-          Treinar
-        </button>
+        <button type="button" onclick="openEditTemplateModal('${t.id}')" title="Editar Ficha" class="p-2 bg-slate-900 border border-slate-800 text-slate-300 hover:text-brand-lime rounded-lg text-xs">✏️</button>
+        <button type="button" onclick="deleteTemplate('${t.id}')" title="Apagar Ficha" class="p-2 bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 rounded-lg text-xs">🗑️</button>
+        <button type="button" onclick="switchTab('workout'); loadTemplateIntoWorkout('${t.id}')" class="px-3 py-1.5 bg-slate-900 border border-slate-800 text-xs font-mono text-brand-lime rounded-lg hover:border-brand-lime">Treinar</button>
       </div>
     `;
     list.appendChild(div);
@@ -950,9 +1105,7 @@ function updateProgressChart() {
       if (w.date) {
         const cleanDateStr = w.date.split('T')[0];
         const parts = cleanDateStr.split('-');
-        if (parts.length === 3) {
-          formattedDate = `${parts[2]}/${parts[1]}`;
-        }
+        if (parts.length === 3) formattedDate = `${parts[2]}/${parts[1]}`;
       }
 
       labels.push(formattedDate);
@@ -1005,126 +1158,4 @@ function updateProgressChart() {
 function renderProfileStats() {
   document.getElementById("profileWorkoutsCount").textContent = state.workouts.length;
   document.getElementById("profileTemplatesCount").textContent = state.templates.length;
-}
-/* -------------------------------------------------------------
-   AVALIAÇÃO FÍSICA & MEDIDAS CORPORAIS (SUPABASE)
--------------------------------------------------------------- */
-async function fetchEvaluations() {
-  if (!supabaseClient || !state.user) return;
-
-  const { data: evals, error: evalErr } = await supabaseClient
-    .from('avaliacoes_fisicas')
-    .select(`*, medidas_corporais (*)`)
-    .eq('user_id', state.user.id)
-    .order('data_avaliacao', { ascending: false });
-
-  if (!evalErr && evals) {
-    state.evaluations = evals;
-    renderEvaluationsHistory();
-  }
-}
-
-async function savePhysicalEvaluation() {
-  if (!state.user) return;
-
-  const peso = parseFloat(document.getElementById("evalPeso").value) || null;
-  const altura = parseFloat(document.getElementById("evalAltura").value) || null;
-  const gordura = parseFloat(document.getElementById("evalGordura").value) || null;
-  const massa = parseFloat(document.getElementById("evalMassa").value) || null;
-  const metodo = document.getElementById("evalMetodo").value;
-  const obs = document.getElementById("evalObs").value.trim();
-
-  if (!peso) {
-    alert("Informe pelo menos o peso para registrar a avaliação.");
-    return;
-  }
-
-  const payloadEval = {
-    user_id: state.user.id,
-    data_avaliacao: new Date().toISOString().split('T')[0],
-    peso_kg: peso,
-    altura_cm: altura,
-    gordura_percentual: gordura,
-    massa_muscular_kg: massa,
-    metodo_avaliacao: metodo,
-    observacoes: obs
-  };
-
-  // 1. Salva a avaliação principal
-  const { data: evalData, error: evalErr } = await supabaseClient
-    .from('avaliacoes_fisicas')
-    .insert([payloadEval])
-    .select();
-
-  if (evalErr || !evalData || evalData.length === 0) {
-    alert("Erro ao salvar avaliação: " + (evalErr?.message || "Erro desconhecido"));
-    return;
-  }
-
-  const newEvalId = evalData[0].id;
-
-  // 2. Coleta e salva as circunferências associadas à avaliação
-  const payloadMedidas = {
-    avaliacao_id: newEvalId,
-    user_id: state.user.id,
-    cintura_cm: parseFloat(document.getElementById("evalCintura").value) || null,
-    abdomen_cm: parseFloat(document.getElementById("evalAbdomen").value) || null,
-    quadril_cm: parseFloat(document.getElementById("evalQuadril").value) || null,
-    peitoral_cm: parseFloat(document.getElementById("evalPeitoral").value) || null,
-    braco_direito_cm: parseFloat(document.getElementById("evalBracoDir").value) || null,
-    braco_esquerdo_cm: parseFloat(document.getElementById("evalBracoEsq").value) || null,
-    coxa_direita_cm: parseFloat(document.getElementById("evalCoxaDir").value) || null,
-    coxa_esquerda_cm: parseFloat(document.getElementById("evalCoxaEsq").value) || null,
-    panturrilha_direita_cm: parseFloat(document.getElementById("evalPantsDir").value) || null,
-    panturrilha_esquerda_cm: parseFloat(document.getElementById("evalPantsEsq").value) || null
-  };
-
-  const { error: medErr } = await supabaseClient
-    .from('medidas_corporais')
-    .insert([payloadMedidas]);
-
-  if (medErr) {
-    console.error("Erro ao salvar medidas corporais:", medErr.message);
-  }
-
-  alert("Avaliação física completa forjada e salva com sucesso no Supabase!");
-  
-  // Limpa campos do form
-  document.querySelectorAll('#screen-profile input, #screen-profile textarea').forEach(el => {
-    if(el.type !== 'button') el.value = '';
-  });
-
-  await fetchEvaluations();
-}
-
-function renderEvaluationsHistory() {
-  const container = document.getElementById("evaluationsHistoryList");
-  if (!container) return;
-  container.innerHTML = "";
-
-  if (state.evaluations.length === 0) {
-    container.innerHTML = `<div class="p-3 text-center text-xs font-mono text-slate-500">Nenhuma avaliação física registrada.</div>`;
-    return;
-  }
-
-  state.evaluations.forEach(ev => {
-    const med = ev.medidas_corporais && ev.medidas_corporais.length > 0 ? ev.medidas_corporais[0] : {};
-    const div = document.createElement("div");
-    div.className = "bg-slate-900/80 p-3 rounded-xl tactical-border space-y-1.5 font-mono text-xs";
-    div.innerHTML = `
-      <div class="flex justify-between items-center text-slate-400 border-b border-slate-800 pb-1">
-        <span class="text-brand-lime font-bold">📅 ${ev.data_avaliacao}</span>
-        <span>Método: ${ev.metodo_avaliacao || 'Geral'}</span>
-      </div>
-      <div class="grid grid-cols-2 gap-2 text-white pt-1">
-        <div>Peso: <b class="text-brand-lime">${ev.peso_kg || '-'} kg</b></div>
-        <div>Altura: <b>${ev.altura_cm || '-'} cm</b></div>
-        <div>Gordura: <b>${ev.gordura_percentual || '-'}%</b></div>
-        <div>Massa M.: <b>${ev.massa_muscular_kg || '-'} kg</b></div>
-      </div>
-      ${med.cintura_cm ? `<div class="text-[11px] text-slate-400 pt-1">Cintura: ${med.cintura_cm}cm | Abdômen: ${med.abdomen_cm || '-'}cm | Braço Dir: ${med.braco_direito_cm || '-'}cm</div>` : ''}
-      ${ev.observacoes ? `<p class="text-[11px] text-slate-500 italic pt-1">"${ev.observacoes}"</p>` : ''}
-    `;
-    container.appendChild(div);
-  });
 }
