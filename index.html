@@ -223,11 +223,25 @@
     </section>
 
     <!-- 4. TELA: EVOLUÇÃO (GRÁFICOS & HISTÓRICO) -->
-    <section id="screen-progress" class="hidden space-y-5">
-      <div>
-        <h2 class="text-lg font-display font-extrabold text-white">Evolução & Análise</h2>
-        <p class="text-xs text-slate-400">Progressão de cargas e registros de treino</p>
-      </div>
+    <!-- Procure no index.html a section#screen-progress e substitua o bloco do gráfico por este: -->
+<div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+    <div class="w-full sm:w-auto">
+      <label class="text-[10px] font-mono uppercase text-slate-400 block mb-1">Exercício Monitorado</label>
+      <select id="progressExerciseSelect" onchange="updateProgressChart()" class="w-full sm:w-auto bg-slate-900 border border-slate-800 text-xs text-white rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-brand-lime">
+      </select>
+    </div>
+    
+    <!-- Botões de Alternância de Métrica -->
+    <div class="flex items-center gap-1 bg-slate-950/80 p-1 rounded-lg tactical-border">
+      <button type="button" id="btnMetricMax" onclick="toggleMetricMode('maxWeight')" class="px-2.5 py-1 rounded bg-brand-lime text-black font-bold text-[10px] font-mono">
+        Carga Máx
+      </button>
+      <button type="button" id="btnMetricRM" onclick="toggleMetricMode('estimated1RM')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white text-[10px] font-mono">
+        1RM Estimado
+      </button>
+    </div>
+  </div>
 
       <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
         <div class="flex justify-between items-center">
