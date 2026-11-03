@@ -14,7 +14,7 @@ const state = {
   authMode: 'login',
   templates: [],
   workouts: [],
-  measurements: [],
+  evaluations: [],
   editingTemplateId: null,
   metricMode: 'maxWeight', // 'maxWeight' ou 'estimated1RM'
   activeWorkout: {
@@ -114,7 +114,7 @@ async function onAuthSuccess() {
   document.getElementById("topUserEmail").textContent = state.user.email.split('@')[0];
   document.getElementById("profileUserEmail").textContent = state.user.email;
   await fetchUserData();
-  await fetchMeasurements();
+  await fetchEvaluations();
   renderAll();
 }
 
@@ -1007,84 +1007,123 @@ function renderProfileStats() {
   document.getElementById("profileTemplatesCount").textContent = state.templates.length;
 }
 /* -------------------------------------------------------------
-   BIOMETRIA E MEDIDAS CORPORAIS
+   AVALIAÇÃO FÍSICA & MEDIDAS CORPORAIS (SUPABASE)
 -------------------------------------------------------------- */
-async function fetchMeasurements() {
+async function fetchEvaluations() {
   if (!supabaseClient || !state.user) return;
-  const { data, error } = await supabaseClient
-    .from('body_measurements')
-    .select('*')
-    .eq('user_id', state.user.id)
-    .order('date', { ascending: false });
 
-  if (!error && data) {
-    state.measurements = data;
-    renderMeasurementsHistory();
+  const { data: evals, error: evalErr } = await supabaseClient
+    .from('avaliacoes_fisicas')
+    .select(`*, medidas_corporais (*)`)
+    .eq('user_id', state.user.id)
+    .order('data_avaliacao', { ascending: false });
+
+  if (!evalErr && evals) {
+    state.evaluations = evals;
+    renderEvaluationsHistory();
   }
 }
 
-async function saveBodyMeasurements() {
-  const weight = parseFloat(document.getElementById("bioWeight").value) || null;
-  const waist = parseFloat(document.getElementById("bioWaist").value) || null;
-  const arms = parseFloat(document.getElementById("bioArms").value) || null;
-  const thighs = parseFloat(document.getElementById("bioThighs").value) || null;
+async function savePhysicalEvaluation() {
+  if (!state.user) return;
 
-  if (!weight && !waist && !arms && !thighs) {
-    alert("Preencha pelo menos uma medida antes de salvar.");
+  const peso = parseFloat(document.getElementById("evalPeso").value) || null;
+  const altura = parseFloat(document.getElementById("evalAltura").value) || null;
+  const gordura = parseFloat(document.getElementById("evalGordura").value) || null;
+  const massa = parseFloat(document.getElementById("evalMassa").value) || null;
+  const metodo = document.getElementById("evalMetodo").value;
+  const obs = document.getElementById("evalObs").value.trim();
+
+  if (!peso) {
+    alert("Informe pelo menos o peso para registrar a avaliação.");
     return;
   }
 
-  const payload = {
+  const payloadEval = {
     user_id: state.user.id,
-    date: new Date().toISOString().split('T')[0],
-    weight,
-    waist,
-    arms,
-    thighs
+    data_avaliacao: new Date().toISOString().split('T')[0],
+    peso_kg: peso,
+    altura_cm: altura,
+    gordura_percentual: gordura,
+    massa_muscular_kg: massa,
+    metodo_avaliacao: metodo,
+    observacoes: obs
   };
 
-  if (supabaseClient) {
-    const { error } = await supabaseClient.from('body_measurements').insert([payload]);
-    if (error) {
-      alert("Erro ao salvar medidas: " + error.message);
-      return;
-    }
+  // 1. Salva a avaliação principal
+  const { data: evalData, error: evalErr } = await supabaseClient
+    .from('avaliacoes_fisicas')
+    .insert([payloadEval])
+    .select();
+
+  if (evalErr || !evalData || evalData.length === 0) {
+    alert("Erro ao salvar avaliação: " + (evalErr?.message || "Erro desconhecido"));
+    return;
   }
 
-  state.measurements.unshift(payload);
-  alert("Medidas corporais salvas com sucesso!");
-  
-  // Limpa os campos
-  document.getElementById("bioWeight").value = "";
-  document.getElementById("bioWaist").value = "";
-  document.getElementById("bioArms").value = "";
-  document.getElementById("bioThighs").value = "";
+  const newEvalId = evalData[0].id;
 
-  renderMeasurementsHistory();
+  // 2. Coleta e salva as circunferências associadas à avaliação
+  const payloadMedidas = {
+    avaliacao_id: newEvalId,
+    user_id: state.user.id,
+    cintura_cm: parseFloat(document.getElementById("evalCintura").value) || null,
+    abdomen_cm: parseFloat(document.getElementById("evalAbdomen").value) || null,
+    quadril_cm: parseFloat(document.getElementById("evalQuadril").value) || null,
+    peitoral_cm: parseFloat(document.getElementById("evalPeitoral").value) || null,
+    braco_direito_cm: parseFloat(document.getElementById("evalBracoDir").value) || null,
+    braco_esquerdo_cm: parseFloat(document.getElementById("evalBracoEsq").value) || null,
+    coxa_direita_cm: parseFloat(document.getElementById("evalCoxaDir").value) || null,
+    coxa_esquerda_cm: parseFloat(document.getElementById("evalCoxaEsq").value) || null,
+    panturrilha_direita_cm: parseFloat(document.getElementById("evalPantsDir").value) || null,
+    panturrilha_esquerda_cm: parseFloat(document.getElementById("evalPantsEsq").value) || null
+  };
+
+  const { error: medErr } = await supabaseClient
+    .from('medidas_corporais')
+    .insert([payloadMedidas]);
+
+  if (medErr) {
+    console.error("Erro ao salvar medidas corporais:", medErr.message);
+  }
+
+  alert("Avaliação física completa forjada e salva com sucesso no Supabase!");
+  
+  // Limpa campos do form
+  document.querySelectorAll('#screen-profile input, #screen-profile textarea').forEach(el => {
+    if(el.type !== 'button') el.value = '';
+  });
+
+  await fetchEvaluations();
 }
 
-function renderMeasurementsHistory() {
-  const container = document.getElementById("measurementsHistoryList");
+function renderEvaluationsHistory() {
+  const container = document.getElementById("evaluationsHistoryList");
   if (!container) return;
   container.innerHTML = "";
 
-  if (state.measurements.length === 0) {
-    container.innerHTML = `<div class="p-3 text-center text-xs font-mono text-slate-500">Nenhuma medida registrada.</div>`;
+  if (state.evaluations.length === 0) {
+    container.innerHTML = `<div class="p-3 text-center text-xs font-mono text-slate-500">Nenhuma avaliação física registrada.</div>`;
     return;
   }
 
-  state.measurements.forEach(m => {
+  state.evaluations.forEach(ev => {
+    const med = ev.medidas_corporais && ev.medidas_corporais.length > 0 ? ev.medidas_corporais[0] : {};
     const div = document.createElement("div");
-    div.className = "bg-slate-900/80 p-2.5 rounded-xl tactical-border flex justify-between items-center text-xs font-mono";
+    div.className = "bg-slate-900/80 p-3 rounded-xl tactical-border space-y-1.5 font-mono text-xs";
     div.innerHTML = `
-      <div>
-        <span class="text-[10px] text-slate-400 block">${m.date}</span>
-        <div class="flex gap-2 mt-0.5 text-white">
-          ${m.weight ? `<span>Peso: <b>${m.weight}kg</b></span>` : ''}
-          ${m.waist ? `<span>Cintura: <b>${m.waist}cm</b></span>` : ''}
-          ${m.arms ? `<span>Braço: <b>${m.arms}cm</b></span>` : ''}
-        </div>
+      <div class="flex justify-between items-center text-slate-400 border-b border-slate-800 pb-1">
+        <span class="text-brand-lime font-bold">📅 ${ev.data_avaliacao}</span>
+        <span>Método: ${ev.metodo_avaliacao || 'Geral'}</span>
       </div>
+      <div class="grid grid-cols-2 gap-2 text-white pt-1">
+        <div>Peso: <b class="text-brand-lime">${ev.peso_kg || '-'} kg</b></div>
+        <div>Altura: <b>${ev.altura_cm || '-'} cm</b></div>
+        <div>Gordura: <b>${ev.gordura_percentual || '-'}%</b></div>
+        <div>Massa M.: <b>${ev.massa_muscular_kg || '-'} kg</b></div>
+      </div>
+      ${med.cintura_cm ? `<div class="text-[11px] text-slate-400 pt-1">Cintura: ${med.cintura_cm}cm | Abdômen: ${med.abdomen_cm || '-'}cm | Braço Dir: ${med.braco_direito_cm || '-'}cm</div>` : ''}
+      ${ev.observacoes ? `<p class="text-[11px] text-slate-500 italic pt-1">"${ev.observacoes}"</p>` : ''}
     `;
     container.appendChild(div);
   });
