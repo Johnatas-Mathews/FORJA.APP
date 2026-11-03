@@ -12,6 +12,7 @@ try {
 const state = {
   user: null,
   userProfile: null,
+  teacher: null,
   selectedRole: 'aluno', // 'aluno' ou 'professor'
   authMode: 'login',
   templates: [],
@@ -171,6 +172,7 @@ async function onAuthSuccess() {
   await fetchUserProfile();
   await fetchUserData();
   await fetchEvaluations();
+  await checkTeacherConnection();
   renderAll();
 }
 
@@ -1158,4 +1160,103 @@ function updateProgressChart() {
 function renderProfileStats() {
   document.getElementById("profileWorkoutsCount").textContent = state.workouts.length;
   document.getElementById("profileTemplatesCount").textContent = state.templates.length;
+}
+/* -------------------------------------------------------------
+   SISTEMA DE VÍNCULO COM PROFESSOR (CÓDIGO / EMAIL)
+-------------------------------------------------------------- */
+async function checkTeacherConnection() {
+  if (!supabaseClient || !state.user) return;
+
+  // Busca se existe algum vínculo ativo para este aluno
+  const { data, error } = await supabaseClient
+    .from('professor_alunos')
+    .select(`
+      id,
+      professor_id,
+      profiles:professor_id (email, full_name)
+    `)
+    .eq('aluno_id', state.user.id)
+    .maybeSingle();
+
+  const badge = document.getElementById("teacherStatusBadge");
+  const form = document.getElementById("connectTeacherForm");
+  const info = document.getElementById("connectedTeacherInfo");
+  const nameLabel = document.getElementById("connectedTeacherName");
+
+  if (!error && data && data.profiles) {
+    state.teacher = data;
+    if (badge) {
+      badge.textContent = "Conectado";
+      badge.className = "text-[10px] font-mono px-2 py-0.5 rounded bg-brand-lime/10 text-brand-lime border border-brand-lime/30 font-bold";
+    }
+    if (form) form.classList.add("hidden");
+    if (info) info.classList.remove("hidden");
+    if (nameLabel) nameLabel.textContent = `Treinador: ${data.profiles.full_name || data.profiles.email}`;
+  } else {
+    state.teacher = null;
+    if (badge) {
+      badge.textContent = "Sem Treinador";
+      badge.className = "text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800";
+    }
+    if (form) form.classList.remove("hidden");
+    if (info) info.classList.add("hidden");
+  }
+}
+
+async function connectToTeacher() {
+  const inputVal = document.getElementById("teacherCodeInput").value.trim().toLowerCase();
+
+  if (!inputVal) {
+    alert("Por favor, insira o e-mail do teu professor.");
+    return;
+  }
+
+  // 1. Procura o perfil do professor no Supabase pelo e-mail
+  const { data: prof, error: profErr } = await supabaseClient
+    .from('profiles')
+    .select('id, email, role')
+    .eq('email', inputVal)
+    .maybeSingle();
+
+  if (profErr || !prof) {
+    alert("Professor não encontrado com este e-mail. Confirma se ele já possui conta na FORJA.");
+    return;
+  }
+
+  if (prof.role !== 'professor') {
+    alert("O utilizador encontrado não possui uma conta do tipo PROFESSOR.");
+    return;
+  }
+
+  // 2. Insere o vínculo na tabela professor_alunos
+  const { error: linkErr } = await supabaseClient
+    .from('professor_alunos')
+    .insert([{
+      professor_id: prof.id,
+      aluno_id: state.user.id
+    }]);
+
+  if (linkErr) {
+    alert("Erro ao vincular com o professor: " + linkErr.message);
+    return;
+  }
+
+  alert("Conectado com sucesso ao teu treinador!");
+  document.getElementById("teacherCodeInput").value = "";
+  await checkTeacherConnection();
+}
+
+async function unlinkTeacher() {
+  if (!state.teacher) return;
+  if (!confirm("Tens a certeza que queres desvincular do teu treinador atual?")) return;
+
+  const { error } = await supabaseClient
+    .from('professor_alunos')
+    .delete()
+    .eq('id', state.teacher.id);
+
+  if (!error) {
+    alert("Vínculo removido.");
+    await checkTeacherConnection();
+  }
 }
