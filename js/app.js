@@ -114,6 +114,7 @@ async function onAuthSuccess() {
   document.getElementById("topUserEmail").textContent = state.user.email.split('@')[0];
   document.getElementById("profileUserEmail").textContent = state.user.email;
   await fetchUserData();
+  await fetchMeasurements();
   renderAll();
 }
 
