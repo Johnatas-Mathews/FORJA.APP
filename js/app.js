@@ -129,12 +129,10 @@ async function handleLogout() {
 async function fetchUserData() {
   if (!supabaseClient || !state.user) return;
 
-  // Carregar Fichas
   const { data: tpls, error: tplErr } = await supabaseClient
     .from('templates')
     .select('*')
-    .eq('user_id', state.user.id)
-    .order('created_at', { ascending: false });
+    .eq('user_id', state.user.id);
 
   if (!tplErr && tpls) {
     state.templates = tpls.map(t => ({
@@ -143,30 +141,53 @@ async function fetchUserData() {
     }));
   }
 
-  // Carregar Histórico de Treinos ordenados por data
   const { data: wks, error: wkErr } = await supabaseClient
     .from('workouts')
     .select('*')
-    .eq('user_id', state.user.id)
-    .order('date', { ascending: true });
+    .eq('user_id', state.user.id);
 
-  if (!wkErr && wks) {
-    // Garante que os exercícios salvos em JSON sejam interpretados corretamente
+  if (wkErr) {
+    console.error("Erro ao buscar workouts:", wkErr);
+  }
+
+  if (wks && wks.length > 0) {
     state.workouts = wks.map(w => ({
       ...w,
       exercises: typeof w.exercises === 'string' ? JSON.parse(w.exercises) : (w.exercises || [])
-    }));
+    })).sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+  } else {
+    state.workouts = [];
   }
 }
 
 /* -------------------------------------------------------------
-   CÁLCULOS BIOMECÂNICOS DE RM E EVOLUÇÃO
+   CÁLCULOS BIOMECÂNICOS (1RM & PR)
 -------------------------------------------------------------- */
-// Fórmula de Epley para cálculo de 1RM Estimado
 function calculate1RM(weight, reps) {
   if (!weight || weight <= 0) return 0;
   if (!reps || reps <= 1) return weight;
   return Math.round(weight * (1 + reps / 30));
+}
+
+function getMaxHistoricalWeight(exerciseName) {
+  let max = 0;
+  state.workouts.forEach(w => {
+    if (!w.exercises) return;
+    const found = w.exercises.find(e => e.name && e.name.trim().toLowerCase() === exerciseName.trim().toLowerCase());
+    if (found && found.sets) {
+      found.sets.forEach(s => {
+        const wVal = parseFloat(s.weight) || 0;
+        if (wVal > max) max = wVal;
+      });
+    }
+  });
+  return max;
+}
+
+function isCardioExercise(exerciseName) {
+  if (typeof EXERCISE_DATABASE === 'undefined') return false;
+  const ex = EXERCISE_DATABASE.find(e => e.name.toLowerCase() === exerciseName.toLowerCase());
+  return ex ? (ex.type === 'cardio' || ex.group === 'Cardio') : false;
 }
 
 /* -------------------------------------------------------------
@@ -266,14 +287,19 @@ function selectExerciseFromLibrary(exerciseId) {
   if (!ex) return;
 
   if (state.libraryContext === 'workout') {
+    const isCardio = ex.type === 'cardio' || ex.group === 'Cardio';
+    
     state.activeWorkout.exercises.push({
       name: ex.name,
-      rest: 60,
-      sets: [
-        { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false },
-        { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false },
-        { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false }
-      ]
+      type: isCardio ? 'cardio' : 'weight_reps',
+      rest: isCardio ? 30 : 60,
+      sets: isCardio 
+        ? [{ timeMin: 20, distanceKm: 2.5, completed: false }]
+        : [
+            { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false },
+            { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false },
+            { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false }
+          ]
     });
     renderActiveWorkout();
     closeExerciseLibraryModal();
@@ -525,15 +551,21 @@ function loadTemplateIntoWorkout(templateId) {
 
   state.activeWorkout.name = tpl.title;
   document.getElementById("activeWorkoutName").value = tpl.title;
-  state.activeWorkout.exercises = tpl.exercises_config.map(ex => ({
-    name: ex.name,
-    rest: ex.rest || 60,
-    sets: Array.from({ length: ex.sets || 3 }, () => ({
-      weight: getLastUsedWeight(ex.name) || 30,
-      reps: 10,
-      completed: false
-    }))
-  }));
+  state.activeWorkout.exercises = tpl.exercises_config.map(ex => {
+    const isCardio = isCardioExercise(ex.name);
+    return {
+      name: ex.name,
+      type: isCardio ? 'cardio' : 'weight_reps',
+      rest: ex.rest || (isCardio ? 30 : 60),
+      sets: isCardio 
+        ? [{ timeMin: 20, distanceKm: 2.5, completed: false }]
+        : Array.from({ length: ex.sets || 3 }, () => ({
+            weight: getLastUsedWeight(ex.name) || 30,
+            reps: 10,
+            completed: false
+          }))
+    };
+  });
 
   renderActiveWorkout();
 }
@@ -563,8 +595,12 @@ function renderActiveWorkout() {
   }
 
   state.activeWorkout.exercises.forEach((ex, exIdx) => {
+    const isCardio = isCardioExercise(ex.name) || ex.type === 'cardio';
+    const maxPrevWeight = getMaxHistoricalWeight(ex.name);
+
     const div = document.createElement("div");
-    div.className = "bg-[#111620] rounded-xl p-3.5 tactical-border space-y-3";
+    div.className = "bg-[#111620] rounded-xl p-3.5 tactical-border space-y-3 relative overflow-hidden";
+    
     div.innerHTML = `
       <div class="flex justify-between items-center">
         <div class="flex items-center gap-2">
@@ -574,11 +610,11 @@ function renderActiveWorkout() {
         <div class="flex items-center gap-1.5">
           <span class="text-[10px] font-mono text-slate-400">Descanso:</span>
           <select onchange="updateExerciseRest(${exIdx}, this.value)" class="bg-slate-900 border border-slate-800 text-[11px] font-mono text-brand-lime rounded px-1.5 py-0.5 focus:outline-none focus:border-brand-lime">
+            <option value="30" ${ex.rest == 30 ? 'selected' : ''}>30s</option>
             <option value="45" ${ex.rest == 45 ? 'selected' : ''}>45s</option>
             <option value="60" ${ex.rest == 60 ? 'selected' : ''}>60s</option>
             <option value="90" ${ex.rest == 90 ? 'selected' : ''}>90s</option>
             <option value="120" ${ex.rest == 120 ? 'selected' : ''}>120s</option>
-            <option value="180" ${ex.rest == 180 ? 'selected' : ''}>180s</option>
           </select>
         </div>
       </div>
@@ -586,26 +622,42 @@ function renderActiveWorkout() {
       <div class="space-y-1.5 font-mono text-xs">
         <div class="grid grid-cols-12 gap-1 text-[10px] text-slate-500 uppercase pb-1 text-center">
           <span class="col-span-2 text-left">Série</span>
-          <span class="col-span-4">Carga (kg)</span>
-          <span class="col-span-3">Reps</span>
-          <span class="col-span-3">Pronto</span>
+          <span class="col-span-4">${isCardio ? 'Tempo (min)' : 'Carga (kg)'}</span>
+          <span class="col-span-3">${isCardio ? 'Km / Nível' : 'Reps'}</span>
+          <span class="col-span-3">Status</span>
         </div>
-        ${ex.sets.map((s, sIdx) => `
-          <div class="grid grid-cols-12 gap-1 items-center ${s.completed ? 'opacity-40' : ''}">
-            <span class="col-span-2 text-slate-400">#${sIdx + 1}</span>
-            <div class="col-span-4 flex items-center gap-1">
-              <input type="number" value="${s.weight}" onchange="updateSetVal(${exIdx}, ${sIdx}, 'weight', this.value)" class="w-full bg-slate-900 border border-slate-800 text-center rounded py-1 text-white focus:outline-none focus:border-brand-lime" />
+
+        ${ex.sets.map((s, sIdx) => {
+          const isPR = !isCardio && s.completed && maxPrevWeight > 0 && (parseFloat(s.weight) > maxPrevWeight);
+          
+          return `
+            <div class="grid grid-cols-12 gap-1 items-center ${s.completed ? 'opacity-90' : ''}">
+              <span class="col-span-2 text-slate-400 font-bold flex items-center gap-1">
+                #${sIdx + 1}
+                ${isPR ? '<span class="text-[9px] bg-brand-lime text-black font-black px-1 rounded animate-pulse" title="Recorde Pessoal!">PR</span>' : ''}
+              </span>
+
+              <div class="col-span-4 flex items-center gap-1">
+                <input type="number" value="${isCardio ? (s.timeMin || 0) : (s.weight || 0)}" 
+                  onchange="updateSetVal(${exIdx}, ${sIdx}, '${isCardio ? 'timeMin' : 'weight'}', this.value)" 
+                  class="w-full bg-slate-900 border border-slate-800 text-center rounded py-1 text-white focus:outline-none focus:border-brand-lime" />
+              </div>
+
+              <div class="col-span-3">
+                <input type="number" step="${isCardio ? '0.1' : '1'}" value="${isCardio ? (s.distanceKm || 0) : (s.reps || 0)}" 
+                  onchange="updateSetVal(${exIdx}, ${sIdx}, '${isCardio ? 'distanceKm' : 'reps'}', this.value)" 
+                  class="w-full bg-slate-900 border border-slate-800 text-center rounded py-1 text-white focus:outline-none focus:border-brand-lime" />
+              </div>
+
+              <div class="col-span-3 flex justify-center">
+                <button type="button" onclick="toggleSetComplete(${exIdx}, ${sIdx})" 
+                  class="w-8 h-7 rounded flex items-center justify-center font-bold text-xs transition-all ${s.completed ? 'bg-brand-lime text-black shadow-lg glow-lime' : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'}">
+                  ${s.completed ? '✓' : '•'}
+                </button>
+              </div>
             </div>
-            <div class="col-span-3">
-              <input type="number" value="${s.reps}" onchange="updateSetVal(${exIdx}, ${sIdx}, 'reps', this.value)" class="w-full bg-slate-900 border border-slate-800 text-center rounded py-1 text-white focus:outline-none focus:border-brand-lime" />
-            </div>
-            <div class="col-span-3 flex justify-center">
-              <button type="button" onclick="toggleSetComplete(${exIdx}, ${sIdx})" class="w-7 h-7 rounded flex items-center justify-center font-bold text-xs ${s.completed ? 'bg-brand-lime text-black' : 'bg-slate-900 border border-slate-800 text-slate-400'}">
-                ✓
-              </button>
-            </div>
-          </div>
-        `).join('')}
+          `;
+        }).join('')}
       </div>
     `;
     list.appendChild(div);
@@ -642,9 +694,11 @@ async function finishAndSaveWorkout() {
 
   let totalVolume = 0;
   state.activeWorkout.exercises.forEach(ex => {
-    ex.sets.forEach(s => {
-      totalVolume += (s.weight || 0) * (s.reps || 0);
-    });
+    if (ex.sets) {
+      ex.sets.forEach(s => {
+        totalVolume += (s.weight || 0) * (s.reps || 0);
+      });
+    }
   });
 
   const newWorkout = {
@@ -831,7 +885,9 @@ function renderProgressExercisesDropdown() {
 
   state.workouts.forEach(w => {
     if (w.exercises) {
-      w.exercises.forEach(e => set.add(e.name));
+      w.exercises.forEach(e => {
+        if (!isCardioExercise(e.name)) set.add(e.name);
+      });
     }
   });
 
@@ -876,8 +932,6 @@ function updateProgressChart() {
 
   state.workouts.forEach(w => {
     if (!w.exercises || !Array.isArray(w.exercises)) return;
-    
-    // Procura o exercício pelo nome (ignorando maiúsculas/minúsculas para evitar falhas)
     const found = w.exercises.find(e => e.name && e.name.trim().toLowerCase() === exerciseName.trim().toLowerCase());
     
     if (found && found.sets && found.sets.length > 0) {
@@ -890,13 +944,12 @@ function updateProgressChart() {
         metricValue = Math.max(...rmValues);
       }
 
-      // Formatação robusta de data
       let formattedDate = "Sessão";
       if (w.date) {
-        const cleanDateStr = w.date.split('T')[0]; // Pega apenas YYYY-MM-DD
+        const cleanDateStr = w.date.split('T')[0];
         const parts = cleanDateStr.split('-');
         if (parts.length === 3) {
-          formattedDate = `${parts[2]}/${parts[1]}`; // DD/MM
+          formattedDate = `${parts[2]}/${parts[1]}`;
         }
       }
 
