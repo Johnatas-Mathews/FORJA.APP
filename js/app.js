@@ -636,6 +636,27 @@ function updateExerciseRest(exIdx, newRestVal) {
   state.activeWorkout.exercises[exIdx].rest = parseInt(newRestVal) || 60;
 }
 
+// NOVA FUNÇÃO: Adicionar série a um exercício no treino ativo
+function addSetToExercise(exIdx) {
+  const ex = state.activeWorkout.exercises[exIdx];
+  if (!ex) return;
+
+  const isCardio = isCardioExercise(ex.name) || ex.type === 'cardio';
+  
+  if (isCardio) {
+    ex.sets.push({ timeMin: 10, distanceKm: 1.0, completed: false });
+  } else {
+    // Pega o peso da última série anterior para facilitar, ou usa 20kg como padrão
+    const lastSet = ex.sets.length > 0 ? ex.sets[ex.sets.length - 1] : null;
+    const defaultWeight = lastSet ? lastSet.weight : (getLastUsedWeight(ex.name) || 20);
+    const defaultReps = lastSet ? lastSet.reps : 10;
+
+    ex.sets.push({ weight: defaultWeight, reps: defaultReps, completed: false });
+  }
+
+  renderActiveWorkout();
+}
+
 function renderActiveWorkout() {
   const list = document.getElementById("activeExercisesList");
   list.innerHTML = "";
@@ -709,6 +730,13 @@ function renderActiveWorkout() {
             </div>
           `;
         }).join('')}
+      </div>
+
+      <!-- BOTÃO DE ADICIONAR SÉRIE NATIVO NO CARD -->
+      <div class="pt-1">
+        <button type="button" onclick="addSetToExercise(${exIdx})" class="w-full py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-brand-lime font-mono font-bold text-[11px] rounded-lg transition-all flex items-center justify-center gap-1">
+          + Adicionar Série
+        </button>
       </div>
     `;
     list.appendChild(div);
@@ -851,412 +879,6 @@ async function savePhysicalEvaluation() {
 
   await supabaseClient.from('medidas_corporais').insert([payloadMedidas]);
 
-  alert("Avaliação física completa salva com sucesso!");
-
-  document.querySelectorAll('#screen-profile input, #screen-profile textarea').forEach(el => {
-    if(el.type !== 'button') el.value = '';
-  });
-
+  alert("Avaliação física salva com sucesso!");
   await fetchEvaluations();
-}
-
-function renderEvaluationsHistory() {
-  const container = document.getElementById("evaluationsHistoryList");
-  if (!container) return;
-  container.innerHTML = "";
-
-  if (state.evaluations.length === 0) {
-    container.innerHTML = `<div class="p-3 text-center text-xs font-mono text-slate-500">Nenhuma avaliação física registrada.</div>`;
-    return;
-  }
-
-  state.evaluations.forEach(ev => {
-    const med = ev.medidas_corporais && ev.medidas_corporais.length > 0 ? ev.medidas_corporais[0] : {};
-    const div = document.createElement("div");
-    div.className = "bg-slate-900/80 p-3 rounded-xl tactical-border space-y-1.5 font-mono text-xs";
-    div.innerHTML = `
-      <div class="flex justify-between items-center text-slate-400 border-b border-slate-800 pb-1">
-        <span class="text-brand-lime font-bold">📅 ${ev.data_avaliacao}</span>
-        <span>Método: ${ev.metodo_avaliacao || 'Geral'}</span>
-      </div>
-      <div class="grid grid-cols-2 gap-2 text-white pt-1">
-        <div>Peso: <b class="text-brand-lime">${ev.peso_kg || '-'} kg</b></div>
-        <div>Altura: <b>${ev.altura_cm || '-'} cm</b></div>
-        <div>Gordura: <b>${ev.gordura_percentual || '-'}%</b></div>
-        <div>Massa M.: <b>${ev.massa_muscular_kg || '-'} kg</b></div>
-      </div>
-      ${med.cintura_cm ? `<div class="text-[11px] text-slate-400 pt-1">Cintura: ${med.cintura_cm}cm | Abdômen: ${med.abdomen_cm || '-'}cm | Braço Dir: ${med.braco_direito_cm || '-'}cm</div>` : ''}
-      ${ev.observacoes ? `<p class="text-[11px] text-slate-500 italic pt-1">"${ev.observacoes}"</p>` : ''}
-    `;
-    container.appendChild(div);
-  });
-}
-
-/* -------------------------------------------------------------
-   INTERFACE & RENDERIZAÇÃO DE DASHBOARDS
--------------------------------------------------------------- */
-function switchTab(tab) {
-  const screens = ['home', 'templates', 'workout', 'progress', 'profile'];
-  screens.forEach(s => {
-    document.getElementById(`screen-${s}`).classList.add('hidden');
-    const navBtn = document.getElementById(`tab-${s}`);
-    if (navBtn) {
-      navBtn.classList.remove('text-brand-lime');
-      navBtn.classList.add('text-slate-400');
-    }
-  });
-
-  document.getElementById(`screen-${tab}`).classList.remove('hidden');
-  const activeBtn = document.getElementById(`tab-${tab}`);
-  if (activeBtn) {
-    activeBtn.classList.add('text-brand-lime');
-    activeBtn.classList.remove('text-slate-400');
-  }
-
-  if (tab === 'progress') updateProgressChart();
-}
-
-function renderAll() {
-  renderTemplates();
-  renderHomeMetrics();
-  renderWeeklyHeatmap();
-  renderWorkoutsHistory();
-  renderProgressExercisesDropdown();
-  renderProfileStats();
-}
-
-function renderTemplates() {
-  const list = document.getElementById("templatesList");
-  const select = document.getElementById("workoutTemplateSelect");
-  list.innerHTML = "";
-  select.innerHTML = '<option value="">Carregar de uma Ficha...</option>';
-
-  state.templates.forEach(t => {
-    const opt = document.createElement("option");
-    opt.value = t.id;
-    opt.textContent = `${t.division || '•'} - ${t.title}`;
-    select.appendChild(opt);
-
-    const div = document.createElement("div");
-    div.className = "bg-[#111620] p-4 rounded-xl tactical-border flex justify-between items-center";
-    div.innerHTML = `
-      <div>
-        <span class="text-[10px] font-mono text-brand-lime font-bold">DIVISÃO ${t.division || 'A'}</span>
-        <h4 class="text-sm font-display font-bold text-white mt-0.5">${t.title}</h4>
-        <span class="text-xs text-slate-400">${t.exercises_config ? t.exercises_config.length : 0} exercícios</span>
-      </div>
-      <div class="flex items-center gap-1.5">
-        <button type="button" onclick="openEditTemplateModal('${t.id}')" title="Editar Ficha" class="p-2 bg-slate-900 border border-slate-800 text-slate-300 hover:text-brand-lime rounded-lg text-xs">✏️</button>
-        <button type="button" onclick="deleteTemplate('${t.id}')" title="Apagar Ficha" class="p-2 bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 rounded-lg text-xs">🗑️</button>
-        <button type="button" onclick="switchTab('workout'); loadTemplateIntoWorkout('${t.id}')" class="px-3 py-1.5 bg-slate-900 border border-slate-800 text-xs font-mono text-brand-lime rounded-lg hover:border-brand-lime">Treinar</button>
-      </div>
-    `;
-    list.appendChild(div);
-  });
-}
-
-function renderHomeMetrics() {
-  document.getElementById("profileWorkoutsCount").textContent = state.workouts.length;
-  document.getElementById("profileTemplatesCount").textContent = state.templates.length;
-
-  let weeklyVol = 0;
-  state.workouts.forEach(w => weeklyVol += (w.total_volume_kg || 0));
-  document.getElementById("statWeeklyVolume").innerHTML = `${weeklyVol} <span class="text-xs text-slate-500">kg</span>`;
-}
-
-function renderWeeklyHeatmap() {
-  const container = document.getElementById("weeklyHeatmap");
-  if (!container) return;
-  container.innerHTML = "";
-
-  const daysLabels = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
-  const today = new Date();
-  
-  const currentSunday = new Date(today);
-  currentSunday.setDate(today.getDate() - today.getDay());
-  currentSunday.setHours(0, 0, 0, 0);
-
-  const activeDaysIndexes = new Set();
-
-  state.workouts.forEach(w => {
-    if (!w.date) return;
-    const wDate = new Date(w.date);
-    if (typeof w.date === 'string' && w.date.length === 10) {
-      const parts = w.date.split('-');
-      wDate.setFullYear(parts[0], parts[1] - 1, parts[2]);
-    }
-    wDate.setHours(0, 0, 0, 0);
-
-    const diffTime = wDate.getTime() - currentSunday.getTime();
-    const diffDays = Math.round(diffTime / (1000 * 3600 * 24));
-
-    if (diffDays >= 0 && diffDays < 7) {
-      activeDaysIndexes.add(diffDays);
-    }
-  });
-
-  daysLabels.forEach((d, idx) => {
-    const isCompleted = activeDaysIndexes.has(idx);
-    const div = document.createElement("div");
-    div.className = "flex flex-col items-center gap-1";
-    div.innerHTML = `
-      <div class="w-8 h-8 rounded-lg flex items-center justify-center font-mono text-xs ${isCompleted ? 'bg-brand-lime text-black font-extrabold shadow-sm glow-lime' : 'bg-slate-900 text-slate-500 border border-slate-800'}">
-        ${d}
-      </div>
-    `;
-    container.appendChild(div);
-  });
-
-  const weekCountEl = document.getElementById("weekSessionsCount");
-  if (weekCountEl) {
-    weekCountEl.textContent = `${activeDaysIndexes.size} sessões`;
-  }
-}
-
-function renderWorkoutsHistory() {
-  const list = document.getElementById("workoutsHistoryList");
-  list.innerHTML = "";
-
-  if (state.workouts.length === 0) {
-    list.innerHTML = `<div class="p-4 text-center text-xs font-mono text-slate-500">Nenhum treino registrado ainda.</div>`;
-    return;
-  }
-
-  state.workouts.slice().reverse().forEach(w => {
-    const div = document.createElement("div");
-    div.className = "bg-[#111620] p-3 rounded-xl tactical-border flex justify-between items-center font-mono text-xs";
-    div.innerHTML = `
-      <div>
-        <p class="font-bold text-white">${w.name}</p>
-        <span class="text-[10px] text-slate-500">${w.date || 'Hoje'}</span>
-      </div>
-      <span class="text-brand-lime font-bold">${w.total_volume_kg || 0} kg</span>
-    `;
-    list.appendChild(div);
-  });
-}
-
-function renderProgressExercisesDropdown() {
-  const select = document.getElementById("progressExerciseSelect");
-  if (!select) return;
-  select.innerHTML = "";
-  const set = new Set();
-
-  state.workouts.forEach(w => {
-    if (w.exercises) {
-      w.exercises.forEach(e => {
-        if (!isCardioExercise(e.name)) set.add(e.name);
-      });
-    }
-  });
-
-  if (set.size === 0) {
-    select.innerHTML = `<option>Supino Reto com Barra</option>`;
-    return;
-  }
-
-  set.forEach(name => {
-    const opt = document.createElement("option");
-    opt.value = name;
-    opt.textContent = name;
-    select.appendChild(opt);
-  });
-}
-
-function toggleMetricMode(mode) {
-  state.metricMode = mode;
-  const btnMax = document.getElementById("btnMetricMax");
-  const btnRM = document.getElementById("btnMetricRM");
-  
-  if (mode === 'maxWeight') {
-    btnMax.className = "px-2.5 py-1 rounded bg-brand-lime text-black font-bold text-[10px] font-mono";
-    btnRM.className = "px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white text-[10px] font-mono";
-  } else {
-    btnRM.className = "px-2.5 py-1 rounded bg-brand-lime text-black font-bold text-[10px] font-mono";
-    btnMax.className = "px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white text-[10px] font-mono";
-  }
-  
-  updateProgressChart();
-}
-
-function updateProgressChart() {
-  const select = document.getElementById("progressExerciseSelect");
-  if (!select) return;
-  const exerciseName = select.value;
-  const ctx = document.getElementById("progressChart")?.getContext("2d");
-  if (!ctx) return;
-
-  const labels = [];
-  const dataValues = [];
-
-  state.workouts.forEach(w => {
-    if (!w.exercises || !Array.isArray(w.exercises)) return;
-    const found = w.exercises.find(e => e.name && e.name.trim().toLowerCase() === exerciseName.trim().toLowerCase());
-    
-    if (found && found.sets && found.sets.length > 0) {
-      let metricValue = 0;
-      
-      if (state.metricMode === 'maxWeight') {
-        metricValue = Math.max(...found.sets.map(s => parseFloat(s.weight) || 0));
-      } else {
-        const rmValues = found.sets.map(s => calculate1RM(parseFloat(s.weight) || 0, parseFloat(s.reps) || 0));
-        metricValue = Math.max(...rmValues);
-      }
-
-      let formattedDate = "Sessão";
-      if (w.date) {
-        const cleanDateStr = w.date.split('T')[0];
-        const parts = cleanDateStr.split('-');
-        if (parts.length === 3) formattedDate = `${parts[2]}/${parts[1]}`;
-      }
-
-      labels.push(formattedDate);
-      dataValues.push(metricValue);
-    }
-  });
-
-  if (progressChartInstance) {
-    progressChartInstance.destroy();
-  }
-
-  const metricLabel = state.metricMode === 'maxWeight' ? 'Carga Máxima (kg)' : '1RM Estimado (kg)';
-
-  progressChartInstance = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels.length ? labels : ['Sem dados'],
-      datasets: [{
-        label: metricLabel,
-        data: dataValues.length ? dataValues : [0],
-        borderColor: '#a3e635',
-        backgroundColor: 'rgba(163, 230, 53, 0.1)',
-        tension: 0.3,
-        fill: true,
-        pointBackgroundColor: '#a3e635',
-        pointRadius: 5
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: { 
-          grid: { color: 'rgba(255,255,255,0.05)' }, 
-          ticks: { color: '#64748b', font: { family: 'JetBrains Mono' } },
-          beginAtZero: true
-        },
-        x: { 
-          grid: { color: 'rgba(255,255,255,0.05)' }, 
-          ticks: { color: '#64748b', font: { family: 'JetBrains Mono' } } 
-        }
-      },
-      plugins: {
-        legend: { display: false }
-      }
-    }
-  });
-}
-
-function renderProfileStats() {
-  document.getElementById("profileWorkoutsCount").textContent = state.workouts.length;
-  document.getElementById("profileTemplatesCount").textContent = state.templates.length;
-}
-/* -------------------------------------------------------------
-   SISTEMA DE VÍNCULO COM PROFESSOR (CÓDIGO / EMAIL)
--------------------------------------------------------------- */
-async function checkTeacherConnection() {
-  if (!supabaseClient || !state.user) return;
-
-  // Busca se existe algum vínculo ativo para este aluno
-  const { data, error } = await supabaseClient
-    .from('professor_alunos')
-    .select(`
-      id,
-      professor_id,
-      profiles:professor_id (email, full_name)
-    `)
-    .eq('aluno_id', state.user.id)
-    .maybeSingle();
-
-  const badge = document.getElementById("teacherStatusBadge");
-  const form = document.getElementById("connectTeacherForm");
-  const info = document.getElementById("connectedTeacherInfo");
-  const nameLabel = document.getElementById("connectedTeacherName");
-
-  if (!error && data && data.profiles) {
-    state.teacher = data;
-    if (badge) {
-      badge.textContent = "Conectado";
-      badge.className = "text-[10px] font-mono px-2 py-0.5 rounded bg-brand-lime/10 text-brand-lime border border-brand-lime/30 font-bold";
-    }
-    if (form) form.classList.add("hidden");
-    if (info) info.classList.remove("hidden");
-    if (nameLabel) nameLabel.textContent = `Treinador: ${data.profiles.full_name || data.profiles.email}`;
-  } else {
-    state.teacher = null;
-    if (badge) {
-      badge.textContent = "Sem Treinador";
-      badge.className = "text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800";
-    }
-    if (form) form.classList.remove("hidden");
-    if (info) info.classList.add("hidden");
-  }
-}
-
-async function connectToTeacher() {
-  const inputVal = document.getElementById("teacherCodeInput").value.trim().toLowerCase();
-
-  if (!inputVal) {
-    alert("Por favor, insira o e-mail do teu professor.");
-    return;
-  }
-
-  // 1. Procura o perfil do professor no Supabase pelo e-mail
-  const { data: prof, error: profErr } = await supabaseClient
-    .from('profiles')
-    .select('id, email, role')
-    .eq('email', inputVal)
-    .maybeSingle();
-
-  if (profErr || !prof) {
-    alert("Professor não encontrado com este e-mail. Confirma se ele já possui conta na FORJA.");
-    return;
-  }
-
-  if (prof.role !== 'professor') {
-    alert("O utilizador encontrado não possui uma conta do tipo PROFESSOR.");
-    return;
-  }
-
-  // 2. Insere o vínculo na tabela professor_alunos
-  const { error: linkErr } = await supabaseClient
-    .from('professor_alunos')
-    .insert([{
-      professor_id: prof.id,
-      aluno_id: state.user.id
-    }]);
-
-  if (linkErr) {
-    alert("Erro ao vincular com o professor: " + linkErr.message);
-    return;
-  }
-
-  alert("Conectado com sucesso ao teu treinador!");
-  document.getElementById("teacherCodeInput").value = "";
-  await checkTeacherConnection();
-}
-
-async function unlinkTeacher() {
-  if (!state.teacher) return;
-  if (!confirm("Tens a certeza que queres desvincular do teu treinador atual?")) return;
-
-  const { error } = await supabaseClient
-    .from('professor_alunos')
-    .delete()
-    .eq('id', state.teacher.id);
-
-  if (!error) {
-    alert("Vínculo removido.");
-    await checkTeacherConnection();
-  }
 }
