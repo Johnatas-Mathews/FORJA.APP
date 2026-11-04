@@ -205,8 +205,9 @@ async function onAuthSuccess() {
   await fetchUserProfile();
   await fetchUserData();
   await fetchEvaluations();
-  if (typeof checkTeacherConnection === 'function') await checkTeacherConnection();
-  if (typeof renderAll === 'function') renderAll();
+  
+  // Garante a renderização completa de todas as telas e selects de evolução
+  renderAll();
   switchTab('home');
 }
 
@@ -224,6 +225,7 @@ async function handleLogout() {
 async function fetchUserData() {
   if (!supabaseClient || !state.user) return;
 
+  // Busca as fichas (templates) no Supabase
   const { data: tpls } = await supabaseClient
     .from('templates')
     .select('*')
@@ -236,6 +238,7 @@ async function fetchUserData() {
     }));
   }
 
+  // Busca os treinos realizados no Supabase
   const { data: wks } = await supabaseClient
     .from('workouts')
     .select('*')
@@ -248,6 +251,136 @@ async function fetchUserData() {
     })).sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
   } else {
     state.workouts = [];
+  }
+}
+
+/* -------------------------------------------------------------
+   RENDERIZAÇÃO GERAL (FICHAS, HISTÓRICO, GRÁFICOS & PERFIL)
+-------------------------------------------------------------- */
+function renderAll() {
+  renderTemplates();
+  renderWorkoutsHistory();
+  renderProfileStats();
+  populateProgressExerciseSelect();
+  if (typeof updateProgressChart === 'function') updateProgressChart();
+}
+
+function renderTemplates() {
+  const container = document.getElementById("templatesList");
+  if (!container) return;
+  container.innerHTML = "";
+
+  if (state.templates.length === 0) {
+    container.innerHTML = `<div class="p-8 text-center text-xs font-mono text-slate-500 border border-dashed border-slate-800 rounded-xl">Nenhuma ficha criada ainda. Clique em "+ Criar Ficha" acima.</div>`;
+    return;
+  }
+
+  state.templates.forEach(tpl => {
+    const div = document.createElement("div");
+    div.className = "bg-[#111620] rounded-2xl p-4 tactical-border space-y-3";
+    
+    const exercisesConfig = tpl.exercises_config || [];
+
+    div.innerHTML = `
+      <div class="flex justify-between items-center">
+        <div>
+          <span class="text-[9px] font-mono text-brand-lime font-bold uppercase">Divisão ${tpl.division || 'A'}</span>
+          <h3 class="text-sm font-display font-bold text-white">${tpl.title || tpl.name}</h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="loadTemplateIntoWorkout('${tpl.id}')" class="px-3 py-1.5 bg-brand-lime text-black font-mono font-bold text-[10px] rounded-lg hover:brightness-110">
+            ⚡ Iniciar
+          </button>
+          <button onclick="openEditTemplateModal('${tpl.id}')" class="px-2 py-1.5 bg-slate-800 text-slate-300 font-mono text-[10px] rounded-lg hover:bg-slate-700">
+            ✏️
+          </button>
+          <button onclick="deleteTemplate('${tpl.id}')" class="px-2 py-1.5 bg-red-950/40 text-red-400 font-mono text-[10px] rounded-lg hover:bg-red-900/40">
+            🗑️
+          </button>
+        </div>
+      </div>
+      <div class="space-y-1 pt-1 border-t border-slate-800/80">
+        ${exercisesConfig.map(ex => `
+          <div class="flex justify-between text-xs font-mono text-slate-400">
+            <span>• ${ex.name}</span>
+            <span class="text-slate-500">${ex.sets || 3} séries (${ex.rest || 60}s)</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function renderWorkoutsHistory() {
+  const container = document.getElementById("workoutsHistoryList");
+  if (!container) return;
+  container.innerHTML = "";
+
+  if (state.workouts.length === 0) {
+    container.innerHTML = `<div class="p-4 text-center text-[11px] font-mono text-slate-500">Nenhum treino concluído ainda.</div>`;
+    return;
+  }
+
+  // Mostra os últimos treinos do mais recente para o mais antigo
+  [...state.workouts].reverse().slice(0, 5).forEach(wk => {
+    const div = document.createElement("div");
+    div.className = "bg-slate-900/80 p-2.5 rounded-xl tactical-border flex justify-between items-center text-xs font-mono";
+    div.innerHTML = `
+      <div>
+        <p class="font-bold text-white">${wk.name}</p>
+        <span class="text-[10px] text-slate-500">${wk.date || 'Data recente'}</span>
+      </div>
+      <div class="text-right">
+        <span class="text-brand-lime font-bold">${wk.total_volume_kg || 0} kg</span>
+        <span class="text-[10px] text-slate-400 block">volume total</span>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function renderProfileStats() {
+  const countEl = document.getElementById("profileWorkoutsCount");
+  const volumeEl = document.getElementById("statWeeklyVolume");
+  const sessionsEl = document.getElementById("weekSessionsCount");
+
+  if (countEl) countEl.textContent = state.workouts.length;
+  
+  let totalVol = 0;
+  state.workouts.forEach(w => totalVol += (w.total_volume_kg || 0));
+  if (volumeEl) volumeEl.innerHTML = `${totalVol} <span class="text-xs text-slate-500">kg</span>`;
+  if (sessionsEl) sessionsEl.textContent = `${state.workouts.length} sessões`;
+}
+
+function populateProgressExerciseSelect() {
+  const select = document.getElementById("progressExerciseSelect");
+  if (!select) return;
+  
+  // Coleta todos os nomes de exercícios únicos presentes nos treinos e fichas
+  const uniqueExercises = new Set();
+  state.workouts.forEach(w => {
+    if (w.exercises) w.exercises.forEach(e => { if (e.name) uniqueExercises.add(e.name); });
+  });
+  state.templates.forEach(t => {
+    if (t.exercises_config) t.exercises_config.forEach(e => { if (e.name) uniqueExercises.add(e.name); });
+  });
+
+  select.innerHTML = "";
+  if (uniqueExercises.size === 0) {
+    select.innerHTML = `<option value="">Nenhum exercício registrado</option>`;
+    return;
+  }
+
+  uniqueExercises.forEach(exName => {
+    const opt = document.createElement("option");
+    opt.value = exName;
+    opt.textContent = exName;
+    select.appendChild(opt);
+  });
+
+  if (typeof updateProgressChart === 'function') {
+    updateProgressChart();
   }
 }
 
@@ -544,8 +677,9 @@ async function saveNewTemplate() {
   }
 
   closeCreateTemplateModal();
-  if (typeof renderTemplates === 'function') renderTemplates();
-  if (typeof renderProfileStats === 'function') renderProfileStats();
+  renderTemplates();
+  renderProfileStats();
+  populateProgressExerciseSelect();
 }
 
 async function deleteTemplate(templateId) {
@@ -567,8 +701,9 @@ async function deleteTemplate(templateId) {
   }
 
   state.templates = state.templates.filter(t => t.id !== templateId);
-  if (typeof renderTemplates === 'function') renderTemplates();
-  if (typeof renderProfileStats === 'function') renderProfileStats();
+  renderTemplates();
+  renderProfileStats();
+  populateProgressExerciseSelect();
 }
 
 /* -------------------------------------------------------------
@@ -658,6 +793,7 @@ function loadTemplateIntoWorkout(templateId) {
   });
 
   renderActiveWorkout();
+  switchTab('workout');
 }
 
 function getLastUsedWeight(exerciseName) {
@@ -833,7 +969,7 @@ async function finishAndSaveWorkout() {
   state.workouts.push(newWorkout);
   alert("Treino salvo com sucesso!");
   switchTab('progress');
-  if (typeof renderAll === 'function') renderAll();
+  renderAll();
 }
 
 function quickStartTemplate() {
@@ -841,6 +977,89 @@ function quickStartTemplate() {
   if (state.templates.length > 0) {
     loadTemplateIntoWorkout(state.templates[0].id);
   }
+}
+
+/* -------------------------------------------------------------
+   GRÁFICO DE EVOLUÇÃO
+-------------------------------------------------------------- */
+function updateProgressChart() {
+  const exerciseName = document.getElementById("progressExerciseSelect")?.value;
+  const canvasCtx = document.getElementById("progressChart");
+  if (!canvasCtx) return;
+
+  const labels = [];
+  const dataPoints = [];
+
+  state.workouts.forEach(w => {
+    if (!w.exercises) return;
+    w.exercises.forEach(e => {
+      if (e.name && e.name.toLowerCase() === exerciseName?.toLowerCase()) {
+        labels.push(w.date || 'Treino');
+        
+        if (state.metricMode === 'maxWeight') {
+          let maxW = 0;
+          if (e.sets) {
+            e.sets.forEach(s => { if ((s.weight || 0) > maxW) maxW = s.weight; });
+          }
+          dataPoints.push(maxW);
+        } else {
+          let best1RM = 0;
+          if (e.sets) {
+            e.sets.forEach(s => {
+              const rm = calculate1RM(s.weight, s.reps);
+              if (rm > best1RM) best1RM = rm;
+            });
+          }
+          dataPoints.push(best1RM);
+        }
+      }
+    });
+  });
+
+  if (progressChartInstance) {
+    progressChartInstance.destroy();
+  }
+
+  progressChartInstance = new Chart(canvasCtx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: state.metricMode === 'maxWeight' ? 'Carga Máxima (kg)' : '1RM Estimado (kg)',
+        data: dataPoints,
+        borderColor: '#a3e635',
+        backgroundColor: 'rgba(163, 230, 53, 0.1)',
+        borderWidth: 2,
+        tension: 0.3,
+        fill: true,
+        pointBackgroundColor: '#a3e635'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#64748b', font: { family: 'monospace', size: 10 } }, grid: { color: '#1e293b' } },
+        y: { ticks: { color: '#64748b', font: { family: 'monospace', size: 10 } }, grid: { color: '#1e293b' } }
+      }
+    }
+  });
+}
+
+function toggleMetricMode(mode) {
+  state.metricMode = mode;
+  const btnMax = document.getElementById("btnMetricMax");
+  const btnRM = document.getElementById("btnMetricRM");
+
+  if (mode === 'maxWeight') {
+    btnMax.className = "px-2.5 py-1 rounded bg-brand-lime text-black font-bold text-[10px] font-mono";
+    btnRM.className = "px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white text-[10px] font-mono";
+  } else {
+    btnRM.className = "px-2.5 py-1 rounded bg-brand-lime text-black font-bold text-[10px] font-mono";
+    btnMax.className = "px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white text-[10px] font-mono";
+  }
+  updateProgressChart();
 }
 
 /* -------------------------------------------------------------
@@ -857,7 +1076,6 @@ async function fetchEvaluations() {
 
   if (!evalErr && evals) {
     state.evaluations = evals;
-    if (typeof renderEvaluationsHistory === 'function') renderEvaluationsHistory();
   }
 }
 
