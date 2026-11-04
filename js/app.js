@@ -64,6 +64,39 @@ async function checkSession() {
 }
 
 /* -------------------------------------------------------------
+   SISTEMA DE ABAS (TROCA DE TELAS)
+-------------------------------------------------------------- */
+function switchTab(targetScreenId) {
+  const screens = ['home', 'templates', 'workout', 'progress', 'profile'];
+  
+  screens.forEach(screenName => {
+    const el = document.getElementById(`screen-${screenName}`);
+    if (el) {
+      if (screenName === targetScreenId) {
+        el.classList.remove('hidden');
+      } else {
+        el.classList.add('hidden');
+      }
+    }
+  });
+
+  screens.forEach(screenName => {
+    const tabBtn = document.getElementById(`tab-${screenName}`);
+    if (tabBtn) {
+      if (screenName === targetScreenId) {
+        tabBtn.className = "flex flex-col items-center gap-1 text-brand-lime font-bold";
+      } else {
+        tabBtn.className = "flex flex-col items-center gap-1 text-slate-400 hover:text-white";
+      }
+    }
+  });
+
+  if (targetScreenId === 'progress' && typeof updateProgressChart === 'function') {
+    setTimeout(updateProgressChart, 50);
+  }
+}
+
+/* -------------------------------------------------------------
    AUTENTICAÇÃO E PERFIL (ALUNO / PROFESSOR)
 -------------------------------------------------------------- */
 function selectAuthRole(role) {
@@ -172,8 +205,9 @@ async function onAuthSuccess() {
   await fetchUserProfile();
   await fetchUserData();
   await fetchEvaluations();
-  await checkTeacherConnection();
-  renderAll();
+  if (typeof checkTeacherConnection === 'function') await checkTeacherConnection();
+  if (typeof renderAll === 'function') renderAll();
+  switchTab('home');
 }
 
 async function handleLogout() {
@@ -510,8 +544,8 @@ async function saveNewTemplate() {
   }
 
   closeCreateTemplateModal();
-  renderTemplates();
-  renderProfileStats();
+  if (typeof renderTemplates === 'function') renderTemplates();
+  if (typeof renderProfileStats === 'function') renderProfileStats();
 }
 
 async function deleteTemplate(templateId) {
@@ -533,8 +567,8 @@ async function deleteTemplate(templateId) {
   }
 
   state.templates = state.templates.filter(t => t.id !== templateId);
-  renderTemplates();
-  renderProfileStats();
+  if (typeof renderTemplates === 'function') renderTemplates();
+  if (typeof renderProfileStats === 'function') renderProfileStats();
 }
 
 /* -------------------------------------------------------------
@@ -549,18 +583,20 @@ function startAutoRest(seconds = 60) {
   state.restTimer.total = seconds;
   state.restTimer.remaining = seconds;
 
-  widget.classList.remove("hidden");
+  if (widget) widget.classList.remove("hidden");
 
   const updateUI = () => {
-    secondsDisplay.textContent = state.restTimer.remaining + "s";
-    const offset = 88 - (88 * state.restTimer.remaining) / state.restTimer.total;
-    circle.style.strokeDashoffset = offset;
+    if (secondsDisplay) secondsDisplay.textContent = state.restTimer.remaining + "s";
+    if (circle) {
+      const offset = 88 - (88 * state.restTimer.remaining) / state.restTimer.total;
+      circle.style.strokeDashoffset = offset;
+    }
 
     if (state.restTimer.remaining <= 0) {
       clearInterval(state.restTimer.intervalId);
       playBeep();
       if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-      setTimeout(() => widget.classList.add("hidden"), 3000);
+      if (widget) setTimeout(() => widget.classList.add("hidden"), 3000);
     }
     state.restTimer.remaining--;
   };
@@ -576,7 +612,8 @@ function addRestTime(seconds) {
 
 function cancelRestTimer() {
   clearInterval(state.restTimer.intervalId);
-  document.getElementById("restTimerWidget").classList.add("hidden");
+  const widget = document.getElementById("restTimerWidget");
+  if (widget) widget.classList.add("hidden");
 }
 
 function playBeep() {
@@ -601,7 +638,9 @@ function loadTemplateIntoWorkout(templateId) {
   if (!tpl) return;
 
   state.activeWorkout.name = tpl.title;
-  document.getElementById("activeWorkoutName").value = tpl.title;
+  const nameInput = document.getElementById("activeWorkoutName");
+  if (nameInput) nameInput.value = tpl.title;
+
   state.activeWorkout.exercises = tpl.exercises_config.map(ex => {
     const isCardio = isCardioExercise(ex.name);
     return {
@@ -636,7 +675,6 @@ function updateExerciseRest(exIdx, newRestVal) {
   state.activeWorkout.exercises[exIdx].rest = parseInt(newRestVal) || 60;
 }
 
-// NOVA FUNÇÃO: Adicionar série a um exercício no treino ativo
 function addSetToExercise(exIdx) {
   const ex = state.activeWorkout.exercises[exIdx];
   if (!ex) return;
@@ -646,7 +684,6 @@ function addSetToExercise(exIdx) {
   if (isCardio) {
     ex.sets.push({ timeMin: 10, distanceKm: 1.0, completed: false });
   } else {
-    // Pega o peso da última série anterior para facilitar, ou usa 20kg como padrão
     const lastSet = ex.sets.length > 0 ? ex.sets[ex.sets.length - 1] : null;
     const defaultWeight = lastSet ? lastSet.weight : (getLastUsedWeight(ex.name) || 20);
     const defaultReps = lastSet ? lastSet.reps : 10;
@@ -659,6 +696,7 @@ function addSetToExercise(exIdx) {
 
 function renderActiveWorkout() {
   const list = document.getElementById("activeExercisesList");
+  if (!list) return;
   list.innerHTML = "";
 
   if (state.activeWorkout.exercises.length === 0) {
@@ -732,7 +770,6 @@ function renderActiveWorkout() {
         }).join('')}
       </div>
 
-      <!-- BOTÃO DE ADICIONAR SÉRIE NATIVO NO CARD -->
       <div class="pt-1">
         <button type="button" onclick="addSetToExercise(${exIdx})" class="w-full py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-brand-lime font-mono font-bold text-[11px] rounded-lg transition-all flex items-center justify-center gap-1">
           + Adicionar Série
@@ -796,7 +833,7 @@ async function finishAndSaveWorkout() {
   state.workouts.push(newWorkout);
   alert("Treino salvo com sucesso!");
   switchTab('progress');
-  renderAll();
+  if (typeof renderAll === 'function') renderAll();
 }
 
 function quickStartTemplate() {
@@ -820,7 +857,7 @@ async function fetchEvaluations() {
 
   if (!evalErr && evals) {
     state.evaluations = evals;
-    renderEvaluationsHistory();
+    if (typeof renderEvaluationsHistory === 'function') renderEvaluationsHistory();
   }
 }
 
