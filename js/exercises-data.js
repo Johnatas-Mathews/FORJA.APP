@@ -594,46 +594,47 @@ const EXERCISE_DATABASE = [
     muscles: 'Extensores do Punho',
     tips: 'Fortalece os extensores, prevenindo dores e epicondilites no cotovelo.',
     img: BASE_IMG_URL + 'Palms-Down_Barbell_Wrist_Curl/0.jpg'
+  },
+
+  // ================= CARDIO =================
+  {
+    id: 'cardio-esteira',
+    name: 'Esteira (Corrida/Caminhada)',
+    group: 'Cardio',
+    equipment: 'Esteira',
+    muscles: 'Sistema Cardiorrespiratório, Membros Inferiores',
+    tips: 'Mantenha a postura ereta e ajuste a velocidade/inclinação de acordo com o objetivo.',
+    type: 'cardio',
+    img: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23a3e635" stroke-width="1.5"%3E%3Cpath d="M13 4v4l-4 4M9 4v4l4 4M4 20h16"/%3E%3C/svg%3E'
+  },
+  {
+    id: 'cardio-bike',
+    name: 'Bicicleta Ergométrica',
+    group: 'Cardio',
+    equipment: 'Bicicleta',
+    muscles: 'Quadríceps, Panturrilhas, Cardiorrespiratório',
+    tips: 'Ajuste o banco na altura do quadril para proteger os joelhos durante a pedalada.',
+    type: 'cardio',
+    img: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23a3e635" stroke-width="1.5"%3E%3Ccircle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 100-2 1 1 0 000 2zM12 17.5V14l-3-3 4-3 2 3h3"/%3E%3C/svg%3E'
+  },
+  {
+    id: 'cardio-escada',
+    name: 'Escada (Stairmaster)',
+    group: 'Cardio',
+    equipment: 'Simulador de Escada',
+    muscles: 'Glúteos, Quadríceps, Panturrilhas',
+    tips: 'Evite debruçar-se sobre o painel; mantenha o tronco alinhado para maior ativação muscular.',
+    type: 'cardio',
+    img: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23a3e635" stroke-width="1.5"%3E%3Cpath d="M4 19h4v-4h4v-4h4v-4h4"/%3E%3C/svg%3E'
+  },
+  {
+    id: 'cardio-caminhada',
+    name: 'Caminhada ao Ar Livre',
+    group: 'Cardio',
+    equipment: 'Livre',
+    muscles: 'Corpo Todo, Cardiorrespiratório',
+    tips: 'Mantenha ritmo constante e passadas firmes.',
+    type: 'cardio',
+    img: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23a3e635" stroke-width="1.5"%3E%3Cpath d="M13 4v4l-4 4M9 4v4l4 4"/%3E%3C/svg%3E'
   }
-  // Adicione estes itens ao seu EXERCISE_DATABASE em js/exercises-data.js:
-{
-  id: 'cardio-esteira',
-  name: 'Esteira (Corrida/Caminhada)',
-  group: 'Cardio',
-  equipment: 'Esteira',
-  muscles: 'Sistema Cardiorrespiratório, Membros Inferiores',
-  tips: 'Mantenha a postura ereta e ajuste a velocidade/inclinação de acordo com o objetivo.',
-  type: 'cardio',
-  img: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23a3e635" stroke-width="1.5"%3E%3Cpath d="M13 4v4l-4 4M9 4v4l4 4M4 20h16"/%3E%3C/svg%3E'
-},
-{
-  id: 'cardio-bike',
-  name: 'Bicicleta Ergométrica',
-  group: 'Cardio',
-  equipment: 'Bicicleta',
-  muscles: 'Quadríceps, Panturrilhas, Cardiorrespiratório',
-  tips: 'Ajuste o banco na altura do quadril para proteger os joelhos durante a pedalada.',
-  type: 'cardio',
-  img: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23a3e635" stroke-width="1.5"%3E%3Ccircle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 100-2 1 1 0 000 2zM12 17.5V14l-3-3 4-3 2 3h3"/%3E%3C/svg%3E'
-},
-{
-  id: 'cardio-escada',
-  name: 'Escada (Stairmaster)',
-  group: 'Cardio',
-  equipment: 'Simulador de Escada',
-  muscles: 'Glúteos, Quadríceps, Panturrilhas',
-  tips: 'Evite debruçar-se sobre o painel; mantenha o tronco alinhado para maior ativação muscular.',
-  type: 'cardio',
-  img: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23a3e635" stroke-width="1.5"%3E%3Cpath d="M4 19h4v-4h4v-4h4v-4h4"/%3E%3C/svg%3E'
-},
-{
-  id: 'cardio-caminhada',
-  name: 'Caminhada ao Ar Livre',
-  group: 'Cardio',
-  equipment: 'Livre',
-  muscles: 'Corpo Todo, Cardiorrespiratório',
-  tips: 'Mantenha ritmo constante e passadas firmes.',
-  type: 'cardio',
-  img: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23a3e635" stroke-width="1.5"%3E%3Cpath d="M13 4v4l-4 4M9 4v4l4 4"/%3E%3C/svg%3E'
-}
 ];
