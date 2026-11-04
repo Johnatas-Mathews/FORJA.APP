@@ -325,7 +325,7 @@
   </main>
 
   <!-- BARRA DE NAVEGAÇÃO INFERIOR -->
-  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-[#0a0d14]/95 backdrop-blur-lg border-t border-slate-800 px-4 py-2">
+  <nav class="fixed bottom-0 left-0 right-0 z-30 bg-[#0a0d14]/95 backdrop-blur-lg border-t border-slate-800 px-4 py-2">
     <div class="max-w-md mx-auto flex justify-between items-center font-mono text-[10px]">
       <button id="tab-home" onclick="switchTab('home')" class="flex flex-col items-center gap-1 text-brand-lime">
         <span class="text-base">🏠</span> Início
@@ -391,9 +391,9 @@
     </div>
   </div>
 
-  <!-- MODAL: ARSENAL DE EXERCÍCIOS -->
-  <div id="modalExerciseLibrary" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-[#111620] rounded-2xl p-4 tactical-border space-y-3 max-h-[85vh] flex flex-col">
+  <!-- MODAL: ARSENAL DE EXERCÍCIOS (Z-INDEX AJUSTADO PARA FICA NO TOPO) -->
+  <div id="modalExerciseLibrary" class="hidden fixed inset-0 z-[99] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-[#111620] rounded-2xl p-4 tactical-border space-y-3 max-h-[85vh] flex flex-col shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-2">
         <h3 class="text-sm font-display font-bold text-white uppercase">Arsenal de Exercícios</h3>
         <button onclick="closeExerciseLibraryModal()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
@@ -413,9 +413,9 @@
     </div>
   </div>
 
-  <!-- MODAL: DETALHES DO EXERCÍCIO -->
-  <div id="modalExerciseDetail" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="w-full max-w-sm bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
+  <!-- MODAL: DETALHES DO EXERCÍCIO (Z-INDEX AJUSTADO) -->
+  <div id="modalExerciseDetail" class="hidden fixed inset-0 z-[99] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-sm bg-[#111620] rounded-2xl p-4 tactical-border space-y-3 shadow-2xl">
       <div class="flex justify-between items-start">
         <div>
           <span id="detailGroupBadge" class="text-[9px] font-mono text-brand-lime uppercase font-bold">PEITORAL</span>
@@ -440,9 +440,9 @@
     </div>
   </div>
 
-  <!-- MODAL: CRIAR / EDITAR FICHA -->
-  <div id="modalNewTemplate" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-[#111620] rounded-2xl p-4 tactical-border space-y-3 max-h-[90vh] flex flex-col">
+  <!-- MODAL: CRIAR / EDITAR FICHA (Z-INDEX AJUSTADO) -->
+  <div id="modalNewTemplate" class="hidden fixed inset-0 z-[99] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-[#111620] rounded-2xl p-4 tactical-border space-y-3 max-h-[90vh] flex flex-col shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-2">
         <h3 id="tplModalTitle" class="text-sm font-display font-bold text-white uppercase">Criar Nova Ficha</h3>
         <button onclick="closeCreateTemplateModal()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
