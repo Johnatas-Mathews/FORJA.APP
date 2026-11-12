@@ -1,4 +1,4 @@
-// js/app.js - FORJA High Performance Engine (Versão Blindada)
+// js/app.js - FORJA High Performance Engine (Versão Blindada & Corrigida)
 const SUPABASE_URL = "https://pzygeoqjdyvtfpxuytvg.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6eWdlb3FqZHl2dGZweHV5dHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNjczNzMsImV4cCI6MjEwODk0MzM3M30.lme2H9a6-QyI7Hf-7-tSIfr3DuvXMk03ZJoBnOemUYU";
 
@@ -109,6 +109,17 @@ function switchTab(targetScreenId) {
 
   if (targetScreenId === 'progress' && typeof updateProgressChart === 'function') {
     setTimeout(updateProgressChart, 50);
+  }
+}
+
+/* -------------------------------------------------------------
+   ATALHO RÁPIDO PARA INICIAR TREINO VIVO
+-------------------------------------------------------------- */
+function quickStartTemplate() {
+  if (state.templates.length > 0) {
+    loadTemplateIntoWorkout(state.templates[0].id);
+  } else {
+    switchTab('workout');
   }
 }
 
@@ -251,6 +262,7 @@ async function fetchUserData() {
       title: t.title || t.name || 'Sem título'
     }));
   }
+  populateWorkoutTemplateSelect();
 
   const { data: wks } = await supabaseClient
     .from('workouts')
@@ -267,11 +279,25 @@ async function fetchUserData() {
   }
 }
 
+function populateWorkoutTemplateSelect() {
+  const select = document.getElementById("workoutTemplateSelect");
+  if (!select) return;
+  
+  select.innerHTML = `<option value="">Carregar de uma Ficha...</option>`;
+  state.templates.forEach(tpl => {
+    const opt = document.createElement("option");
+    opt.value = tpl.id;
+    opt.textContent = `${tpl.division ? '[' + tpl.division + '] ' : ''}${tpl.title || tpl.name}`;
+    select.appendChild(opt);
+  });
+}
+
+// CORRIGIDO: Aponta para a tabela correta avaliacoes_fisicas
 async function fetchEvaluations() {
   if (!supabaseClient || !state.user) return;
   try {
     const { data } = await supabaseClient
-      .from('evaluations')
+      .from('avaliacoes_fisicas')
       .select('*')
       .eq('user_id', state.user.id)
       .order('created_at', { ascending: false });
@@ -290,6 +316,7 @@ function renderAll() {
   renderWorkoutsHistory();
   renderProfileStats();
   populateProgressExerciseSelect();
+  populateWorkoutTemplateSelect();
 
   if (typeof renderGamificationCard === 'function') {
     renderGamificationCard();
@@ -740,6 +767,7 @@ async function saveNewTemplate() {
   renderTemplates();
   renderProfileStats();
   populateProgressExerciseSelect();
+  populateWorkoutTemplateSelect();
 }
 
 async function deleteTemplate(templateId) {
@@ -764,6 +792,7 @@ async function deleteTemplate(templateId) {
   renderTemplates();
   renderProfileStats();
   populateProgressExerciseSelect();
+  populateWorkoutTemplateSelect();
 }
 
 /* -------------------------------------------------------------
