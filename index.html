@@ -184,13 +184,13 @@
         <div class="flex items-center justify-between pt-1">
           <span class="text-[10px] font-mono text-slate-400 uppercase">Métrica do Gráfico</span>
           <div class="flex gap-1">
-            <button id="btnMetricMax" onclick="toggleMetricMode('maxWeight')" class="px-2.5 py-1 rounded bg-brand-lime text-black font-bold text-[10px] font-mono">Carga Máxima</button>
-            <button id="btnMetricRM" onclick="toggleMetricMode('estimated1RM')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white text-[10px] font-mono">1RM Estimado</button>
+            <button id="btnMetricMaxWeight" onclick="setProgressMetricMode('maxWeight')" class="px-2.5 py-1 rounded bg-brand-lime text-black font-bold text-[10px] font-mono">Carga Máxima</button>
+            <button id="btnMetric1RM" onclick="setProgressMetricMode('estimated1RM')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white text-[10px] font-mono">1RM Estimado</button>
           </div>
         </div>
 
-        <div class="h-64 pt-2">
-          <canvas id="progressChart"></canvas>
+        <div class="relative w-full h-64 pt-2">
+          <canvas id="progressChartCanvas"></canvas>
         </div>
       </div>
     </section>
@@ -511,8 +511,8 @@
   </div>
 
   <!-- Scripts com quebra de cache -->
-  <script src="js/exercises-data.js?v=4"></script>
-  <script src="js/gamification.js?v=4"></script>
-  <script src="js/app.js?v=4"></script>
+  <script src="js/exercises-data.js?v=5"></script>
+  <script src="js/gamification.js?v=5"></script>
+  <script src="js/app.js?v=5"></script>
 </body>
 </html>
