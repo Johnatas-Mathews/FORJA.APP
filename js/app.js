@@ -1,4 +1,4 @@
-// js/app.js - FORJA High Performance Engine
+// js/app.js - FORJA High Performance Engine (Versão Blindada)
 const SUPABASE_URL = "https://pzygeoqjdyvtfpxuytvg.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6eWdlb3FqZHl2dGZweHV5dHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNjczNzMsImV4cCI6MjEwODk0MzM3M30.lme2H9a6-QyI7Hf-7-tSIfr3DuvXMk03ZJoBnOemUYU";
 
@@ -13,13 +13,20 @@ const state = {
   user: null,
   userProfile: null,
   teacher: null,
-  selectedRole: 'aluno', // 'aluno' ou 'professor'
+  selectedRole: 'aluno',
   authMode: 'login',
   templates: [],
   workouts: [],
   evaluations: [],
   editingTemplateId: null,
-  metricMode: 'maxWeight', // 'maxWeight' ou 'estimated1RM'
+  metricMode: 'maxWeight',
+  
+  // CAMPOS DE GAMIFICAÇÃO & STREAK
+  xp: 0,
+  level: 1,
+  patente: 'Ferro Bruto',
+  nextLevelXP: 500,
+
   activeWorkout: {
     name: "Treino Personalizado",
     exercises: []
@@ -34,7 +41,15 @@ const state = {
 };
 
 let progressChartInstance = null;
+let animationInterval = null;
 const DEFAULT_FALLBACK_IMG = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%23a3e635' stroke-width='1.5'%3E%3Cpath d='M6.5 6.5h11M6.5 17.5h11M4 9.5h16M4 14.5h16M2 12h20'/%3E%3C/svg%3E";
+
+// Helper seguro para acessar o banco de exercícios global
+function getExerciseDB() {
+  if (typeof window !== 'undefined' && window.EXERCISE_DATABASE) return window.EXERCISE_DATABASE;
+  if (typeof EXERCISE_DATABASE !== 'undefined') return EXERCISE_DATABASE;
+  return [];
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
   populateExerciseSuggestions();
@@ -43,9 +58,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function populateExerciseSuggestions() {
   const datalist = document.getElementById("exerciseSuggestionsList");
-  if (!datalist || typeof EXERCISE_DATABASE === 'undefined') return;
+  const db = getExerciseDB();
+  if (!datalist || db.length === 0) return;
   datalist.innerHTML = "";
-  EXERCISE_DATABASE.forEach(ex => {
+  db.forEach(ex => {
     const opt = document.createElement("option");
     opt.value = ex.name;
     datalist.appendChild(opt);
@@ -206,7 +222,6 @@ async function onAuthSuccess() {
   await fetchUserData();
   await fetchEvaluations();
   
-  // Garante a renderização completa de todas as telas e selects de evolução
   renderAll();
   switchTab('home');
 }
@@ -225,7 +240,6 @@ async function handleLogout() {
 async function fetchUserData() {
   if (!supabaseClient || !state.user) return;
 
-  // Busca as fichas (templates) no Supabase
   const { data: tpls } = await supabaseClient
     .from('templates')
     .select('*')
@@ -238,7 +252,6 @@ async function fetchUserData() {
     }));
   }
 
-  // Busca os treinos realizados no Supabase
   const { data: wks } = await supabaseClient
     .from('workouts')
     .select('*')
@@ -254,6 +267,21 @@ async function fetchUserData() {
   }
 }
 
+async function fetchEvaluations() {
+  if (!supabaseClient || !state.user) return;
+  try {
+    const { data } = await supabaseClient
+      .from('evaluations')
+      .select('*')
+      .eq('user_id', state.user.id)
+      .order('created_at', { ascending: false });
+
+    if (data) state.evaluations = data;
+  } catch (e) {
+    state.evaluations = [];
+  }
+}
+
 /* -------------------------------------------------------------
    RENDERIZAÇÃO GERAL (FICHAS, HISTÓRICO, GRÁFICOS & PERFIL)
 -------------------------------------------------------------- */
@@ -262,6 +290,11 @@ function renderAll() {
   renderWorkoutsHistory();
   renderProfileStats();
   populateProgressExerciseSelect();
+
+  if (typeof renderGamificationCard === 'function') {
+    renderGamificationCard();
+  }
+
   if (typeof updateProgressChart === 'function') updateProgressChart();
 }
 
@@ -322,7 +355,6 @@ function renderWorkoutsHistory() {
     return;
   }
 
-  // Mostra os últimos treinos do mais recente para o mais antigo
   [...state.workouts].reverse().slice(0, 5).forEach(wk => {
     const div = document.createElement("div");
     div.className = "bg-slate-900/80 p-2.5 rounded-xl tactical-border flex justify-between items-center text-xs font-mono";
@@ -357,7 +389,6 @@ function populateProgressExerciseSelect() {
   const select = document.getElementById("progressExerciseSelect");
   if (!select) return;
   
-  // Coleta todos os nomes de exercícios únicos presentes nos treinos e fichas
   const uniqueExercises = new Set();
   state.workouts.forEach(w => {
     if (w.exercises) w.exercises.forEach(e => { if (e.name) uniqueExercises.add(e.name); });
@@ -409,13 +440,13 @@ function getMaxHistoricalWeight(exerciseName) {
 }
 
 function isCardioExercise(exerciseName) {
-  if (typeof EXERCISE_DATABASE === 'undefined') return false;
-  const ex = EXERCISE_DATABASE.find(e => e.name.toLowerCase() === exerciseName.toLowerCase());
+  const db = getExerciseDB();
+  const ex = db.find(e => e.name.toLowerCase() === exerciseName.toLowerCase());
   return ex ? (ex.type === 'cardio' || ex.group === 'Cardio') : false;
 }
 
 /* -------------------------------------------------------------
-   ARSENAL DE EXERCÍCIOS & MODAIS
+   ARSENAL DE EXERCÍCIOS & MODAIS COM SUPORTE A ANIMAÇÃO FLIP
 -------------------------------------------------------------- */
 function openExerciseLibraryModal(context = 'workout') {
   state.libraryContext = context;
@@ -438,10 +469,13 @@ function filterExerciseLibrary() {
 
 function renderExerciseLibraryList() {
   const container = document.getElementById("libraryListContainer");
-  const searchTerm = document.getElementById("librarySearchInput").value.toLowerCase();
+  const searchInput = document.getElementById("librarySearchInput");
+  const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
+  if (!container) return;
   container.innerHTML = "";
 
-  const filtered = EXERCISE_DATABASE.filter(ex => {
+  const db = getExerciseDB();
+  const filtered = db.filter(ex => {
     const matchesGroup = (state.activeGroupFilter === 'Todos' || ex.group === state.activeGroupFilter);
     const matchesSearch = ex.name.toLowerCase().includes(searchTerm) || 
                           ex.muscles.toLowerCase().includes(searchTerm) ||
@@ -483,31 +517,56 @@ function renderExerciseLibraryList() {
 }
 
 function showExerciseDetail(exerciseId) {
-  const ex = EXERCISE_DATABASE.find(e => e.id === exerciseId);
+  const db = getExerciseDB();
+  const ex = db.find(e => e.id === exerciseId);
   if (!ex) return;
 
-  document.getElementById("detailGroupBadge").textContent = ex.group;
-  document.getElementById("detailExerciseName").textContent = ex.name;
-  document.getElementById("detailEquipment").textContent = "Equipamento: " + ex.equipment;
-  document.getElementById("detailMuscles").textContent = ex.muscles;
-  document.getElementById("detailTips").textContent = ex.tips;
+  const groupBadge = document.getElementById("detailGroupBadge");
+  const nameEl = document.getElementById("detailExerciseName");
+  const equipEl = document.getElementById("detailEquipment");
+  const musclesEl = document.getElementById("detailMuscles");
+  const tipsEl = document.getElementById("detailTips");
+
+  if (groupBadge) groupBadge.textContent = ex.group;
+  if (nameEl) nameEl.textContent = ex.name;
+  if (equipEl) equipEl.textContent = "Equipamento: " + ex.equipment;
+  if (musclesEl) musclesEl.textContent = ex.muscles;
+  if (tipsEl) tipsEl.textContent = ex.tips;
 
   const detailImg = document.getElementById("detailExerciseImg");
-  detailImg.onerror = function() {
-    this.onerror = null;
-    this.src = DEFAULT_FALLBACK_IMG;
-  };
-  detailImg.src = ex.img;
+  if (detailImg) {
+    if (animationInterval) clearInterval(animationInterval);
 
-  document.getElementById("modalExerciseDetail").classList.remove("hidden");
+    if (ex.img && ex.img.includes('/0.jpg')) {
+      const baseUrl = ex.img.replace('/0.jpg', '');
+      let frame = 0;
+      detailImg.src = `${baseUrl}/${frame}.jpg`;
+      animationInterval = setInterval(() => {
+        frame = frame === 0 ? 1 : 0;
+        detailImg.src = `${baseUrl}/${frame}.jpg`;
+      }, 800);
+    } else {
+      detailImg.onerror = function() {
+        this.onerror = null;
+        this.src = DEFAULT_FALLBACK_IMG;
+      };
+      detailImg.src = ex.img;
+    }
+  }
+
+  const modalDetail = document.getElementById("modalExerciseDetail");
+  if (modalDetail) modalDetail.classList.remove("hidden");
 }
 
 function closeExerciseDetailModal() {
-  document.getElementById("modalExerciseDetail").classList.add("hidden");
+  if (animationInterval) clearInterval(animationInterval);
+  const modalDetail = document.getElementById("modalExerciseDetail");
+  if (modalDetail) modalDetail.classList.add("hidden");
 }
 
 function selectExerciseFromLibrary(exerciseId) {
-  const ex = EXERCISE_DATABASE.find(e => e.id === exerciseId);
+  const db = getExerciseDB();
+  const ex = db.find(e => e.id === exerciseId);
   if (!ex) return;
 
   if (state.libraryContext === 'workout') {
@@ -538,6 +597,7 @@ function selectExerciseFromLibrary(exerciseId) {
 -------------------------------------------------------------- */
 function appendExerciseRowToTemplateForm(name = "", sets = 3, rest = 60) {
   const container = document.getElementById("tplExerciseInputs");
+  if (!container) return;
   const rowId = "tpl-row-" + Date.now() + Math.floor(Math.random() * 1000);
   const div = document.createElement("div");
   div.id = rowId;
@@ -851,65 +911,67 @@ function renderActiveWorkout() {
       <div class="flex justify-between items-center">
         <div class="flex items-center gap-2">
           <h4 class="text-sm font-display font-bold text-white">${ex.name}</h4>
-          <button type="button" onclick="inspectExerciseByName('${ex.name}')" title="Ver postura" class="text-xs bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded text-slate-300 hover:text-white">👁️</button>
+          <button type="button" onclick="inspectExerciseByName('${ex.name}')" title="Ver postura" class="text-xs bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded text-slate-400 hover:text-white">👁️</button>
         </div>
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center gap-2">
           <span class="text-[10px] font-mono text-slate-400">Descanso:</span>
-          <select onchange="updateExerciseRest(${exIdx}, this.value)" class="bg-slate-900 border border-slate-800 text-[11px] font-mono text-brand-lime rounded px-1.5 py-0.5 focus:outline-none focus:border-brand-lime">
-            <option value="30" ${ex.rest == 30 ? 'selected' : ''}>30s</option>
+          <select onchange="updateExerciseRest(${exIdx}, this.value)" class="bg-slate-900 border border-slate-800 rounded px-1.5 py-0.5 text-[10px] font-mono text-brand-lime">
             <option value="45" ${ex.rest == 45 ? 'selected' : ''}>45s</option>
             <option value="60" ${ex.rest == 60 ? 'selected' : ''}>60s</option>
             <option value="90" ${ex.rest == 90 ? 'selected' : ''}>90s</option>
             <option value="120" ${ex.rest == 120 ? 'selected' : ''}>120s</option>
           </select>
+          <button type="button" onclick="removeActiveExercise(${exIdx})" class="text-slate-500 hover:text-red-400 font-bold text-sm">&times;</button>
         </div>
       </div>
-
-      <div class="space-y-1.5 font-mono text-xs">
-        <div class="grid grid-cols-12 gap-1 text-[10px] text-slate-500 uppercase pb-1 text-center">
-          <span class="col-span-2 text-left">Série</span>
-          <span class="col-span-4">${isCardio ? 'Tempo (min)' : 'Carga (kg)'}</span>
-          <span class="col-span-3">${isCardio ? 'Km / Nível' : 'Reps'}</span>
-          <span class="col-span-3">Status</span>
-        </div>
-
-        ${ex.sets.map((s, sIdx) => {
-          const isPR = !isCardio && s.completed && maxPrevWeight > 0 && (parseFloat(s.weight) > maxPrevWeight);
-          
-          return `
-            <div class="grid grid-cols-12 gap-1 items-center ${s.completed ? 'opacity-90' : ''}">
-              <span class="col-span-2 text-slate-400 font-bold flex items-center gap-1">
-                #${sIdx + 1}
-                ${isPR ? '<span class="text-[9px] bg-brand-lime text-black font-black px-1 rounded animate-pulse" title="Recorde Pessoal!">PR</span>' : ''}
-              </span>
-
-              <div class="col-span-4 flex items-center gap-1">
-                <input type="number" value="${isCardio ? (s.timeMin || 0) : (s.weight || 0)}" 
-                  onchange="updateSetVal(${exIdx}, ${sIdx}, '${isCardio ? 'timeMin' : 'weight'}', this.value)" 
-                  class="w-full bg-slate-900 border border-slate-800 text-center rounded py-1 text-white focus:outline-none focus:border-brand-lime" />
-              </div>
-
-              <div class="col-span-3">
-                <input type="number" step="${isCardio ? '0.1' : '1'}" value="${isCardio ? (s.distanceKm || 0) : (s.reps || 0)}" 
-                  onchange="updateSetVal(${exIdx}, ${sIdx}, '${isCardio ? 'distanceKm' : 'reps'}', this.value)" 
-                  class="w-full bg-slate-900 border border-slate-800 text-center rounded py-1 text-white focus:outline-none focus:border-brand-lime" />
-              </div>
-
-              <div class="col-span-3 flex justify-center">
-                <button type="button" onclick="toggleSetComplete(${exIdx}, ${sIdx})" 
-                  class="w-8 h-7 rounded flex items-center justify-center font-bold text-xs transition-all ${s.completed ? 'bg-brand-lime text-black shadow-lg glow-lime' : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'}">
-                  ${s.completed ? '✓' : '•'}
+      <div class="text-[10px] font-mono text-slate-500">
+        Recorde histórico: <span class="text-white font-bold">${maxPrevWeight} kg</span>
+      </div>
+      <div class="space-y-2 pt-1">
+        ${ex.sets.map((set, setIdx) => {
+          if (isCardio) {
+            return `
+              <div class="flex items-center gap-2 bg-slate-950/50 p-2 rounded-lg border border-slate-800/80">
+                <span class="text-[10px] font-mono text-slate-500 w-6">#${setIdx + 1}</span>
+                <div class="flex-1 flex gap-2">
+                  <input type="number" value="${set.timeMin}" onchange="updateCardioSet(${exIdx}, ${setIdx}, 'timeMin', this.value)" placeholder="Min" class="w-1/2 bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-white text-center" />
+                  <input type="number" step="0.1" value="${set.distanceKm}" onchange="updateCardioSet(${exIdx}, ${setIdx}, 'distanceKm', this.value)" placeholder="Km" class="w-1/2 bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-white text-center" />
+                </div>
+                <button type="button" onclick="toggleSetComplete(${exIdx}, ${setIdx})" class="px-3 py-1 rounded-lg text-xs font-mono font-bold ${set.completed ? 'bg-brand-lime text-black' : 'bg-slate-800 text-slate-400'}">
+                  ${set.completed ? 'FEITO' : 'OK'}
                 </button>
               </div>
-            </div>
-          `;
+            `;
+          } else {
+            const e1rm = calculate1RM(set.weight, set.reps);
+            return `
+              <div class="flex items-center gap-2 bg-slate-950/50 p-2 rounded-lg border border-slate-800/80">
+                <span class="text-[10px] font-mono text-slate-500 w-6">#${setIdx + 1}</span>
+                <div class="flex-1 grid grid-cols-2 gap-2">
+                  <div class="relative">
+                    <input type="number" value="${set.weight}" onchange="updateWeightRepsSet(${exIdx}, ${setIdx}, 'weight', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-white text-center font-mono" />
+                    <span class="absolute right-2 top-1.5 text-[9px] text-slate-500">kg</span>
+                  </div>
+                  <div class="relative">
+                    <input type="number" value="${set.reps}" onchange="updateWeightRepsSet(${exIdx}, ${setIdx}, 'reps', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-white text-center font-mono" />
+                    <span class="absolute right-2 top-1.5 text-[9px] text-slate-500">reps</span>
+                  </div>
+                </div>
+                <div class="text-right w-12 hidden sm:block">
+                  <span class="text-[9px] font-mono text-slate-500 block">1RM</span>
+                  <span class="text-[10px] font-mono text-brand-lime font-bold">${e1rm}</span>
+                </div>
+                <button type="button" onclick="toggleSetComplete(${exIdx}, ${setIdx})" class="px-3 py-1 rounded-lg text-xs font-mono font-bold ${set.completed ? 'bg-brand-lime text-black shadow-lg glow-lime' : 'bg-slate-800 text-slate-400 hover:text-white'}">
+                  ${set.completed ? 'FEITO' : 'OK'}
+                </button>
+              </div>
+            `;
+          }
         }).join('')}
       </div>
-
-      <div class="pt-1">
-        <button type="button" onclick="addSetToExercise(${exIdx})" class="w-full py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-brand-lime font-mono font-bold text-[11px] rounded-lg transition-all flex items-center justify-center gap-1">
-          + Adicionar Série
-        </button>
+      <div class="flex justify-between pt-1">
+        <button type="button" onclick="addSetToExercise(${exIdx})" class="text-[10px] font-mono text-brand-lime hover:underline">+ Adicionar Série</button>
+        <button type="button" onclick="removeActiveExercise(${exIdx})" class="text-[10px] font-mono text-red-400 hover:underline">Remover Exercício</button>
       </div>
     `;
     list.appendChild(div);
@@ -917,30 +979,43 @@ function renderActiveWorkout() {
 }
 
 function inspectExerciseByName(name) {
-  const found = EXERCISE_DATABASE.find(e => e.name.toLowerCase() === name.toLowerCase());
+  const db = getExerciseDB();
+  const found = db.find(e => e.name.toLowerCase() === name.toLowerCase());
   if (found) {
     showExerciseDetail(found.id);
   } else {
-    alert("Exercício adicionado manualmente.");
+    alert(`Detalhes não encontrados para: ${name}`);
   }
 }
 
-function updateSetVal(exIdx, sIdx, field, val) {
-  state.activeWorkout.exercises[exIdx].sets[sIdx][field] = parseFloat(val) || 0;
-}
-
-function toggleSetComplete(exIdx, sIdx) {
-  const set = state.activeWorkout.exercises[exIdx].sets[sIdx];
-  set.completed = !set.completed;
-  if (set.completed) {
-    startAutoRest(state.activeWorkout.exercises[exIdx].rest || 60);
-  }
+function removeActiveExercise(exIdx) {
+  state.activeWorkout.exercises.splice(exIdx, 1);
   renderActiveWorkout();
 }
 
-async function finishAndSaveWorkout() {
+function updateWeightRepsSet(exIdx, setIdx, field, val) {
+  state.activeWorkout.exercises[exIdx].sets[setIdx][field] = parseFloat(val) || 0;
+}
+
+function updateCardioSet(exIdx, setIdx, field, val) {
+  state.activeWorkout.exercises[exIdx].sets[setIdx][field] = parseFloat(val) || 0;
+}
+
+function toggleSetComplete(exIdx, setIdx) {
+  const set = state.activeWorkout.exercises[exIdx].sets[setIdx];
+  set.completed = !set.completed;
+  
+  if (set.completed) {
+    const restTime = state.activeWorkout.exercises[exIdx].rest || 60;
+    startAutoRest(restTime);
+  }
+  
+  renderActiveWorkout();
+}
+
+async function finishActiveWorkout() {
   if (state.activeWorkout.exercises.length === 0) {
-    alert("Adicione pelo menos um exercício antes de finalizar.");
+    alert("Adicione pelo menos um exercício antes de concluir o treino!");
     return;
   }
 
@@ -948,192 +1023,37 @@ async function finishAndSaveWorkout() {
   state.activeWorkout.exercises.forEach(ex => {
     if (ex.sets) {
       ex.sets.forEach(s => {
-        totalVolume += (s.weight || 0) * (s.reps || 0);
+        if (s.completed && s.weight && s.reps) {
+          totalVolume += (s.weight * s.reps);
+        }
       });
     }
   });
 
-  const newWorkout = {
+  const workoutPayload = {
     user_id: state.user ? state.user.id : null,
-    name: state.activeWorkout.name,
+    name: document.getElementById("activeWorkoutName").value.trim() || "Treino Concluído",
     date: new Date().toISOString().split('T')[0],
     total_volume_kg: totalVolume,
     exercises: state.activeWorkout.exercises
   };
 
   if (supabaseClient && state.user) {
-    const { error } = await supabaseClient.from('workouts').insert([newWorkout]);
-    if (error) console.error("Erro ao salvar treino no Supabase:", error);
-  }
-
-  state.workouts.push(newWorkout);
-  alert("Treino salvo com sucesso!");
-  switchTab('progress');
-  renderAll();
-}
-
-function quickStartTemplate() {
-  switchTab('workout');
-  if (state.templates.length > 0) {
-    loadTemplateIntoWorkout(state.templates[0].id);
-  }
-}
-
-/* -------------------------------------------------------------
-   GRÁFICO DE EVOLUÇÃO
--------------------------------------------------------------- */
-function updateProgressChart() {
-  const exerciseName = document.getElementById("progressExerciseSelect")?.value;
-  const canvasCtx = document.getElementById("progressChart");
-  if (!canvasCtx) return;
-
-  const labels = [];
-  const dataPoints = [];
-
-  state.workouts.forEach(w => {
-    if (!w.exercises) return;
-    w.exercises.forEach(e => {
-      if (e.name && e.name.toLowerCase() === exerciseName?.toLowerCase()) {
-        labels.push(w.date || 'Treino');
-        
-        if (state.metricMode === 'maxWeight') {
-          let maxW = 0;
-          if (e.sets) {
-            e.sets.forEach(s => { if ((s.weight || 0) > maxW) maxW = s.weight; });
-          }
-          dataPoints.push(maxW);
-        } else {
-          let best1RM = 0;
-          if (e.sets) {
-            e.sets.forEach(s => {
-              const rm = calculate1RM(s.weight, s.reps);
-              if (rm > best1RM) best1RM = rm;
-            });
-          }
-          dataPoints.push(best1RM);
-        }
-      }
-    });
-  });
-
-  if (progressChartInstance) {
-    progressChartInstance.destroy();
-  }
-
-  progressChartInstance = new Chart(canvasCtx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: state.metricMode === 'maxWeight' ? 'Carga Máxima (kg)' : '1RM Estimado (kg)',
-        data: dataPoints,
-        borderColor: '#a3e635',
-        backgroundColor: 'rgba(163, 230, 53, 0.1)',
-        borderWidth: 2,
-        tension: 0.3,
-        fill: true,
-        pointBackgroundColor: '#a3e635'
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: '#64748b', font: { family: 'monospace', size: 10 } }, grid: { color: '#1e293b' } },
-        y: { ticks: { color: '#64748b', font: { family: 'monospace', size: 10 } }, grid: { color: '#1e293b' } }
-      }
+    const { error } = await supabaseClient.from('workouts').insert([workoutPayload]);
+    if (error) {
+      alert("Erro ao salvar treino no banco: " + error.message);
+      return;
     }
-  });
-}
-
-function toggleMetricMode(mode) {
-  state.metricMode = mode;
-  const btnMax = document.getElementById("btnMetricMax");
-  const btnRM = document.getElementById("btnMetricRM");
-
-  if (mode === 'maxWeight') {
-    btnMax.className = "px-2.5 py-1 rounded bg-brand-lime text-black font-bold text-[10px] font-mono";
-    btnRM.className = "px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white text-[10px] font-mono";
-  } else {
-    btnRM.className = "px-2.5 py-1 rounded bg-brand-lime text-black font-bold text-[10px] font-mono";
-    btnMax.className = "px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white text-[10px] font-mono";
-  }
-  updateProgressChart();
-}
-
-/* -------------------------------------------------------------
-   AVALIAÇÃO FÍSICA E MEDIDAS CORPORAIS
--------------------------------------------------------------- */
-async function fetchEvaluations() {
-  if (!supabaseClient || !state.user) return;
-
-  const { data: evals, error: evalErr } = await supabaseClient
-    .from('avaliacoes_fisicas')
-    .select(`*, medidas_corporais (*)`)
-    .eq('user_id', state.user.id)
-    .order('data_avaliacao', { ascending: false });
-
-  if (!evalErr && evals) {
-    state.evaluations = evals;
-  }
-}
-
-async function savePhysicalEvaluation() {
-  if (!state.user) return;
-
-  const peso = parseFloat(document.getElementById("evalPeso").value) || null;
-  const altura = parseFloat(document.getElementById("evalAltura").value) || null;
-  const gordura = parseFloat(document.getElementById("evalGordura").value) || null;
-  const massa = parseFloat(document.getElementById("evalMassa").value) || null;
-  const metodo = document.getElementById("evalMetodo").value;
-  const obs = document.getElementById("evalObs").value.trim();
-
-  if (!peso) {
-    alert("Informe pelo menos o peso para registrar a avaliação.");
-    return;
   }
 
-  const payloadEval = {
-    user_id: state.user.id,
-    data_avaliacao: new Date().toISOString().split('T')[0],
-    peso_kg: peso,
-    altura_cm: altura,
-    gordura_percentual: gordura,
-    massa_muscular_kg: massa,
-    metodo_avaliacao: metodo,
-    observacoes: obs
-  };
+  state.workouts.push(workoutPayload);
+  
+  // Recompensa com XP
+  addXP(150, "Treino Concluído");
 
-  const { data: evalData, error: evalErr } = await supabaseClient
-    .from('avaliacoes_fisicas')
-    .insert([payloadEval])
-    .select();
+  alert(`🔥 Treino finalizado com sucesso!\nVolume total: ${totalVolume} kg\n+150 XP acumulados!`);
 
-  if (evalErr || !evalData || evalData.length === 0) {
-    alert("Erro ao salvar avaliação: " + (evalErr?.message || "Erro desconhecido"));
-    return;
-  }
-
-  const newEvalId = evalData[0].id;
-
-  const payloadMedidas = {
-    avaliacao_id: newEvalId,
-    user_id: state.user.id,
-    cintura_cm: parseFloat(document.getElementById("evalCintura").value) || null,
-    abdomen_cm: parseFloat(document.getElementById("evalAbdomen").value) || null,
-    quadril_cm: parseFloat(document.getElementById("evalQuadril").value) || null,
-    peitoral_cm: parseFloat(document.getElementById("evalPeitoral").value) || null,
-    braco_direito_cm: parseFloat(document.getElementById("evalBracoDir").value) || null,
-    braco_esquerdo_cm: parseFloat(document.getElementById("evalBracoEsq").value) || null,
-    coxa_direita_cm: parseFloat(document.getElementById("evalCoxaDir").value) || null,
-    coxa_esquerda_cm: parseFloat(document.getElementById("evalCoxaEsq").value) || null,
-    panturrilha_direita_cm: parseFloat(document.getElementById("evalPantsDir").value) || null,
-    panturrilha_esquerda_cm: parseFloat(document.getElementById("evalPantsEsq").value) || null
-  };
-
-  await supabaseClient.from('medidas_corporais').insert([payloadMedidas]);
-
-  alert("Avaliação física salva com sucesso!");
-  await fetchEvaluations();
+  state.activeWorkout = { name: "Treino Personalizado", exercises: [] };
+  renderAll();
+  switchTab('home');
 }

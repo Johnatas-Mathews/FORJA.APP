@@ -1,640 +1,275 @@
-// js/exercises-data.js
-const BASE_IMG_URL = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/";
-
-const EXERCISE_DATABASE = [
+// js/exercises-data.js - Banco de Dados Oficial e Completo da FORJA
+window.EXERCISE_DATABASE = [
   // ================= PEITO =================
   {
-    id: 'bench-press-barbell',
-    name: 'Supino Reto com Barra',
-    group: 'Peito',
-    equipment: 'Barra Olímpica',
-    muscles: 'Peitoral Maior (Fibras médias), Tríceps, Deltóide Anterior',
-    tips: 'Pés plantados no chão, escápulas em retração contínua e barra tocando a linha dos mamilos.',
-    img: BASE_IMG_URL + 'Barbell_Bench_Press/0.jpg'
+    id: "supino-reto-barra",
+    name: "Supino Reto com Barra",
+    group: "Peito",
+    equipment: "Barra / Banco Reto",
+    muscles: "Peitoral maior, tríceps, deltoide anterior",
+    tips: "Mantenha as escápulas retraídas, pés firmes no chão e desça a barra controlada até a linha média do peito.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press_-_Medium_Grip/0.jpg"
   },
   {
-    id: 'bench-press-dumbbell',
-    name: 'Supino Reto com Halteres',
-    group: 'Peito',
-    equipment: 'Halteres & Banco Reto',
-    muscles: 'Peitoral Maior, Estabilizadores do Ombro',
-    tips: 'Permite maior amplitude de descida do que a barra; não bata os halteres no topo.',
-    img: BASE_IMG_URL + 'Dumbbell_Bench_Press/0.jpg'
+    id: "supino-reto-halteres",
+    name: "Supino Reto com Halteres",
+    group: "Peito",
+    equipment: "Halteres / Banco Reto",
+    muscles: "Peitoral maior, tríceps, deltoide anterior",
+    tips: "Mantenha os pés firmes no chão, escápulas retraídas e desça os halteres controlados até a linha do peito.",
+    img: "assets/3d-avatars/peito-supino-reto.png" // Futuro boneco 3D
   },
   {
-    id: 'incline-barbell-press',
-    name: 'Supino Inclinado com Barra',
-    group: 'Peito',
-    equipment: 'Barra Olímpica & Banco 30°',
-    muscles: 'Peitoral Superior (Porção Clavicular)',
-    tips: 'Desça a barra na região alta do peito, logo abaixo da clavícula.',
-    img: BASE_IMG_URL + 'Barbell_Incline_Bench_Press/0.jpg'
+    id: "supino-inclinado-halteres",
+    name: "Supino Inclinado com Halteres",
+    group: "Peito",
+    equipment: "Halteres / Banco 30º-45º",
+    muscles: "Peitoral superior, tríceps",
+    tips: "Ajuste o banco entre 30º e 45º para focar na porção clavicular (superior) do peitoral.",
+    img: "assets/3d-avatars/supino-inclinado.gif" // Apontando para o seu novo arquivo local
   },
   {
-    id: 'incline-dumbbell-press',
-    name: 'Supino Inclinado com Halteres',
-    group: 'Peito',
-    equipment: 'Halteres & Banco 30°/45°',
-    muscles: 'Peitoral Superior, Deltóide Anterior',
-    tips: 'Evite inclinação além de 45° para não transformar o exercício em desenvolvimento de ombros.',
-    img: BASE_IMG_URL + 'Incline_Dumbbell_Press/0.jpg'
+    id: "supino-declinado-halteres",
+    name: "Supino Declinado com Halteres",
+    group: "Peito",
+    equipment: "Halteres / Banco Declinado",
+    muscles: "Peitoral maior (porção inferior), tríceps",
+    tips: "Trave bem os pés no suporte do banco declinado e realize o movimento com amplitude controlada.",
+    img: "assets/3d-avatars/peito-supino-declinado.png" // Futuro boneco 3D
   },
   {
-    id: 'decline-barbell-press',
-    name: 'Supino Declinado com Barra',
-    group: 'Peito',
-    equipment: 'Barra Olímpica & Banco Declinado',
-    muscles: 'Peitoral Inferior (Porção Costal)',
-    tips: 'Excelente ativação de peitoral inferior com menor sobrecarga na articulação do ombro.',
-    img: BASE_IMG_URL + 'Decline_Barbell_Bench_Press/0.jpg'
+    id: "crucifixo-polia",
+    name: "Crucifixo na Polia (Crossover)",
+    group: "Peito",
+    equipment: "Polia Dupla",
+    muscles: "Peitoral maior",
+    tips: "Mantenha uma leve semiflexão nos cotovelos durante todo o arco e esmague o peitoral no centro.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Crossover/0.jpg"
   },
   {
-    id: 'chest-dips',
-    name: 'Paralelas com Foco em Peitoral',
-    group: 'Peito',
-    equipment: 'Barras Paralelas / Graviton',
-    muscles: 'Peitoral Inferior, Tríceps, Core',
-    tips: 'Incline o tronco levemente para a frente e afaste ligeiramente os cotovelos.',
-    img: BASE_IMG_URL + 'Dips_Chest/0.jpg'
+    id: "supino-declinado-barra",
+    name: "Supino Declinado com Barra",
+    group: "Peito",
+    equipment: "Barra / Banco Declinado",
+    muscles: "Peitoral maior (porção inferior), tríceps",
+    tips: "Mantenha os pés travados firmemente no suporte e desça a barra na altura inferior do peito.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Barbell_Bench_Press/0.jpg"
   },
   {
-    id: 'cable-crossover-high',
-    name: 'Crossover na Polia Alta',
-    group: 'Peito',
-    equipment: 'Polia Dupla',
-    muscles: 'Peitoral Maior (Foco Inferior/Esternal)',
-    tips: 'Cruze levemente as mãos à frente da cintura mantendo os cotovelos com ângulo fixo.',
-    img: BASE_IMG_URL + 'Cable_Crossover/0.jpg'
+    id: "pullover-halteres",
+    name: "Pullover com Halter no Banco",
+    group: "Peito",
+    equipment: "Halter / Banco Reto",
+    muscles: "Peitoral maior, serrátil anterior, grande dorsal",
+    tips: "Deite ao longo do banco, mantendo uma leve flexão nos cotovelos ao descer o peso atrás da cabeça.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bent-Arm_Dumbbell_Pullover/0.jpg"
   },
   {
-    id: 'cable-crossover-low',
-    name: 'Crossover na Polia Baixa',
-    group: 'Peito',
-    equipment: 'Polia Baixa Dupla',
-    muscles: 'Peitoral Superior e Clavicular',
-    tips: 'Puxe as alças de baixo para cima convergindo na altura dos olhos.',
-    img: BASE_IMG_URL + 'Cable_Iron_Cross/0.jpg'
-  },
-  {
-    id: 'dumbbell-flys',
-    name: 'Crucifixo Reto com Halteres',
-    group: 'Peito',
-    equipment: 'Halteres',
-    muscles: 'Peitoral Maior (Alongamento Máximo)',
-    tips: 'Mantenha os cotovelos semi-flexionados em todo o arco de abertura.',
-    img: BASE_IMG_URL + 'Dumbbell_Flyes/0.jpg'
-  },
-  {
-    id: 'peck-deck',
-    name: 'Voador / Peck Deck Máquina',
-    group: 'Peito',
-    equipment: 'Máquina',
-    muscles: 'Peitoral Maior (Isolamento contínuo)',
-    tips: 'Mantenha o peito estufado e não deixe os ombros serem puxados para frente.',
-    img: BASE_IMG_URL + 'Butterfly/0.jpg'
-  },
-  {
-    id: 'pushups',
-    name: 'Flexão de Braços no Solo',
-    group: 'Peito',
-    equipment: 'Peso Corporal',
-    muscles: 'Peitoral, Core, Tríceps',
-    tips: 'Mantenha a prancha perfeita sem deixar o quadril cair.',
-    img: BASE_IMG_URL + 'Pushups/0.jpg'
+    id: "flexao-declinada",
+    name: "Flexão Declinada (Pés Elevados)",
+    group: "Peito",
+    equipment: "Peso Corporal / Step",
+    muscles: "Peitoral superior, deltoide anterior, core",
+    tips: "Apoie os pés em uma superfície elevada e mantenha o abdômen altamente contraído.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Push-Up/0.jpg"
   },
 
   // ================= COSTAS =================
   {
-    id: 'pull-ups',
-    name: 'Barra Fixa Pronada (Pull-Up)',
-    group: 'Costas',
-    equipment: 'Barra Fixa',
-    muscles: 'Grande Dorsal (Largura), Redondo Maior, Bíceps',
-    tips: 'Inicie a subida puxando com as dorsais e não com os braços; queixo acima da barra.',
-    img: BASE_IMG_URL + 'Pullups/0.jpg'
+    id: "puxada-alta-aberta",
+    name: "Puxada Alta Pegada Aberta",
+    group: "Costas",
+    equipment: "Polia Alta",
+    muscles: "Grande dorsal, redondo maior, bíceps",
+    tips: "Inicie o movimento deprimindo os ombros e puxe a barra até a parte superior do peito.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Lat_Pulldown/0.jpg"
   },
   {
-    id: 'chin-ups',
-    name: 'Barra Fixa Supinada (Chin-Up)',
-    group: 'Costas',
-    equipment: 'Barra Fixa',
-    muscles: 'Grande Dorsal e Bíceps Braquial',
-    tips: 'Palmas voltadas para você; forte ativação de bíceps com carga corporal.',
-    img: BASE_IMG_URL + 'Chin-Ups/0.jpg'
+    id: "remada-curvada-barra",
+    name: "Remada Curvada com Barra",
+    group: "Costas",
+    equipment: "Barra Livre",
+    muscles: "Dorsais, romboides, trapézio, eretores da espinha",
+    tips: "Coluna neutra inclinada a ~45º; puxe a barra em direção ao umbigo.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bent_Over_Barbell_Row/0.jpg"
   },
   {
-    id: 'lat-pulldown-wide',
-    name: 'Puxada Frontal Aberta na Polia',
-    group: 'Costas',
-    equipment: 'Polia Alta',
-    muscles: 'Grande Dorsal, Redondo Maior',
-    tips: 'Puxe a barra em direção à fúrcula esternal projetando o peito para cima.',
-    img: BASE_IMG_URL + 'Wide-Grip_Lat_Pulldown/0.jpg'
+    id: "remada-baixa-barra-reta",
+    name: "Remada Baixa com Barra Reta",
+    group: "Costas",
+    equipment: "Polia Baixa / Barra Reta",
+    muscles: "Dorsais, trapézio inferior, romboides",
+    tips: "Puxe a barra em direção ao abdômen inferior mantendo o tronco estável.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Cable_Rows/0.jpg"
   },
   {
-    id: 'lat-pulldown-close',
-    name: 'Puxada Frontal com Triângulo',
-    group: 'Costas',
-    equipment: 'Polia Alta & Triângulo',
-    muscles: 'Grande Dorsal (Fibras inferiores) e Bíceps',
-    tips: 'Pegada neutra que protege o ombro e permite puxar com grande sobrecarga.',
-    img: BASE_IMG_URL + 'V-bar_Pulldown/0.jpg'
+    id: "puxada-frente-supinada",
+    name: "Puxada Frente com Pegada Supinada",
+    group: "Costas",
+    equipment: "Polia Alta",
+    muscles: "Grande dorsal, bíceps braquial",
+    tips: "Com as palmas voltadas para você, puxe a barra até o peito focando na contração dos bíceps.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Underhand_Cable_Pulldowns/0.jpg"
   },
   {
-    id: 'bent-over-row-barbell',
-    name: 'Remada Curvada com Barra',
-    group: 'Costas',
-    equipment: 'Barra Olímpica',
-    muscles: 'Dorsais, Rombóides, Trapézio, Lombar',
-    tips: 'Tronco a 45 graus, coluna alinhada e puxe a barra rente à coxa até o umbigo.',
-    img: BASE_IMG_URL + 'Bent_Over_Barbell_Row/0.jpg'
-  },
-  {
-    id: 'seated-cable-row',
-    name: 'Remada Baixa no Triângulo',
-    group: 'Costas',
-    equipment: 'Polia Baixa',
-    muscles: 'Dorsais, Trapézio Médio/Inferior',
-    tips: 'Alongue as escápulas na ida e aperte as costas na volta sem usar a lombar como pêndulo.',
-    img: BASE_IMG_URL + 'Seated_Cable_Rows/0.jpg'
-  },
-  {
-    id: 'dumbbell-single-row',
-    name: 'Remada Unilateral com Halter (Serrote)',
-    group: 'Costas',
-    equipment: 'Halter & Banco',
-    muscles: 'Grande Dorsal, Redondo Maior',
-    tips: 'Traga o halter em direção ao quadril criando uma curva de alavanca natural.',
-    img: BASE_IMG_URL + 'One-Arm_Dumbbell_Row/0.jpg'
-  },
-  {
-    id: 't-bar-row',
-    name: 'Remada Cavalinho (Barra T)',
-    group: 'Costas',
-    equipment: 'Barra T / Apoio',
-    muscles: 'Espessura de Costas, Rombóides',
-    tips: 'Mantenha os joelhos semi-flexionados para absorver a carga na cadeia posterior.',
-    img: BASE_IMG_URL + 'T-Bar_Row/0.jpg'
-  },
-  {
-    id: 'straight-arm-pulldown',
-    name: 'Pulldown na Polia com Barra/Corda',
-    group: 'Costas',
-    equipment: 'Polia Alta',
-    muscles: 'Grande Dorsal (Isolamento)',
-    tips: 'Cotovelos destravados mas imóveis; desça apenas pela extensão do ombro.',
-    img: BASE_IMG_URL + 'Straight-Arm_Pulldown/0.jpg'
-  },
-  {
-    id: 'deadlift',
-    name: 'Levantamento Terra Clássico',
-    group: 'Costas',
-    equipment: 'Barra Olímpica',
-    muscles: 'Eretores da Espinha, Glúteos, Isquiotibiais, Trapézio',
-    tips: 'A barra deve subir rente às canelas; trave o abdômen e empurre o chão.',
-    img: BASE_IMG_URL + 'Barbell_Deadlift/0.jpg'
+    id: "remada-t-barra-livre",
+    name: "Remada T com Barra Livre (Landmine)",
+    group: "Costas",
+    equipment: "Barra / Landmine",
+    muscles: "Espessura das costas, trapézio, lombar",
+    tips: "Mantenha a coluna neutra e puxe a alça em direção às costelas com firmeza.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/T-Bar_Row_with_Handle/0.jpg"
   },
 
   // ================= PERNAS =================
   {
-    id: 'back-squat',
-    name: 'Agachamento Livre com Barra',
-    group: 'Pernas',
-    equipment: 'Barra Olímpica & Rack',
-    muscles: 'Quadríceps, Glúteos, Isquiotibiais, Core',
-    tips: 'Base na largura dos ombros, ponta dos pés para fora e quebre a paralela de 90°.',
-    img: BASE_IMG_URL + 'Barbell_Full_Squat/0.jpg'
+    id: "agachamento-livre",
+    name: "Agachamento Livre com Barra",
+    group: "Pernas",
+    equipment: "Barra / Gaiola",
+    muscles: "Quadríceps, glúteos, adutores, core",
+    tips: "Empurre os joelhos para fora na linha dos pés e mantenha o tronco firme na subida.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Full_Squat/0.jpg"
   },
   {
-    id: 'front-squat',
-    name: 'Agachamento Frontal com Barra',
-    group: 'Pernas',
-    equipment: 'Barra Olímpica',
-    muscles: 'Foco Total em Quadríceps e Core',
-    tips: 'Barra apoiada nos deltóides anteriores; tronco muito mais ereto durante a descida.',
-    img: BASE_IMG_URL + 'Front_Barbell_Squat/0.jpg'
+    id: "leg-press-45",
+    name: "Leg Press 45º",
+    group: "Pernas",
+    equipment: "Máquina Leg Press",
+    muscles: "Quadríceps, glúteos",
+    tips: "Não trave os joelhos no topo e não deixe o quadril levantar do banco no fundo.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Press/0.jpg"
   },
   {
-    id: 'leg-press-45',
-    name: 'Leg Press 45°',
-    group: 'Pernas',
-    equipment: 'Máquina 45°',
-    muscles: 'Quadríceps e Glúteos',
-    tips: 'Nunca tire a lombar do encosto e não trave os joelhos em hiperextensão.',
-    img: BASE_IMG_URL + 'Leg_Press/0.jpg'
+    id: "agachamento-sumo-haltere",
+    name: "Agachamento Sumô com Halter",
+    group: "Pernas",
+    equipment: "Halter",
+    muscles: "Glúteos, adutores da coxa, quadríceps",
+    tips: "Abra bem a base dos pés com as pontas viradas para fora e desça o quadril na vertical.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Squat/0.jpg"
   },
   {
-    id: 'hack-squat',
-    name: 'Agachamento Hack',
-    group: 'Pernas',
-    equipment: 'Máquina Hack',
-    muscles: 'Vasto Lateral e Quadríceps Geral',
-    tips: 'Estabilidade guiada para descer com profundidade máxima sem risco lombar.',
-    img: BASE_IMG_URL + 'Hack_Squat/0.jpg'
+    id: "cadeira-abdutora",
+    name: "Cadeira Abdutora",
+    group: "Pernas",
+    equipment: "Máquina Abdutora",
+    muscles: "Glúteo médio e mínimo",
+    tips: "Incline o tronco ligeiramente para a frente para focar ainda mais na ativação dos glúteos.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Thigh_Abductor/0.jpg"
   },
   {
-    id: 'bulgarian-squat',
-    name: 'Agachamento Búlgaro com Halteres',
-    group: 'Pernas',
-    equipment: 'Halteres & Banco',
-    muscles: 'Quadríceps, Glúteo Médio/Máximo',
-    tips: 'Pé de trás suspenso no banco; desça o joelho traseiro quase até tocar o piso.',
-    img: BASE_IMG_URL + 'Dumbbell_Split_Squat/0.jpg'
+    id: "cadeira-adutora",
+    name: "Cadeira Adutora",
+    group: "Pernas",
+    equipment: "Máquina Adutora",
+    muscles: "Músculos adutores (parte interna da coxa)",
+    tips: "Feche as pernas controlando o movimento sem soltar o peso abruptamente.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Thigh_Adductor/0.jpg"
   },
   {
-    id: 'leg-extension',
-    name: 'Cadeira Extensora',
-    group: 'Pernas',
-    equipment: 'Máquina',
-    muscles: 'Quadríceps (Isolamento / Reto Femoral)',
-    tips: 'Pausa isométrica de 1 segundo no pico de contração antes de descer.',
-    img: BASE_IMG_URL + 'Leg_Extensions/0.jpg'
-  },
-  {
-    id: 'romanian-deadlift',
-    name: 'Stiff / RDL com Barra',
-    group: 'Pernas',
-    equipment: 'Barra Olímpica',
-    muscles: 'Isquiotibiais (Posterior de Coxa) e Glúteos',
-    tips: 'Mantenha os joelhos com microflexão fixa e jogue a bacia para trás.',
-    img: BASE_IMG_URL + 'Romanian_Deadlift/0.jpg'
-  },
-  {
-    id: 'lying-leg-curl',
-    name: 'Mesa Flexora',
-    group: 'Pernas',
-    equipment: 'Máquina',
-    muscles: 'Isquiotibiais (Bíceps Femoral)',
-    tips: 'Pressione o quadril contra o estofado durante toda a fase concêntrica.',
-    img: BASE_IMG_URL + 'Lying_Leg_Curls/0.jpg'
-  },
-  {
-    id: 'seated-leg-curl',
-    name: 'Cadeira Flexora',
-    group: 'Pernas',
-    equipment: 'Máquina',
-    muscles: 'Isquiotibiais (Em posição alongada)',
-    tips: 'O ângulo do quadril sentado gera maior hipertrofia na cabeça longa do posterior.',
-    img: BASE_IMG_URL + 'Seated_Leg_Curl/0.jpg'
-  },
-  {
-    id: 'hip-thrust',
-    name: 'Elevação Pélvica com Barra',
-    group: 'Pernas',
-    equipment: 'Barra & Banco',
-    muscles: 'Glúteo Máximo',
-    tips: 'Apoio na altura das escápulas; trave os glúteos no topo por 1 segundo.',
-    img: BASE_IMG_URL + 'Barbell_Hip_Thrust/0.jpg'
-  },
-  {
-    id: 'standing-calf-raise',
-    name: 'Panturrilha em Pé no Smith / Degrau',
-    group: 'Pernas',
-    equipment: 'Smith / Máquina',
-    muscles: 'Gastrocnêmio',
-    tips: 'Alongamento máximo na descida e subida explosiva na ponta dos pés.',
-    img: BASE_IMG_URL + 'Standing_Calf_Raises/0.jpg'
-  },
-  {
-    id: 'seated-calf-raise',
-    name: 'Panturrilha Sentado (Gêmeos)',
-    group: 'Pernas',
-    equipment: 'Máquina',
-    muscles: 'Sóleo',
-    tips: 'Com os joelhos flexionados a 90°, o sóleo é o músculo predominante.',
-    img: BASE_IMG_URL + 'Seated_Calf_Raise/0.jpg'
+    id: "panturrilha-sentada",
+    name: "Panturrilha Sentada na Máquina",
+    group: "Pernas",
+    equipment: "Máquina de Panturrilha Sentada",
+    muscles: "Músculo sóleo",
+    tips: "Amplitude máxima esticando o calcanhar para baixo e contraindo forte no topo.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Calf_Raise/0.jpg"
   },
 
   // ================= OMBROS =================
   {
-    id: 'overhead-press-barbell',
-    name: 'Desenvolvimento Militar com Barra',
-    group: 'Ombros',
-    equipment: 'Barra Olímpica',
-    muscles: 'Deltóide Anterior, Tríceps, Core',
-    tips: 'Feito em pé; contraia os glúteos para blindar a coluna enquanto empurra a barra.',
-    img: BASE_IMG_URL + 'Standing_Military_Press/0.jpg'
+    id: "elevacao-lateral-halteres",
+    name: "Elevação Lateral com Halteres",
+    group: "Ombros",
+    equipment: "Halteres",
+    muscles: "Deltoide lateral",
+    tips: "Suba até a linha dos ombros liderando o movimento pelos cotovelos, sem balançar o tronco.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Side_Lateral_Raise/0.jpg"
   },
   {
-    id: 'seated-dumbbell-shoulder-press',
-    name: 'Desenvolvimento com Halteres Sentado',
-    group: 'Ombros',
-    equipment: 'Halteres & Banco 90°',
-    muscles: 'Deltóide Anterior e Lateral',
-    tips: 'Desça os halteres na linha das orelhas sem bater no retorno superior.',
-    img: BASE_IMG_URL + 'Dumbbell_Shoulder_Press/0.jpg'
+    id: "desenvolvimento-arnold",
+    name: "Desenvolvimento Arnold com Halteres",
+    group: "Ombros",
+    equipment: "Halteres / Banco",
+    muscles: "Deltoides (anterior, lateral e posterior)",
+    tips: "Inicie com as palmas voltadas para o rosto e vá girando os punhos para fora durante a subida.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Arnold_Dumbbell_Press/0.jpg"
   },
   {
-    id: 'lateral-raise-dumbbell',
-    name: 'Elevação Lateral com Halteres',
-    group: 'Ombros',
-    equipment: 'Halteres',
-    muscles: 'Deltóide Lateral (Largura de Ombros)',
-    tips: 'Cotovelo lidera o movimento até a linha do ombro; não balance o tronco.',
-    img: BASE_IMG_URL + 'Side_Lateral_Raise/0.jpg'
-  },
-  {
-    id: 'lateral-raise-cable',
-    name: 'Elevação Lateral na Polia Baixa',
-    group: 'Ombros',
-    equipment: 'Polia Baixa',
-    muscles: 'Deltóide Lateral (Tensão Contínua)',
-    tips: 'A polia mantém a tensão uniforme mesmo no início do movimento.',
-    img: BASE_IMG_URL + 'Cable_One_Arm_Lateral_Raise/0.jpg'
-  },
-  {
-    id: 'front-raise-dumbbell',
-    name: 'Elevação Frontal com Halteres',
-    group: 'Ombros',
-    equipment: 'Halteres',
-    muscles: 'Deltóide Anterior',
-    tips: 'Levante o halter alternado até a altura dos olhos com controle de descida.',
-    img: BASE_IMG_URL + 'Front_Dumbbell_Raise/0.jpg'
-  },
-  {
-    id: 'face-pull',
-    name: 'Face Pull na Polia com Corda',
-    group: 'Ombros',
-    equipment: 'Polia Alta & Corda',
-    muscles: 'Deltóide Posterior, Trapézio, Manguito Rotador',
-    tips: 'Puxe a corda em direção aos olhos separando as mãos e rodando os ombros para trás.',
-    img: BASE_IMG_URL + 'Face_Pull/0.jpg'
-  },
-  {
-    id: 'rear-delt-fly-dumbbell',
-    name: 'Crucifixo Invertido com Halteres',
-    group: 'Ombros',
-    equipment: 'Halteres',
-    muscles: 'Deltóide Posterior',
-    tips: 'Tronco inclinado para a frente; abra os braços como asas sentindo as costas altas.',
-    img: BASE_IMG_URL + 'Bent-Over_Rear_Delt_Raise/0.jpg'
-  },
-  {
-    id: 'arnold-press',
-    name: 'Desenvolvimento Arnold',
-    group: 'Ombros',
-    equipment: 'Halteres',
-    muscles: 'Deltóide Anterior, Lateral e Manguito',
-    tips: 'Inicie com as palmas voltadas para você e rode os punhos enquanto sobe a carga.',
-    img: BASE_IMG_URL + 'Arnold_Dumbbell_Press/0.jpg'
+    id: "remada-alta-polia",
+    name: "Remada Alta na Polia",
+    group: "Ombros",
+    equipment: "Polia Baixa / Barra Reta",
+    muscles: "Trapézio, deltoide lateral",
+    tips: "Puxe a barra rente ao corpo guiando o movimento pelos cotovelos.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Upright_Cable_Row/0.jpg"
   },
 
-  // ================= BÍCEPS =================
+  // ================= BRAÇOS =================
   {
-    id: 'barbell-bicep-curl',
-    name: 'Rosca Direta com Barra W',
-    group: 'Bíceps',
-    equipment: 'Barra W',
-    muscles: 'Bíceps Braquial, Braquial',
-    tips: 'Cotovelos colados nas costelas sem avançá-los durante a flexão do braço.',
-    img: BASE_IMG_URL + 'Barbell_Curl/0.jpg'
+    id: "rosca-direta-barra",
+    name: "Rosca Direta com Barra",
+    group: "Braços",
+    equipment: "Barra",
+    muscles: "Bíceps braquial, braquial",
+    tips: "Cotovelos fixos ao lado das costelas; suba sem projetar os ombros para frente.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Curl/0.jpg"
   },
   {
-    id: 'dumbbell-alternate-bicep-curl',
-    name: 'Rosca Alternada com Halteres',
-    group: 'Bíceps',
-    equipment: 'Halteres',
-    muscles: 'Bíceps Braquial (Com Supinação)',
-    tips: 'Inicie neutro e faça a supinação (gire a palma para cima) no ápice do movimento.',
-    img: BASE_IMG_URL + 'Alternate_Incline_Dumbbell_Curl/0.jpg'
+    id: "triceps-polia-corda",
+    name: "Tríceps na Polia com Corda",
+    group: "Braços",
+    equipment: "Polia Alta / Corda",
+    muscles: "Tríceps braquial",
+    tips: "Cotovelos travados ao lado do tronco; abra as pontas da corda no final da extensão.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown_-_Rope_Attachment/0.jpg"
   },
   {
-    id: 'incline-dumbbell-curl',
-    name: 'Rosca no Banco Inclinado',
-    group: 'Bíceps',
-    equipment: 'Halteres & Banco 45°',
-    muscles: 'Cabeça Longa do Bíceps (Pico)',
-    tips: 'O estiramento com os braços para trás gera estímulo hipertrófico diferenciado.',
-    img: BASE_IMG_URL + 'Incline_Dumbbell_Curl/0.jpg'
+    id: "rosca-concentrada",
+    name: "Rosca Concentrada com Halter",
+    group: "Braços",
+    equipment: "Halter / Banco",
+    muscles: "Bíceps braquial (pico do bíceps)",
+    tips: "Apoie o cotovelo na parte interna da coxa e isole totalmente o movimento do braço.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Concentration_Curls/0.jpg"
   },
   {
-    id: 'preacher-curl',
-    name: 'Rosca Scott com Barra W / Máquina',
-    group: 'Bíceps',
-    equipment: 'Banco Scott',
-    muscles: 'Cabeça Curta do Bíceps (Isolamento puro)',
-    tips: 'Não tire as axilas do apoio; controle a descida para não lesionar o tendão distal.',
-    img: BASE_IMG_URL + 'Preacher_Curl/0.jpg'
-  },
-  {
-    id: 'hammer-curl',
-    name: 'Rosca Martelo com Halteres',
-    group: 'Bíceps',
-    equipment: 'Halteres',
-    muscles: 'Braquial Anterior e Braquiorradial',
-    tips: 'Pegada neutra constante para aumentar a espessura e densidade do braço.',
-    img: BASE_IMG_URL + 'Hammer_Curls/0.jpg'
-  },
-  {
-    id: 'cable-bicep-curl',
-    name: 'Rosca na Polia Baixa',
-    group: 'Bíceps',
-    equipment: 'Polia Baixa & Barra Reta',
-    muscles: 'Bíceps Braquial',
-    tips: 'Cabo garante tração angular contínua em todo o arco articular.',
-    img: BASE_IMG_URL + 'Cable_Curl/0.jpg'
-  },
-  {
-    id: 'concentration-curl',
-    name: 'Rosca Concentrada',
-    group: 'Bíceps',
-    equipment: 'Halter & Banco',
-    muscles: 'Pico de Bíceps',
-    tips: 'Cotovelo apoiado na parte interna da coxa; elimine qualquer inércia corporal.',
-    img: BASE_IMG_URL + 'Concentration_Curls/0.jpg'
+    id: "triceps-banco-mergulho",
+    name: "Mergulho no Banco (Tríceps Dips)",
+    group: "Braços",
+    equipment: "Banco / Peso Corporal",
+    muscles: "Tríceps braquial, peitoral menor",
+    tips: "Mantenha o quadril próximo ao banco durante a descida para proteger os ombros.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bench_Dips/0.jpg"
   },
 
-  // ================= TRÍCEPS =================
+  // ================= CORE =================
   {
-    id: 'triceps-pushdown-rope',
-    name: 'Tríceps Corda na Polia Alta',
-    group: 'Tríceps',
-    equipment: 'Polia Alta & Corda',
-    muscles: 'Tríceps (Cabeça Lateral)',
-    tips: 'Abra a corda no final da descida para contração em pico de 1 segundo.',
-    img: BASE_IMG_URL + 'Triceps_Pushdown/0.jpg'
+    id: "prancha-isometrica",
+    name: "Prancha Abdominal Isométrica",
+    group: "Core",
+    equipment: "Peso Corporal",
+    muscles: "Transverso abdominal, reto abdominal, lombar",
+    tips: "Contraia glúteos e abdômen com força máxima, mantendo a respiração controlada.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/0.jpg"
   },
   {
-    id: 'triceps-pushdown-bar',
-    name: 'Tríceps Barra Reta na Polia',
-    group: 'Tríceps',
-    equipment: 'Polia Alta & Barra',
-    muscles: 'Tríceps (Cabeça Medial e Lateral)',
-    tips: 'Permite o uso de cargas mais altas com grande estabilidade de punho.',
-    img: BASE_IMG_URL + 'Triceps_Pushdown/1.jpg'
+    id: "abdominal-remador",
+    name: "Abdominal Remador (Full Crunch)",
+    group: "Core",
+    equipment: "Colchonete",
+    muscles: "Core completo, flexores do quadril",
+    tips: "Estenda pernas e braços simultaneamente e recolha o corpo abraçando os joelhos.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Crunches/0.jpg"
   },
   {
-    id: 'skull-crushers',
-    name: 'Tríceps Testa com Barra W',
-    group: 'Tríceps',
-    equipment: 'Barra W & Banco Reto',
-    muscles: 'Cabeça Longa e Medial do Tríceps',
-    tips: 'Desça a barra controladamente em direção à testa ou atrás do topo da cabeça.',
-    img: BASE_IMG_URL + 'Lying_Triceps_Press/0.jpg'
-  },
-  {
-    id: 'overhead-cable-extension',
-    name: 'Tríceps Francês na Polia com Corda',
-    group: 'Tríceps',
-    equipment: 'Polia Média/Alta',
-    muscles: 'Cabeça Longa do Tríceps (Alongamento)',
-    tips: 'Braços estendidos acima da cabeça atacam a maior porção do tríceps.',
-    img: BASE_IMG_URL + 'Cable_Rope_Overhead_Triceps_Extension/0.jpg'
-  },
-  {
-    id: 'close-grip-bench-press',
-    name: 'Supino com Pegada Fechada',
-    group: 'Tríceps',
-    equipment: 'Barra Olímpica & Banco Reto',
-    muscles: 'Tríceps e Peitoral Central',
-    tips: 'Mãos na largura dos ombros; mantenha os cotovelos junto às costelas.',
-    img: BASE_IMG_URL + 'Close-Grip_Barbell_Bench_Press/0.jpg'
-  },
-  {
-    id: 'bench-dips',
-    name: 'Tríceps no Banco (Mergulho)',
-    group: 'Tríceps',
-    equipment: 'Banco',
-    muscles: 'Tríceps Geral',
-    tips: 'Mãos apoiadas no banco por trás; desça o corpo mantendo a coluna rente ao estofado.',
-    img: BASE_IMG_URL + 'Bench_Dips/0.jpg'
-  },
-  {
-    id: 'dumbbell-kickback',
-    name: 'Tríceps Coice com Halter',
-    group: 'Tríceps',
-    equipment: 'Halter',
-    muscles: 'Tríceps (Foco no encurtamento total)',
-    tips: 'Braço paralelo ao chão; estenda o antebraço travando o cotovelo no lugar.',
-    img: BASE_IMG_URL + 'Tricep_Dumbbell_Kickback/0.jpg'
-  },
-
-  // ================= ABDÔMEN & CORE =================
-  {
-    id: 'hanging-leg-raise',
-    name: 'Elevação de Pernas na Barra Fixa',
-    group: 'Abdômen',
-    equipment: 'Barra Fixa',
-    muscles: 'Reto Abdominal (Porção Infra)',
-    tips: 'Enrole a pelve na subida em vez de apenas elevar as coxas pelos flexores.',
-    img: BASE_IMG_URL + 'Hanging_Leg_Raise/0.jpg'
-  },
-  {
-    id: 'cable-crunch',
-    name: 'Abdominal na Polia Alta (Cable Crunch)',
-    group: 'Abdômen',
-    equipment: 'Polia Alta & Corda',
-    muscles: 'Reto Abdominal Geral',
-    tips: 'Ajoelhe-se e flexione o tronco levando os cotovelos em direção aos joelhos.',
-    img: BASE_IMG_URL + 'Cable_Crunch/0.jpg'
-  },
-  {
-    id: 'plank',
-    name: 'Prancha Isométrica no Solo',
-    group: 'Abdômen',
-    equipment: 'Peso Corporal',
-    muscles: 'Transverso do Abdômen e Core',
-    tips: 'Alinhe calcanhares, quadril e ombros mantendo o abdômen contraído.',
-    img: BASE_IMG_URL + 'Plank/0.jpg'
-  },
-  {
-    id: 'ab-wheel-rollout',
-    name: 'Roda Abdominal (Ab Wheel)',
-    group: 'Abdômen',
-    equipment: 'Roda Abdominal',
-    muscles: 'Reto Abdominal, Oblíquos, Dorsal',
-    tips: 'Role para frente até quase encostar o peito no chão e puxe pelo abdômen.',
-    img: BASE_IMG_URL + 'Ab_Roller/0.jpg'
-  },
-  {
-    id: 'russian-twist',
-    name: 'Giro Russo (Russian Twist)',
-    group: 'Abdômen',
-    equipment: 'Anilha / Peso Corporal',
-    muscles: 'Oblíquos e Core Rotacional',
-    tips: 'Com os pés suspensos, gire o tronco controlando a inércia lateral.',
-    img: BASE_IMG_URL + 'Russian_Twist/0.jpg'
-  },
-
-  // ================= TRAPÉZIO =================
-  {
-    id: 'barbell-shrug',
-    name: 'Encolhimento de Ombros com Barra',
-    group: 'Trapézio',
-    equipment: 'Barra Olímpica',
-    muscles: 'Trapézio Superior',
-    tips: 'Suba os ombros em direção às orelhas em linha reta; nunca gire os ombros.',
-    img: BASE_IMG_URL + 'Barbell_Shrug/0.jpg'
-  },
-  {
-    id: 'dumbbell-shrug',
-    name: 'Encolhimento com Halteres',
-    group: 'Trapézio',
-    equipment: 'Halteres',
-    muscles: 'Trapézio Superior',
-    tips: 'Segure os halteres ao lado do corpo para uma pegada mais anatômica e neutra.',
-    img: BASE_IMG_URL + 'Dumbbell_Shrug/0.jpg'
-  },
-
-  // ================= ANTEBRAÇO =================
-  {
-    id: 'wrist-curl-barbell',
-    name: 'Rosca de Punho com Barra',
-    group: 'Antebraço',
-    equipment: 'Barra',
-    muscles: 'Flexores do Punho e Força de Pegada',
-    tips: 'Antebraços apoiados nas coxas ou no banco; flexione apenas os punhos.',
-    img: BASE_IMG_URL + 'Palms-Up_Barbell_Wrist_Curl/0.jpg'
-  },
-  {
-    id: 'reverse-wrist-curl',
-    name: 'Rosca de Punho Inversa',
-    group: 'Antebraço',
-    equipment: 'Barra ou Halteres',
-    muscles: 'Extensores do Punho',
-    tips: 'Fortalece os extensores, prevenindo dores e epicondilites no cotovelo.',
-    img: BASE_IMG_URL + 'Palms-Down_Barbell_Wrist_Curl/0.jpg'
-  },
-
-  // ================= CARDIO =================
-  {
-    id: 'cardio-esteira',
-    name: 'Esteira (Corrida/Caminhada)',
-    group: 'Cardio',
-    equipment: 'Esteira',
-    muscles: 'Sistema Cardiorrespiratório, Membros Inferiores',
-    tips: 'Mantenha a postura ereta e ajuste a velocidade/inclinação de acordo com o objetivo.',
-    type: 'cardio',
-    img: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23a3e635" stroke-width="1.5"%3E%3Cpath d="M13 4v4l-4 4M9 4v4l4 4M4 20h16"/%3E%3C/svg%3E'
-  },
-  {
-    id: 'cardio-bike',
-    name: 'Bicicleta Ergométrica',
-    group: 'Cardio',
-    equipment: 'Bicicleta',
-    muscles: 'Quadríceps, Panturrilhas, Cardiorrespiratório',
-    tips: 'Ajuste o banco na altura do quadril para proteger os joelhos durante a pedalada.',
-    type: 'cardio',
-    img: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23a3e635" stroke-width="1.5"%3E%3Ccircle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 100-2 1 1 0 000 2zM12 17.5V14l-3-3 4-3 2 3h3"/%3E%3C/svg%3E'
-  },
-  {
-    id: 'cardio-escada',
-    name: 'Escada (Stairmaster)',
-    group: 'Cardio',
-    equipment: 'Simulador de Escada',
-    muscles: 'Glúteos, Quadríceps, Panturrilhas',
-    tips: 'Evite debruçar-se sobre o painel; mantenha o tronco alinhado para maior ativação muscular.',
-    type: 'cardio',
-    img: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23a3e635" stroke-width="1.5"%3E%3Cpath d="M4 19h4v-4h4v-4h4v-4h4"/%3E%3C/svg%3E'
-  },
-  {
-    id: 'cardio-caminhada',
-    name: 'Caminhada ao Ar Livre',
-    group: 'Cardio',
-    equipment: 'Livre',
-    muscles: 'Corpo Todo, Cardiorrespiratório',
-    tips: 'Mantenha ritmo constante e passadas firmes.',
-    type: 'cardio',
-    img: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23a3e635" stroke-width="1.5"%3E%3Cpath d="M13 4v4l-4 4M9 4v4l4 4"/%3E%3C/svg%3E'
+    id: "lombar-hiperextensao",
+    name: "Hiperextensão Lombar no Banco",
+    group: "Core",
+    equipment: "Banco Romano",
+    muscles: "Eretores da espinha, glúteos",
+    tips: "Evite hiper estender a coluna no topo; pare no alinhamento reto do corpo.",
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hyperextensions_Back_Extensions/0.jpg"
   }
 ];
