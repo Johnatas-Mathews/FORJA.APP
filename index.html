@@ -163,7 +163,7 @@
       <!-- Lista Dinâmica de Exercícios -->
       <div id="activeExercisesList" class="space-y-3"></div>
 
-      <button type="button" onclick="finishAndSaveWorkout()" class="w-full py-3.5 bg-brand-lime text-black font-mono font-extrabold text-xs uppercase rounded-xl hover:brightness-110 shadow-lg glow-lime">
+      <button type="button" onclick="finishActiveWorkout()" class="w-full py-3.5 bg-brand-lime text-black font-mono font-extrabold text-xs uppercase rounded-xl hover:brightness-110 shadow-lg glow-lime">
         🏁 Finalizar e Salvar Treino
       </button>
     </section>
@@ -197,11 +197,10 @@
 
     <!-- ================= 5. TELA: PERFIL & AVALIAÇÃO FÍSICA ================= -->
     <section id="screen-profile" class="hidden space-y-5">
-      <div>
-        <h2 class="text-lg font-display font-extrabold text-white">Perfil & Avaliação Física</h2>
-        <p class="text-xs text-slate-400">Controle de composição corporal e histórico biométrico</p>
-      </div>
+      <!-- CARD DE GAMIFICAÇÃO FORJA -->
+      <div id="gamificationCardContainer" class="mb-4"></div>
 
+      <!-- INFORMAÇÕES DA CONTA & LOGOUT -->
       <div class="bg-[#111620] rounded-2xl p-4 tactical-border flex justify-between items-center">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-brand-lime font-mono font-bold text-sm">
@@ -217,84 +216,99 @@
         </button>
       </div>
 
-      <!-- FORMULÁRIO DE NOVA AVALIAÇÃO FÍSICA -->
-      <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-4">
-        <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
-          <h3 class="text-xs font-mono uppercase text-brand-lime font-bold">Nova Avaliação Física</h3>
-          <span class="text-[10px] font-mono text-slate-500">Data: Hoje</span>
-        </div>
+      <!-- AVALIAÇÃO FÍSICA (ACORDEÃO) -->
+      <details class="bg-[#111620] rounded-2xl tactical-border overflow-hidden mb-4 group">
+        <summary class="p-4 cursor-pointer font-display font-bold text-sm text-white flex justify-between items-center select-none hover:bg-slate-900/55 transition-all">
+          <span class="flex items-center gap-2">📊 Avaliação Física & Medidas</span>
+          <span class="text-brand-lime text-xs font-mono group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        
+        <div class="p-4 border-t border-slate-800 space-y-4">
+          <div>
+            <h2 class="text-md font-display font-extrabold text-white">Avaliação Física</h2>
+            <p class="text-xs text-slate-400">Controle de composição corporal e histórico biométrico</p>
+          </div>
 
-        <!-- 1. Dados Gerais -->
-        <div class="space-y-2">
-          <span class="text-[10px] font-mono uppercase text-slate-400 block">1. Dados Gerais</span>
-          <div class="grid grid-cols-2 gap-2 font-mono text-xs">
-            <div>
-              <label class="block text-[10px] text-slate-500 mb-1">Peso (kg)</label>
-              <input type="number" step="0.1" id="evalPeso" placeholder="Ex: 78.5" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-brand-lime" />
+          <!-- FORMULÁRIO DE NOVA AVALIAÇÃO FÍSICA -->
+          <div class="bg-slate-950/60 rounded-xl p-3 space-y-4 border border-slate-800">
+            <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
+              <h3 class="text-xs font-mono uppercase text-brand-lime font-bold">Nova Avaliação Física</h3>
+              <span class="text-[10px] font-mono text-slate-500">Data: Hoje</span>
             </div>
-            <div>
-              <label class="block text-[10px] text-slate-500 mb-1">Altura (cm)</label>
-              <input type="number" id="evalAltura" placeholder="Ex: 175" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-brand-lime" />
+
+            <!-- 1. Dados Gerais -->
+            <div class="space-y-2">
+              <span class="text-[10px] font-mono uppercase text-slate-400 block">1. Dados Gerais</span>
+              <div class="grid grid-cols-2 gap-2 font-mono text-xs">
+                <div>
+                  <label class="block text-[10px] text-slate-500 mb-1">Peso (kg)</label>
+                  <input type="number" step="0.1" id="evalPeso" placeholder="Ex: 78.5" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-brand-lime" />
+                </div>
+                <div>
+                  <label class="block text-[10px] text-slate-500 mb-1">Altura (cm)</label>
+                  <input type="number" id="evalAltura" placeholder="Ex: 175" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-brand-lime" />
+                </div>
+              </div>
             </div>
+
+            <!-- 2. Circunferências Corporais -->
+            <div class="space-y-2">
+              <span class="text-[10px] font-mono uppercase text-slate-400 block">2. Circunferências Corporais (cm)</span>
+              <div class="grid grid-cols-2 gap-2 font-mono text-xs">
+                <div><label class="block text-[9px] text-slate-500 mb-0.5">Cintura</label><input type="number" step="0.5" id="evalCintura" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
+                <div><label class="block text-[9px] text-slate-500 mb-0.5">Abdômen</label><input type="number" step="0.5" id="evalAbdomen" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
+                <div><label class="block text-[9px] text-slate-500 mb-0.5">Quadril</label><input type="number" step="0.5" id="evalQuadril" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
+                <div><label class="block text-[9px] text-slate-500 mb-0.5">Peitoral</label><input type="number" step="0.5" id="evalPeitoral" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
+                <div><label class="block text-[9px] text-slate-500 mb-0.5">Braço Direito</label><input type="number" step="0.5" id="evalBracoDir" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
+                <div><label class="block text-[9px] text-slate-500 mb-0.5">Braço Esquerdo</label><input type="number" step="0.5" id="evalBracoEsq" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
+                <div><label class="block text-[9px] text-slate-500 mb-0.5">Coxa Direita</label><input type="number" step="0.5" id="evalCoxaDir" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
+                <div><label class="block text-[9px] text-slate-500 mb-0.5">Coxa Esquerda</label><input type="number" step="0.5" id="evalCoxaEsq" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
+                <div><label class="block text-[9px] text-slate-500 mb-0.5">Panturrilha Direita</label><input type="number" step="0.5" id="evalPantsDir" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
+                <div><label class="block text-[9px] text-slate-500 mb-0.5">Panturrilha Esquerda</label><input type="number" step="0.5" id="evalPantsEsq" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
+              </div>
+            </div>
+
+            <!-- 3. Composição Corporal -->
+            <div class="space-y-2">
+              <span class="text-[10px] font-mono uppercase text-slate-400 block">3. Composição Corporal</span>
+              <div class="grid grid-cols-2 gap-2 font-mono text-xs">
+                <div>
+                  <label class="block text-[10px] text-slate-500 mb-1">Gordura Corporal (%)</label>
+                  <input type="number" step="0.1" id="evalGordura" placeholder="Ex: 15.5" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white" />
+                </div>
+                <div>
+                  <label class="block text-[10px] text-slate-500 mb-1">Massa Muscular (kg)</label>
+                  <input type="number" step="0.1" id="evalMassa" placeholder="Ex: 36" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white" />
+                </div>
+              </div>
+              <div class="pt-1">
+                <label class="block text-[10px] font-mono uppercase text-slate-400 mb-1">Método de Avaliação</label>
+                <select id="evalMetodo" class="w-full bg-slate-900 border border-slate-800 text-xs text-white rounded-lg p-2 focus:outline-none">
+                  <option value="Bioimpedância">Bioimpedância</option>
+                  <option value="Adipômetro (Dobras Cutâneas)">Adipômetro (Dobras Cutâneas)</option>
+                  <option value="Outro método">Outro método</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 4. Observações -->
+            <div class="space-y-1">
+              <span class="text-[10px] font-mono uppercase text-slate-400 block">4. Observações</span>
+              <textarea id="evalObs" rows="2" placeholder="Descreva observações, metas ou pontos de atenção..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none"></textarea>
+            </div>
+
+            <button type="button" onclick="savePhysicalEvaluation()" class="w-full py-2.5 bg-brand-lime text-black font-mono font-bold text-xs uppercase rounded-xl hover:brightness-110 shadow-lg glow-lime">
+              Salvar Avaliação Física Completa
+            </button>
+          </div>
+
+          <!-- Histórico de Avaliações Salvas -->
+          <div class="bg-slate-950/60 rounded-xl p-3 space-y-2 border border-slate-800">
+            <h3 class="text-xs font-mono uppercase text-slate-400">Histórico de Avaliações</h3>
+            <div id="evaluationsHistoryList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
           </div>
         </div>
-
-        <!-- 2. Circunferências Corporais -->
-        <div class="space-y-2">
-          <span class="text-[10px] font-mono uppercase text-slate-400 block">2. Circunferências Corporais (cm)</span>
-          <div class="grid grid-cols-2 gap-2 font-mono text-xs">
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Cintura</label><input type="number" step="0.5" id="evalCintura" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Abdômen</label><input type="number" step="0.5" id="evalAbdomen" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Quadril</label><input type="number" step="0.5" id="evalQuadril" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Peitoral</label><input type="number" step="0.5" id="evalPeitoral" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Braço Direito</label><input type="number" step="0.5" id="evalBracoDir" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Braço Esquerdo</label><input type="number" step="0.5" id="evalBracoEsq" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Coxa Direita</label><input type="number" step="0.5" id="evalCoxaDir" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Coxa Esquerda</label><input type="number" step="0.5" id="evalCoxaEsq" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Panturrilha Direita</label><input type="number" step="0.5" id="evalPantsDir" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-            <div><label class="block text-[9px] text-slate-500 mb-0.5">Panturrilha Esquerda</label><input type="number" step="0.5" id="evalPantsEsq" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-          </div>
-        </div>
-
-        <!-- 3. Composição Corporal -->
-        <div class="space-y-2">
-          <span class="text-[10px] font-mono uppercase text-slate-400 block">3. Composição Corporal</span>
-          <div class="grid grid-cols-2 gap-2 font-mono text-xs">
-            <div>
-              <label class="block text-[10px] text-slate-500 mb-1">Gordura Corporal (%)</label>
-              <input type="number" step="0.1" id="evalGordura" placeholder="Ex: 15.5" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white" />
-            </div>
-            <div>
-              <label class="block text-[10px] text-slate-500 mb-1">Massa Muscular (kg)</label>
-              <input type="number" step="0.1" id="evalMassa" placeholder="Ex: 36" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white" />
-            </div>
-          </div>
-          <div class="pt-1">
-            <label class="block text-[10px] font-mono uppercase text-slate-400 mb-1">Método de Avaliação</label>
-            <select id="evalMetodo" class="w-full bg-slate-900 border border-slate-800 text-xs text-white rounded-lg p-2 focus:outline-none">
-              <option value="Bioimpedância">Bioimpedância</option>
-              <option value="Adipômetro (Dobras Cutâneas)">Adipômetro (Dobras Cutâneas)</option>
-              <option value="Outro método">Outro método</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- 4. Observações -->
-        <div class="space-y-1">
-          <span class="text-[10px] font-mono uppercase text-slate-400 block">4. Observações</span>
-          <textarea id="evalObs" rows="2" placeholder="Descreva observações, metas ou pontos de atenção..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none"></textarea>
-        </div>
-
-        <button type="button" onclick="savePhysicalEvaluation()" class="w-full py-2.5 bg-brand-lime text-black font-mono font-bold text-xs uppercase rounded-xl hover:brightness-110 shadow-lg glow-lime">
-          Salvar Avaliação Física Completa
-        </button>
-      </div>
-
-      <!-- Histórico de Avaliações Salvas -->
-      <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-2">
-        <h3 class="text-xs font-mono uppercase text-slate-400">Histórico de Avaliações</h3>
-        <div id="evaluationsHistoryList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
-      </div>
+      </details>
 
       <!-- BLOCO DE VÍNCULO COM O PROFESSOR -->
       <div id="teacherConnectionBox" class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
@@ -320,11 +334,12 @@
           <button type="button" onclick="unlinkTeacher()" class="text-[10px] text-red-400 hover:underline">Desvincular</button>
         </div>
       </div>
+      
     </section>
 
   </main>
 
-  <!-- BARRA DE NAVEGAÇÃO INFERIOR (RESTAURADA COM Z-INDEX ADEQUADO) -->
+  <!-- BARRA DE NAVEGAÇÃO INFERIOR -->
   <nav class="fixed bottom-0 left-0 right-0 z-40 bg-[#0a0d14]/95 backdrop-blur-lg border-t border-slate-800 px-4 py-2">
     <div class="max-w-md mx-auto flex justify-between items-center font-mono text-[10px]">
       <button id="tab-home" onclick="switchTab('home')" class="flex flex-col items-center gap-1 text-brand-lime">
@@ -391,25 +406,41 @@
     </div>
   </div>
 
-  <!-- MODAL: ARSENAL DE EXERCÍCIOS (Z-INDEX [200]) -->
-  <div id="modalExerciseLibrary" class="hidden fixed inset-0 z-[200] bg-black/95 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-[#111620] rounded-2xl p-4 tactical-border space-y-3 max-h-[85vh] flex flex-col shadow-2xl border border-brand-lime/30">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-        <h3 class="text-sm font-display font-bold text-white uppercase">Arsenal de Exercícios</h3>
-        <button onclick="closeExerciseLibraryModal()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
-      </div>
+  <!-- MODAL: ARSENAL DE EXERCÍCIOS -->
+  <div id="modalExerciseLibrary" class="hidden fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#111620] border border-slate-800 rounded-2xl w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
       
-      <input type="text" id="librarySearchInput" oninput="filterExerciseLibrary()" placeholder="Buscar por nome, músculo ou equipamento..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-brand-lime font-mono" />
-      
-      <div class="flex gap-1 overflow-x-auto pb-1 text-[10px] font-mono scrollbar-none">
-        <button onclick="filterByGroup('Todos')" class="px-2.5 py-1 bg-brand-lime text-black font-bold rounded-lg whitespace-nowrap">Todos</button>
-        <button onclick="filterByGroup('Peitoral')" class="px-2.5 py-1 bg-slate-900 text-slate-300 rounded-lg whitespace-nowrap hover:text-white">Peitoral</button>
-        <button onclick="filterByGroup('Costas')" class="px-2.5 py-1 bg-slate-900 text-slate-300 rounded-lg whitespace-nowrap hover:text-white">Costas</button>
-        <button onclick="filterByGroup('Quadríceps')" class="px-2.5 py-1 bg-slate-900 text-slate-300 rounded-lg whitespace-nowrap hover:text-white">Quadríceps</button>
-        <button onclick="filterByGroup('Cardio')" class="px-2.5 py-1 bg-slate-900 text-slate-300 rounded-lg whitespace-nowrap hover:text-white">Cardio</button>
+      <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
+        <div>
+          <span class="text-[9px] font-mono text-brand-lime font-bold uppercase tracking-wider">BANCO DE DADOS TÁTICO</span>
+          <h3 class="text-sm font-display font-bold text-white">Arsenal de Exercícios</h3>
+        </div>
+        <button onclick="closeExerciseLibraryModal()" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold text-sm transition-all">&times;</button>
       </div>
 
-      <div id="libraryListContainer" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
+      <div class="p-4 space-y-3 bg-slate-950/30 border-b border-slate-800/60">
+        <div class="relative">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">🔍</span>
+          <input type="text" id="librarySearchInput" oninput="filterExerciseLibrary()" placeholder="Buscar por nome, músculo ou equipamento..." class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-lime transition-all" />
+        </div>
+
+        <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          <button type="button" onclick="filterByGroup('Todos')" class="px-3 py-1.5 rounded-lg bg-brand-lime text-black font-mono font-bold text-[10px] flex-shrink-0 transition-all">Todos</button>
+          <button type="button" onclick="filterByGroup('Peito')" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono text-[10px] flex-shrink-0 hover:border-slate-700 transition-all">Peito</button>
+          <button type="button" onclick="filterByGroup('Costas')" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono text-[10px] flex-shrink-0 hover:border-slate-700 transition-all">Costas</button>
+          <button type="button" onclick="filterByGroup('Pernas')" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono text-[10px] flex-shrink-0 hover:border-slate-700 transition-all">Pernas</button>
+          <button type="button" onclick="filterByGroup('Ombros')" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono text-[10px] flex-shrink-0 hover:border-slate-700 transition-all">Ombros</button>
+          <button type="button" onclick="filterByGroup('Braços')" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono text-[10px] flex-shrink-0 hover:border-slate-700 transition-all">Braços</button>
+          <button type="button" onclick="filterByGroup('Core')" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono text-[10px] flex-shrink-0 hover:border-slate-700 transition-all">Core</button>
+        </div>
+      </div>
+
+      <div id="libraryListContainer" class="p-4 space-y-2.5 overflow-y-auto flex-1 max-h-[50vh] scrollbar-thin"></div>
+
+      <div class="p-3 border-t border-slate-800 bg-slate-950/55 text-center">
+        <span class="text-[10px] font-mono text-slate-500">Toque em "+ Usar" para adicionar o exercício à sua ficha ou treino atual.</span>
+      </div>
+
     </div>
   </div>
 
@@ -424,7 +455,8 @@
         <button onclick="closeExerciseDetailModal()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
       </div>
 
-      <img id="detailExerciseImg" src="" alt="Postura" class="w-full h-40 rounded-xl object-cover bg-slate-950 border border-slate-800" />
+      <!-- IMAGEM CORRIGIDA PARA OBJECT-CONTAIN E ALTURA AMPLIADA -->
+      <img id="detailExerciseImg" src="" alt="Postura" class="w-full h-52 rounded-xl object-contain bg-slate-950/80 border border-slate-800 p-2" />
       
       <div class="space-y-2 text-xs font-mono">
         <div>
@@ -478,8 +510,9 @@
     </div>
   </div>
 
-  <!-- Scripts -->
-  <script src="js/exercises-data.js"></script>
-  <script src="js/app.js"></script>
+  <!-- Scripts com quebra de cache -->
+  <script src="js/exercises-data.js?v=4"></script>
+  <script src="js/gamification.js?v=4"></script>
+  <script src="js/app.js?v=4"></script>
 </body>
 </html>
