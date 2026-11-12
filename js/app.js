@@ -1086,3 +1086,103 @@ async function finishActiveWorkout() {
   renderAll();
   switchTab('home');
 }
+/* -------------------------------------------------------------
+   GRÁFICO DE EVOLUÇÃO E PROGRESSO DE CARGAS
+-------------------------------------------------------------- */
+function updateProgressChart() {
+  const select = document.getElementById("progressExerciseSelect");
+  const canvas = document.getElementById("progressChartCanvas");
+  if (!select || !canvas) return;
+
+  const selectedExercise = select.value;
+  const ctx = canvas.getContext("2d");
+
+  // Filtra os treinos que possuem o exercício selecionado
+  const dataPoints = [];
+  state.workouts.forEach(w => {
+    if (!w.exercises) return;
+    w.exercises.forEach(e => {
+      if (e.name && e.name.toLowerCase() === selectedExercise.toLowerCase()) {
+        let metricVal = 0;
+        if (state.metricMode === 'maxWeight') {
+          // Pega o maior peso executado nas séries deste exercício no treino
+          e.sets.forEach(s => {
+            const wVal = parseFloat(s.weight) || 0;
+            if (wVal > metricVal) metricVal = wVal;
+          });
+        } else {
+          // Pega o maior 1RM estimado
+          e.sets.forEach(s => {
+            const rm = calculate1RM(s.weight, s.reps);
+            if (rm > metricVal) metricVal = rm;
+          });
+        }
+        if (metricVal > 0) {
+          dataPoints.push({
+            date: w.date || 'Recente',
+            value: metricVal
+          });
+        }
+      }
+    });
+  });
+
+  // Se já existir uma instância anterior do Chart, destrói para recriar limpa
+  if (window.myProgressChart instanceof Chart) {
+    window.myProgressChart.destroy();
+  }
+
+  if (dataPoints.length === 0) {
+    // Se não houver dados, limpa o canvas ou exibe estado vazio
+    return;
+  }
+
+  window.myProgressChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: dataPoints.map(d => d.date),
+      datasets: [{
+        label: selectedExercise,
+        data: dataPoints.map(d => d.value),
+        borderColor: '#a3e635',
+        backgroundColor: 'rgba(163, 230, 53, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#94a3b8', font: { family: 'monospace', size: 10 } },
+          grid: { color: '#1e293b' }
+        },
+        y: {
+          ticks: { color: '#94a3b8', font: { family: 'monospace', size: 10 } },
+          grid: { color: '#1e293b' }
+        }
+      }
+    }
+  });
+}
+
+// Alternar entre Carga Máxima e 1RM no painel de evolução
+function setProgressMetricMode(mode) {
+  state.metricMode = mode;
+  const btnMax = document.getElementById("btnMetricMaxWeight");
+  const btn1RM = document.getElementById("btnMetric1RM");
+
+  if (mode === 'maxWeight') {
+    if (btnMax) btnMax.className = "px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-brand-lime text-black";
+    if (btn1RM) btn1RM.className = "px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-slate-900 text-slate-400";
+  } else {
+    if (btn1RM) btn1RM.className = "px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-brand-lime text-black";
+    if (btnMax) btnMax.className = "px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-slate-900 text-slate-400";
+  }
+  updateProgressChart();
+}
