@@ -1,4 +1,4 @@
-// js/app.js - FORJA High Performance Engine (Versão Blindada & Corrigida com Modal de Meta e Dias Preferenciais)
+// js/app.js - FORJA High Performance Engine (Versão Blindada & Corrigida)
 const SUPABASE_URL = "https://pzygeoqjdyvtfpxuytvg.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6eWdlb3FqZHl2dGZweHV5dHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNjczNzMsImV4cCI6MjEwODk0MzM3M30.lme2H9a6-QyI7Hf-7-tSIfr3DuvXMk03ZJoBnOemUYU";
 let supabaseClient = null;
@@ -1423,7 +1423,9 @@ async function finishActiveWorkout() {
   
   addXP(150, "Treino Concluído");
 
-  alert(`🔥 Treino finalizado com sucesso!\nVolume total: ${totalVolume} kg\n+150 XP acumulados!`);
+  alert(`🔥 Treino finalizado com sucesso!
+Volume total: ${totalVolume} kg
++150 XP acumulados!`);
 
   state.activeWorkout = { name: "Treino Personalizado", exercises: [] };
   renderAll();
@@ -1523,4 +1525,309 @@ function setProgressMetricMode(mode) {
     if (btnMax) btnMax.className = "px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-slate-900 text-slate-400";
   }
   updateProgressChart();
+}
+
+/* -------------------------------------------------------------
+   PAINEL DE EVOLUÇÃO & PERFORMANCE PROFISSIONAL (FORJA)
+-------------------------------------------------------------- */
+function switchProgressTab(subTab) {
+  const subTabs = ['overview', 'loads', 'prs', 'analysis'];
+  subTabs.forEach(t => {
+    const el = document.getElementById(`progSub-${t}`);
+    const btn = document.getElementById(`progTabBtn-${t}`);
+    if (el) {
+      if (t === subTab) el.classList.remove('hidden');
+      else el.classList.add('hidden');
+    }
+    if (btn) {
+      if (t === subTab) {
+        btn.className = "py-2 font-bold rounded-lg bg-brand-lime text-black transition-all";
+      } else {
+        btn.className = "py-2 font-bold rounded-lg text-slate-400 hover:text-white transition-all";
+      }
+    }
+  });
+
+  if (subTab === 'overview') renderOverviewProgressStats();
+  if (subTab === 'loads') updateProgressChart();
+  if (subTab === 'prs') renderPersonalRecords();
+  if (subTab === 'analysis') renderMuscleVolumeAnalysis();
+}
+
+function renderOverviewProgressStats() {
+  const monthlyVolEl = document.getElementById("progOverviewMonthlyVolume");
+  const totalSesEl = document.getElementById("progOverviewTotalSessions");
+  const avgVolEl = document.getElementById("progAvgVolumePerWorkout");
+  const topExEl = document.getElementById("progTopExerciseName");
+  const consistencyEl = document.getElementById("progConsistencyRate");
+
+  let totalVol = 0;
+  let validWorkoutsCount = state.workouts.length;
+  
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  let monthlyVol = 0;
+  const exerciseCounts = {};
+
+  state.workouts.forEach(w => {
+    const vol = w.total_volume_kg || 0;
+    totalVol += vol;
+
+    if (w.date) {
+      const wDate = new Date(w.date + 'T00:00:00');
+      if (wDate.getMonth() === currentMonth && wDate.getFullYear() === currentYear) {
+        monthlyVol += vol;
+      }
+    }
+
+    if (w.exercises) {
+      w.exercises.forEach(e => {
+        if (e.name) {
+          exerciseCounts[e.name] = (exerciseCounts[e.name] || 0) + 1;
+        }
+      });
+    }
+  });
+
+  if (monthlyVolEl) monthlyVolEl.textContent = monthlyVol.toLocaleString('pt-BR') + " kg";
+  if (totalSesEl) totalSesEl.textContent = validWorkoutsCount;
+  if (avgVolEl) avgVolEl.textContent = validWorkoutsCount > 0 ? Math.round(totalVol / validWorkoutsCount).toLocaleString('pt-BR') + " kg" : "0 kg";
+
+  let topEx = "Nenhum";
+  let maxCount = 0;
+  for (const [exName, count] of Object.entries(exerciseCounts)) {
+    if (count > maxCount) {
+      maxCount = count;
+      topEx = exName;
+    }
+  }
+  if (topExEl) topExEl.textContent = topEx;
+
+  const weeklyGoal = state.weeklyGoal || 5;
+  const consistencyRate = Math.min(Math.round((validWorkoutsCount / (weeklyGoal * 4)) * 100), 100);
+  if (consistencyEl) consistencyEl.textContent = consistencyRate + "%";
+}
+
+function updateProgressChart() {
+  const select = document.getElementById("progressExerciseSelect");
+  const canvas = document.getElementById("progressChartCanvas");
+  const cardioNotice = document.getElementById("cardioMetricNotice");
+  const weightControls = document.getElementById("weightMetricControls");
+  
+  if (!select || !canvas) return;
+  const selectedExercise = select.value;
+  if (!selectedExercise) return;
+
+  const isCardio = isCardioExercise(selectedExercise);
+  if (cardioNotice && weightControls) {
+    if (isCardio) {
+      cardioNotice.classList.remove('hidden');
+      weightControls.classList.add('hidden');
+    } else {
+      cardioNotice.classList.add('hidden');
+      weightControls.classList.remove('hidden');
+    }
+  }
+
+  const ctx = canvas.getContext("2d");
+  const dataPoints = [];
+
+  state.workouts.forEach(w => {
+    if (!w.exercises) return;
+    w.exercises.forEach(e => {
+      if (e.name && e.name.toLowerCase() === selectedExercise.toLowerCase()) {
+        let metricVal = 0;
+        let cardioSummary = "";
+
+        if (isCardio) {
+          let totalDist = 0;
+          let totalTime = 0;
+          e.sets.forEach(s => {
+            if (s.completed) {
+              totalDist += (parseFloat(s.distanceKm) || 0);
+              totalTime += (parseFloat(s.timeMin) || 0);
+            }
+          });
+          if (totalDist > 0 || totalTime > 0) {
+            dataPoints.push({
+              date: w.date || 'Recente',
+              value: totalDist,
+              labelStr: `${totalDist} km (${totalTime} min)`
+            });
+          }
+        } else {
+          // FILTRO ESTRITO: Apenas séries concluídas (completed === true)
+          if (state.metricMode === 'maxWeight') {
+            e.sets.forEach(s => {
+              if (s.completed) {
+                const wVal = parseFloat(s.weight) || 0;
+                if (wVal > metricVal) metricVal = wVal;
+              }
+            });
+          } else {
+            e.sets.forEach(s => {
+              if (s.completed) {
+                const rm = calculate1RM(s.weight, s.reps);
+                if (rm > metricVal) metricVal = rm;
+              }
+            });
+          }
+          if (metricVal > 0) {
+            dataPoints.push({
+              date: w.date || 'Recente',
+              value: metricVal
+            });
+          }
+        }
+      }
+    });
+  });
+
+  if (window.myProgressChart instanceof Chart) {
+    window.myProgressChart.destroy();
+  }
+
+  if (dataPoints.length === 0) {
+    return;
+  }
+
+  window.myProgressChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: dataPoints.map(d => d.date),
+      datasets: [{
+        label: selectedExercise + (isCardio ? ' (Distância em Km)' : ''),
+        data: dataPoints.map(d => d.value),
+        borderColor: '#a3e635',
+        backgroundColor: 'rgba(163, 230, 53, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#94a3b8', font: { family: 'monospace', size: 10 } },
+          grid: { color: '#1e293b' }
+        },
+        y: {
+          ticks: { color: '#94a3b8', font: { family: 'monospace', size: 10 } },
+          grid: { color: '#1e293b' }
+        }
+      }
+    }
+  });
+}
+
+function renderPersonalRecords() {
+  const container = document.getElementById("personalRecordsList");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const prMap = {};
+
+  state.workouts.forEach(w => {
+    if (!w.exercises) return;
+    w.exercises.forEach(e => {
+      if (!e.name) return;
+      if (isCardioExercise(e.name)) return;
+
+      let maxW = 0;
+      let max1RM = 0;
+      e.sets.forEach(s => {
+        if (s.completed) {
+          const wVal = parseFloat(s.weight) || 0;
+          const rmVal = calculate1RM(s.weight, s.reps);
+          if (wVal > maxW) maxW = wVal;
+          if (rmVal > max1RM) max1RM = rmVal;
+        }
+      });
+
+      if (maxW > 0) {
+        if (!prMap[e.name] || maxW > prMap[e.name].maxWeight) {
+          prMap[e.name] = {
+            name: e.name,
+            maxWeight: maxW,
+            estimated1RM: max1RM,
+            date: w.date || 'Recente'
+          };
+        }
+      }
+    });
+  });
+
+  const prs = Object.values(prMap);
+  if (prs.length === 0) {
+    container.innerHTML = `<div class="p-4 text-center text-xs font-mono text-slate-500">Nenhum recorde registrado com séries concluídas ainda.</div>`;
+    return;
+  }
+
+  prs.forEach(pr => {
+    const div = document.createElement("div");
+    div.className = "bg-slate-900/80 p-3 rounded-xl tactical-border flex justify-between items-center text-xs font-mono";
+    div.innerHTML = `
+      <div>
+        <h4 class="font-bold text-white">${pr.name}</h4>
+        <span class="text-[10px] text-slate-400">Batido em: ${pr.date}</span>
+      </div>
+      <div class="text-right">
+        <span class="text-brand-lime font-bold block text-sm">${pr.maxWeight} kg</span>
+        <span class="text-[10px] text-slate-400 block">1RM: ${pr.estimated1RM} kg</span>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function renderMuscleVolumeAnalysis() {
+  const container = document.getElementById("muscleVolumeAnalysisList");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const db = getExerciseDB();
+  const muscleVolume = {};
+
+  state.workouts.forEach(w => {
+    if (!w.exercises) return;
+    w.exercises.forEach(e => {
+      if (!e.name) return;
+      const foundDb = db.find(item => item.name.toLowerCase() === e.name.toLowerCase());
+      const group = foundDb ? foundDb.group : 'Outros';
+
+      let exerciseVol = 0;
+      e.sets.forEach(s => {
+        if (s.completed && s.weight && s.reps) {
+          exerciseVol += (parseFloat(s.weight) * parseFloat(s.reps));
+        }
+      });
+
+      muscleVolume[group] = (muscleVolume[group] || 0) + exerciseVol;
+    });
+  });
+
+  const entries = Object.entries(muscleVolume);
+  if (entries.length === 0 || Object.values(muscleVolume).every(v => v === 0)) {
+    container.innerHTML = `<div class="p-4 text-center text-xs font-mono text-slate-500">Nenhum dado de volume por grupo muscular registrado.</div>`;
+    return;
+  }
+
+  entries.sort((a, b) => b[1] - a[1]);
+
+  entries.forEach(([group, vol]) => {
+    const div = document.createElement("div");
+    div.className = "bg-slate-900/80 p-3 rounded-xl tactical-border flex justify-between items-center text-xs font-mono";
+    div.innerHTML = `
+      <span class="font-bold text-white uppercase">${group}</span>
+      <span class="text-brand-lime font-bold">${vol.toLocaleString('pt-BR')} kg</span>
+    `;
+    container.appendChild(div);
+  });
 }
