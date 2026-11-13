@@ -262,7 +262,6 @@ async function fetchUserData() {
       title: t.title || t.name || 'Sem título'
     }));
   }
-  populateWorkoutTemplateSelect();
 
   const { data: wks } = await supabaseClient
     .from('workouts')
@@ -275,12 +274,13 @@ async function fetchUserData() {
       exercises: typeof w.exercises === 'string' ? JSON.parse(w.exercises) : (w.exercises || [])
     })).sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
     
-    // 🔥 Calcula o XP acumulado com base nos treinos já salvos (150 XP por treino)
+    // Calcula o XP acumulado retroativamente (150 XP por treino)
     state.xp = state.workouts.length * 150;
   } else {
     state.workouts = [];
     state.xp = 0;
   }
+  
   populateWorkoutTemplateSelect();
 }
 
@@ -297,7 +297,6 @@ function populateWorkoutTemplateSelect() {
   });
 }
 
-// CORRIGIDO: Aponta para a tabela correta avaliacoes_fisicas
 async function fetchEvaluations() {
   if (!supabaseClient || !state.user) return;
   try {
@@ -1103,7 +1102,6 @@ function updateProgressChart() {
   const selectedExercise = select.value;
   const ctx = canvas.getContext("2d");
 
-  // Filtra os treinos que possuem o exercício selecionado
   const dataPoints = [];
   state.workouts.forEach(w => {
     if (!w.exercises) return;
@@ -1111,13 +1109,11 @@ function updateProgressChart() {
       if (e.name && e.name.toLowerCase() === selectedExercise.toLowerCase()) {
         let metricVal = 0;
         if (state.metricMode === 'maxWeight') {
-          // Pega o maior peso executado nas séries deste exercício no treino
           e.sets.forEach(s => {
             const wVal = parseFloat(s.weight) || 0;
             if (wVal > metricVal) metricVal = wVal;
           });
         } else {
-          // Pega o maior 1RM estimado
           e.sets.forEach(s => {
             const rm = calculate1RM(s.weight, s.reps);
             if (rm > metricVal) metricVal = rm;
@@ -1133,7 +1129,6 @@ function updateProgressChart() {
     });
   });
 
-  // Se já existir uma instância anterior do Chart, destrói para recriar limpa
   if (window.myProgressChart instanceof Chart) {
     window.myProgressChart.destroy();
   }
@@ -1176,7 +1171,6 @@ function updateProgressChart() {
   });
 }
 
-// Alternar entre Carga Máxima e 1RM no painel de evolução
 function setProgressMetricMode(mode) {
   state.metricMode = mode;
   const btnMax = document.getElementById("btnMetricMaxWeight");
