@@ -78,7 +78,21 @@
     <!-- ================= 1. TELA: HOME / DASHBOARD ================= -->
     <section id="screen-home" class="space-y-4">
     
-      <!-- Card de Frequência Semanal (Modelo Exato Solicitado) -->
+      <!-- SAUDAÇÃO AO ALUNO -->
+      <div class="px-1 space-y-0.5">
+        <h2 id="homeGreetingTitle" class="text-base font-display font-extrabold text-white uppercase italic tracking-wide">
+          BEM-VINDO DE VOLTA, ATLETA! 💪
+        </h2>
+        <p class="text-xs font-mono text-slate-400">Pronto para mais um treino?</p>
+      </div>
+
+      <!-- MENSAGEM DE DESEMPENHO BASEADA EM DADOS REAIS -->
+      <div id="homeMotivationBanner" class="hidden bg-brand-lime/10 border border-brand-lime/30 rounded-2xl p-3.5 flex items-center gap-3">
+        <span class="text-xl">⚡</span>
+        <p id="homeMotivationText" class="text-xs font-mono text-brand-lime font-medium leading-relaxed"></p>
+      </div>
+
+      <!-- Card de Frequência Semanal -->
       <div class="bg-[#111620] p-5 rounded-2xl tactical-border space-y-4 relative">
         <!-- Cabeçalho -->
         <div class="flex justify-between items-center">
@@ -107,9 +121,7 @@
         </div>
 
         <!-- Mini-Grid dos Dias da Semana -->
-        <div id="weeklyDaysGrid" class="grid grid-cols-7 gap-1.5 pt-2">
-          <!-- Preenchido dinamicamente pelo JS -->
-        </div>
+        <div id="weeklyDaysGrid" class="grid grid-cols-7 gap-1.5 pt-2"></div>
 
         <!-- Barra de Progresso Geral da Semana -->
         <div class="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden border border-slate-800/80">
@@ -122,12 +134,16 @@
         </div>
       </div>
 
+      <!-- CARDS DE ESTATÍSTICAS (VOLUME COM COMPARAÇÃO E TOTAL DE TREINOS) -->
       <div class="grid grid-cols-2 gap-3">
-        <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-1">
+        <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-1 flex flex-col justify-between">
           <span class="text-[10px] font-mono text-slate-400 uppercase">Volume Semanal</span>
-          <p id="statWeeklyVolume" class="text-xl font-mono font-extrabold text-white">0 <span class="text-xs text-slate-500">kg</span></p>
+          <div>
+            <p id="statWeeklyVolume" class="text-xl font-mono font-extrabold text-white">0 <span class="text-xs text-slate-500">kg</span></p>
+            <span id="volumeComparisonBadge" class="hidden text-[10px] font-mono font-bold text-brand-lime mt-1 block"></span>
+          </div>
         </div>
-        <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-1">
+        <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-1 flex flex-col justify-between">
           <span class="text-[10px] font-mono text-slate-400 uppercase">Treinos Concluídos</span>
           <p id="profileWorkoutsCount" class="text-xl font-mono font-extrabold text-brand-lime">0</p>
         </div>
@@ -145,7 +161,7 @@
 
       <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-2">
         <h3 class="text-xs font-mono uppercase text-slate-400">Últimos Treinos</h3>
-        <div id="workoutsHistoryList" class="space-y-2 max-h-48 overflow-y-auto"></div>
+        <div id="workoutsHistoryList" class="space-y-2 max-h-56 overflow-y-auto"></div>
       </div>
     </section>
 
