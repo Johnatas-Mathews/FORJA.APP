@@ -563,7 +563,7 @@ function renderProfileStats() {
   if (motivationBanner && motivationText) {
     if (workoutsThisWeek > 0) {
       motivationBanner.classList.remove('hidden');
-      motivationText.textContent = `Você já completou ${workoutsThisWeek} ${workoutsThisWeek === 1 ? 'treino' : 'treinos'} nesta semana. Continue evoluindo!`;
+      motivationText.textContent = `${workoutsThisWeek} ${workoutsThisWeek === 1 ? 'sessão' : 'sessões'} Forjadas nesta semana. Mentenha a consistência!`;
     } else {
       motivationBanner.classList.remove('hidden');
       motivationText.textContent = `Sua meta é ${weeklyTarget} treinos esta semana. Vamos iniciar o primeiro?`;
