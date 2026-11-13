@@ -274,6 +274,26 @@ async function fetchUserData() {
       ...w,
       exercises: typeof w.exercises === 'string' ? JSON.parse(w.exercises) : (w.exercises || [])
     })).sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+    
+    // 🔥 Calcula o XP acumulado com base nos treinos já salvos (150 XP por treino)
+    state.xp = state.workouts.length * 150;
+  } else {
+    state.workouts = [];
+    state.xp = 0;
+  }
+}
+  populateWorkoutTemplateSelect();
+
+  const { data: wks } = await supabaseClient
+    .from('workouts')
+    .select('*')
+    .eq('user_id', state.user.id);
+
+  if (wks && wks.length > 0) {
+    state.workouts = wks.map(w => ({
+      ...w,
+      exercises: typeof w.exercises === 'string' ? JSON.parse(w.exercises) : (w.exercises || [])
+    })).sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
   } else {
     state.workouts = [];
   }
