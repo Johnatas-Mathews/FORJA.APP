@@ -209,12 +209,14 @@ async function fetchUserProfile() {
 
   if (!error && data) {
     state.userProfile = data;
-    state.weeklyGoal = data.weekly_goal || 5;
-    state.preferredDays = Array.isArray(data.preferred_days) ? data.preferred_days : [];
+    state.weeklyGoal = data.weekly_goal || parseInt(localStorage.getItem(`forja_goal_${state.user.id}`)) || 5;
+    state.preferredDays = Array.isArray(data.preferred_days) 
+      ? data.preferred_days 
+      : JSON.parse(localStorage.getItem(`forja_pref_${state.user.id}`) || '[]');
     applyRoleUI(data.role);
   } else {
-    state.weeklyGoal = 5;
-    state.preferredDays = [];
+    state.weeklyGoal = parseInt(localStorage.getItem(`forja_goal_${state.user.id}`)) || 5;
+    state.preferredDays = JSON.parse(localStorage.getItem(`forja_pref_${state.user.id}`) || '[]');
   }
 }
 
