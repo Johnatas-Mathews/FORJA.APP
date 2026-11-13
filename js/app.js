@@ -1,6 +1,6 @@
 // js/app.js - FORJA High Performance Engine (Versão Blindada & Corrigida)
 const SUPABASE_URL = "https://pzygeoqjdyvtfpxuytvg.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6eWdlb3FqZHl2dGZweHV5dHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNjczNzMsImV4cCI6MjEwODk0MzM3M30.lme2H9a6-QyI7Hf-7-tSIfr3DuvXMk03ZJoBnOemUYU";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp6eWdlb3FqZHl2dGZweHV5dHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNjczNzMsImV4cCI6MjEwODk0MzM3M30.lme2H9a6-QyI7Hf-7-tSIfr3DuvXMk03ZJoBnOemUYU";
 let supabaseClient = null;
 try {
   supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -149,20 +149,20 @@ function switchAuthMode(mode) {
   const btnRegister = document.getElementById("btnTabRegister");
   const submitText = document.getElementById("authSubmitText");
   const roleContainer = document.getElementById("roleSelectionContainer");
-  const nameFieldContainer = document.getElementById("nameFieldContainer"); // Novo container do nome
+  const nameFieldContainer = document.getElementById("nameFieldContainer");
 
   if (mode === 'login') {
     btnLogin.className = "flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all bg-brand-lime text-black";
     btnRegister.className = "flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all text-slate-400 hover:text-white";
     submitText.textContent = "ACESSAR MINHA CONTA";
     if (roleContainer) roleContainer.classList.add("hidden");
-    if (nameFieldContainer) nameFieldContainer.classList.add("hidden"); // Oculta no login
+    if (nameFieldContainer) nameFieldContainer.classList.add("hidden");
   } else {
     btnRegister.className = "flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all bg-brand-lime text-black";
     btnLogin.className = "flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all text-slate-400 hover:text-white";
     submitText.textContent = "CRIAR CONTA NA FORJA";
     if (roleContainer) roleContainer.classList.remove("hidden");
-    if (nameFieldContainer) nameFieldContainer.classList.remove("hidden"); // Mostra no cadastro
+    if (nameFieldContainer) nameFieldContainer.classList.remove("hidden");
   }
 }
 
@@ -192,14 +192,13 @@ async function handleAuthSubmit(e) {
         options: {
           data: {
             role: state.selectedRole,
-            full_name: fullName // Salva nos metadados do Auth
+            full_name: fullName
           }
         }
       });
       if (error) throw error;
       state.user = data.user;
 
-      // Cria ou atualiza o registro na tabela profiles com o nome
       if (supabaseClient && state.user) {
         await supabaseClient.from('profiles').upsert({
           id: state.user.id,
@@ -236,10 +235,56 @@ async function fetchUserProfile() {
       ? data.preferred_days 
       : JSON.parse(localStorage.getItem(`forja_pref_${state.user.id}`) || '[]');
     applyRoleUI(data.role);
+
+    // Preenche input de nome na tela de perfil se existir
+    const profileInput = document.getElementById("profileFullNameInput");
+    if (profileInput && data.full_name) {
+      profileInput.value = data.full_name;
+    }
   } else {
     state.weeklyGoal = parseInt(localStorage.getItem(`forja_goal_${state.user.id}`)) || 5;
     state.preferredDays = JSON.parse(localStorage.getItem(`forja_pref_${state.user.id}`) || '[]');
   }
+}
+
+async function updateProfileFullName() {
+  const input = document.getElementById("profileFullNameInput");
+  if (!input) return;
+  const newName = input.value.trim();
+
+  if (!newName) {
+    alert("Insira um nome válido!");
+    return;
+  }
+
+  if (!state.user) {
+    alert("Usuário não autenticado.");
+    return;
+  }
+
+  if (!state.userProfile) state.userProfile = {};
+  state.userProfile.full_name = newName;
+
+  if (supabaseClient) {
+    const { error } = await supabaseClient
+      .from('profiles')
+      .upsert({
+        id: state.user.id,
+        email: state.user.email,
+        full_name: newName,
+        weekly_goal: state.weeklyGoal || 5,
+        preferred_days: state.preferredDays || []
+      }, { onConflict: 'id' });
+
+    if (error) {
+      console.error("Erro ao atualizar nome no Supabase:", error);
+      alert("Erro ao atualizar nome na nuvem: " + error.message);
+      return;
+    }
+  }
+
+  alert("Nome de perfil atualizado com sucesso!");
+  renderProfileStats();
 }
 
 function applyRoleUI(role) {
