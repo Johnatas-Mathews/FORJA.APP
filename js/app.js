@@ -1,4 +1,4 @@
-// js/app.js - FORJA High Performance Engine (Versão Blindada & Corrigida com Modal de Meta e Dias Preferenciais)
+// js/app.js - FORJA High Performance Engine (Versão Blindada & Corrigida)
 const SUPABASE_URL = "https://pzygeoqjdyvtfpxuytvg.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6eWdlb3FqZHl2dGZweHV5dHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNjczNzMsImV4cCI6MjEwODk0MzM3M30.lme2H9a6-QyI7Hf-7-tSIfr3DuvXMk03ZJoBnOemUYU";
 let supabaseClient = null;
@@ -20,15 +20,15 @@ const state = {
   editingTemplateId: null,
   metricMode: 'maxWeight',
   
-  // META SEMANAL E DIAS PREFERENCIAIS
-  weeklyGoal: 5,
-  preferredDays: [],
-
   // CAMPOS DE GAMIFICAÇÃO & STREAK
   xp: 0,
   level: 1,
   patente: 'Ferro Bruto',
   nextLevelXP: 500,
+
+  // METAS E PREFERÊNCIAS SEMANAIS
+  weeklyGoal: 5,
+  preferredDays: [],
 
   activeWorkout: {
     name: "Treino Personalizado",
@@ -47,6 +47,7 @@ let progressChartInstance = null;
 let animationInterval = null;
 const DEFAULT_FALLBACK_IMG = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%23a3e635' stroke-width='1.5'%3E%3Cpath d='M6.5 6.5h11M6.5 17.5h11M4 9.5h16M4 14.5h16M2 12h20'/%3E%3C/svg%3E";
 
+// Helper seguro para acessar o banco de exercícios global
 function getExerciseDB() {
   if (typeof window !== 'undefined' && window.EXERCISE_DATABASE) return window.EXERCISE_DATABASE;
   if (typeof EXERCISE_DATABASE !== 'undefined') return EXERCISE_DATABASE;
@@ -114,6 +115,9 @@ function switchTab(targetScreenId) {
   }
 }
 
+/* -------------------------------------------------------------
+   ATALHO RÁPIDO PARA INICIAR TREINO VIVO
+-------------------------------------------------------------- */
 function quickStartTemplate() {
   if (state.templates.length > 0) {
     loadTemplateIntoWorkout(state.templates[0].id);
@@ -318,109 +322,6 @@ async function fetchEvaluations() {
 }
 
 /* -------------------------------------------------------------
-   CONTROLE DO MODAL DE CONFIGURAÇÃO DE META E DIAS PREFERENCIAIS
--------------------------------------------------------------- */
-let tempSelectedGoal = 5;
-let tempPreferredDays = [];
-
-function openGoalModal() {
-  const modal = document.getElementById("modalGoalConfig");
-  if (!modal) return;
-  
-  tempSelectedGoal = state.weeklyGoal || 5;
-  tempPreferredDays = Array.isArray(state.preferredDays) ? [...state.preferredDays] : [];
-
-  const dayButtons = modal.querySelectorAll('.goal-days-btn');
-  dayButtons.forEach(btn => {
-    const val = parseInt(btn.getAttribute('data-val'));
-    if (val === tempSelectedGoal) {
-      btn.className = "goal-days-btn py-3 px-2 rounded-xl border border-brand-lime bg-brand-lime text-black font-mono flex flex-col items-center justify-center gap-1 shadow-md glow-lime font-bold";
-      btn.querySelector('span:last-child').className = "text-[10px] text-black/80 font-bold";
-    } else {
-      btn.className = "goal-days-btn py-3 px-2 rounded-xl border border-slate-800 bg-slate-900 text-white font-mono flex flex-col items-center justify-center gap-1 transition-all hover:border-slate-700";
-      btn.querySelector('span:last-child').className = "text-[10px] text-slate-400";
-    }
-  });
-
-  const prefButtons = modal.querySelectorAll('.pref-day-btn');
-  prefButtons.forEach(btn => {
-    const dayIndex = parseInt(btn.getAttribute('data-day'));
-    if (tempPreferredDays.includes(dayIndex)) {
-      btn.className = "pref-day-btn py-2.5 rounded-xl border border-brand-lime bg-brand-lime text-black font-mono text-xs font-bold shadow-sm glow-lime";
-    } else {
-      btn.className = "pref-day-btn py-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 font-mono text-xs font-bold transition-all";
-    }
-  });
-
-  modal.classList.remove("hidden");
-}
-
-function closeGoalModal() {
-  const modal = document.getElementById("modalGoalConfig");
-  if (modal) modal.classList.add("hidden");
-}
-
-function selectGoalDays(goalVal) {
-  tempSelectedGoal = goalVal;
-  const buttons = document.querySelectorAll('.goal-days-btn');
-  buttons.forEach(btn => {
-    const val = parseInt(btn.getAttribute('data-val'));
-    if (val === goalVal) {
-      btn.className = "goal-days-btn py-3 px-2 rounded-xl border border-brand-lime bg-brand-lime text-black font-mono flex flex-col items-center justify-center gap-1 shadow-md glow-lime font-bold";
-      btn.querySelector('span:last-child').className = "text-[10px] text-black/80 font-bold";
-    } else {
-      btn.className = "goal-days-btn py-3 px-2 rounded-xl border border-slate-800 bg-slate-900 text-white font-mono flex flex-col items-center justify-center gap-1 transition-all hover:border-slate-700";
-      btn.querySelector('span:last-child').className = "text-[10px] text-slate-400";
-    }
-  });
-}
-
-function togglePreferredDay(dayIndex) {
-  const btn = document.querySelector(`.pref-day-btn[data-day="${dayIndex}"]`);
-  if (!btn) return;
-
-  const existsIndex = tempPreferredDays.indexOf(dayIndex);
-  if (existsIndex > -1) {
-    tempPreferredDays.splice(existsIndex, 1);
-    btn.className = "pref-day-btn py-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 font-mono text-xs font-bold transition-all";
-  } else {
-    tempPreferredDays.push(dayIndex);
-    btn.className = "pref-day-btn py-2.5 rounded-xl border border-brand-lime bg-brand-lime text-black font-mono text-xs font-bold shadow-sm glow-lime";
-  }
-}
-
-async function saveUserGoal() {
-  state.weeklyGoal = tempSelectedGoal;
-  state.preferredDays = [...tempPreferredDays];
-  closeGoalModal();
-
-  // Atualiza o card na hora na tela
-  renderProfileStats();
-
-  if (state.user) {
-    // Backup local imediato para nunca perder a configuração
-    localStorage.setItem(`forja_goal_${state.user.id}`, state.weeklyGoal);
-    localStorage.setItem(`forja_pref_${state.user.id}`, JSON.stringify(state.preferredDays));
-  }
-
-  if (supabaseClient && state.user) {
-    // Usa upsert para criar a linha no profiles caso ela ainda não exista
-    const { error } = await supabaseClient
-      .from('profiles')
-      .upsert({ 
-        id: state.user.id,
-        email: state.user.email,
-        weekly_goal: state.weeklyGoal,
-        preferred_days: state.preferredDays
-      }, { onConflict: 'id' });
-
-    if (error) {
-      console.error("Erro ao salvar meta no Supabase:", error);
-      alert("Erro ao salvar meta no banco: " + error.message);
-    }
-  }
-}
-/* -------------------------------------------------------------
    RENDERIZAÇÃO GERAL (FICHAS, HISTÓRICO, GRÁFICOS & PERFIL)
 -------------------------------------------------------------- */
 function renderAll() {
@@ -453,18 +354,15 @@ function renderTemplates() {
     
     const exercisesConfig = tpl.exercises_config || [];
     
-    // Contagem automática da quantidade total de séries da ficha
     let totalSeries = 0;
     exercisesConfig.forEach(ex => {
       totalSeries += (parseInt(ex.sets) || 3);
     });
 
-    // Deixa a primeira ficha aberta por padrão, as demais fechadas
     const isOpen = index === 0 ? 'open' : '';
 
     div.innerHTML = `
       <details ${isOpen} class="group">
-        <!-- Resumo inicial visível do card -->
         <summary class="p-4 cursor-pointer flex justify-between items-center select-none hover:bg-slate-900/50 transition-all list-none">
           <div class="pr-2 space-y-0.5">
             <span class="text-[9px] font-mono text-brand-lime font-bold uppercase tracking-wider block">Divisão ${tpl.division || 'A'}</span>
@@ -488,7 +386,6 @@ function renderTemplates() {
           </div>
         </summary>
 
-        <!-- Detalhes / Lista de exercícios expandida -->
         <div class="p-4 pt-0 border-t border-slate-800/80 space-y-2 mt-2">
           <div class="flex justify-between items-center pb-1">
             <span class="text-[10px] font-mono uppercase text-slate-500 tracking-wider">Composição da Ficha</span>
@@ -503,7 +400,6 @@ function renderTemplates() {
             </div>
           `).join('')}
 
-          <!-- Botão de recolher no rodapé para facilitar a interação mobile -->
           <div class="pt-2 text-center">
             <button type="button" onclick="this.closest('details').removeAttribute('open')" class="text-[10px] font-mono text-slate-500 hover:text-slate-300 underline">
               ▲ Recolher exercícios
@@ -511,7 +407,6 @@ function renderTemplates() {
           </div>
         </div>
 
-        <!-- Indicador de "Ver exercícios" quando fechado -->
         <div class="px-4 pb-3 pt-0 group-open:hidden text-center border-t border-slate-800/40">
           <span class="text-[10px] font-mono text-brand-lime/80 hover:text-brand-lime cursor-pointer inline-flex items-center gap-1 pt-2">
             Ver exercícios ▼
@@ -534,16 +429,29 @@ function renderWorkoutsHistory() {
   }
 
   [...state.workouts].reverse().slice(0, 5).forEach(wk => {
+    const exercisesCount = wk.exercises ? wk.exercises.length : 0;
+    const durationMin = wk.duration_min || 50;
+    
+    let formattedDate = wk.date || 'Recente';
+    if (wk.date && wk.date.includes('-')) {
+      const parts = wk.date.split('-');
+      if (parts.length === 3) formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+
     const div = document.createElement("div");
-    div.className = "bg-slate-900/80 p-2.5 rounded-xl tactical-border flex justify-between items-center text-xs font-mono";
+    div.className = "bg-slate-900/80 p-3 rounded-xl tactical-border flex justify-between items-center text-xs font-mono";
     div.innerHTML = `
-      <div>
-        <p class="font-bold text-white">${wk.name}</p>
-        <span class="text-[10px] text-slate-500">${wk.date || 'Data recente'}</span>
+      <div class="space-y-0.5">
+        <p class="font-bold text-white uppercase">${wk.name}</p>
+        <div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+          <span>${formattedDate}</span>
+          <span>·</span>
+          <span>${durationMin} min</span>
+        </div>
       </div>
-      <div class="text-right">
-        <span class="text-brand-lime font-bold">${wk.total_volume_kg || 0} kg</span>
-        <span class="text-[10px] text-slate-400 block">volume total</span>
+      <div class="text-right space-y-0.5">
+        <span class="text-brand-lime font-bold block">${(wk.total_volume_kg || 0).toLocaleString('pt-BR')} kg</span>
+        <span class="text-[10px] text-slate-400 block">${exercisesCount} ${exercisesCount === 1 ? 'exercício' : 'exercícios'}</span>
       </div>
     `;
     container.appendChild(div);
@@ -559,51 +467,55 @@ function renderProfileStats() {
   const daysGrid = document.getElementById("weeklyDaysGrid");
   const progressBar = document.getElementById("weekProgressBar");
   const weeklyPercentageText = document.getElementById("weeklyPercentageText");
+  const greetingTitle = document.getElementById("homeGreetingTitle");
+  const motivationBanner = document.getElementById("homeMotivationBanner");
+  const motivationText = document.getElementById("homeMotivationText");
+  const volumeComparisonBadge = document.getElementById("volumeComparisonBadge");
+
+  if (greetingTitle && state.user) {
+    const userName = (state.user.user_metadata?.full_name || state.user.email.split('@')[0]).toUpperCase();
+    greetingTitle.textContent = `BEM-VINDO DE VOLTA, ${userName}! 💪`;
+  }
 
   if (countEl) countEl.textContent = state.workouts.length;
-  
-  let totalVol = 0;
-  state.workouts.forEach(w => totalVol += (w.total_volume_kg || 0));
-  if (volumeEl) volumeEl.innerHTML = `${totalVol} <span class="text-xs text-slate-500">kg</span>`;
-
-  const weeklyTarget = state.weeklyGoal || 5;
 
   const today = new Date();
-  const currentDayOfWeek = today.getDay(); // 0 (Dom) a 6 (Sáb)
+  const currentDayOfWeek = today.getDay();
   
-  const monday = new Date(today);
+  const mondayCurrent = new Date(today);
   const diffToMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
-  monday.setDate(today.getDate() + diffToMonday);
-  monday.setHours(0, 0, 0, 0);
+  mondayCurrent.setDate(today.getDate() + diffToMonday);
+  mondayCurrent.setHours(0, 0, 0, 0);
+
+  const mondayPrevious = new Date(mondayCurrent);
+  mondayPrevious.setDate(mondayPrevious.getDate() - 7);
+
+  let currentWeekVolume = 0;
+  let previousWeekVolume = 0;
+  let workoutsThisWeek = 0;
 
   const weekDays = [
-    { label: 'SEG', date: new Date(monday) },
-    { label: 'TER', date: new Date(monday.setDate(monday.getDate() + 1)) },
-    { label: 'QUA', date: new Date(monday.setDate(monday.getDate() + 1)) },
-    { label: 'QUI', date: new Date(monday.setDate(monday.getDate() + 1)) },
-    { label: 'SEX', date: new Date(monday.setDate(monday.getDate() + 1)) },
-    { label: 'SÁB', date: new Date(monday.setDate(monday.getDate() + 1)) },
-    { label: 'DOM', date: new Date(monday.setDate(monday.getDate() + 1)) }
+    { label: 'SEG' }, { label: 'TER' }, { label: 'QUA' }, { label: 'QUI' }, { label: 'SEX' }, { label: 'SÁB' }, { label: 'DOM' }
   ];
 
-  let workoutsThisWeek = 0;
+  const formattedWeekDays = weekDays.map((d, idx) => {
+    const targetDate = new Date(mondayCurrent);
+    targetDate.setDate(mondayCurrent.getDate() + idx);
+    return {
+      label: d.label,
+      dateStr: targetDate.toISOString().split('T')[0]
+    };
+  });
 
   if (daysGrid) {
     daysGrid.innerHTML = "";
-    weekDays.forEach((dayObj) => {
-      const year = dayObj.date.getFullYear();
-      const month = String(dayObj.date.getMonth() + 1).padStart(2, '0');
-      const day = String(dayObj.date.getDate()).padStart(2, '0');
-      const dateStr = `${year}-${month}-${day}`;
-
-      const workoutsOnThisDay = state.workouts.filter(w => w.date === dateStr);
+    formattedWeekDays.forEach(dayObj => {
+      const workoutsOnThisDay = state.workouts.filter(w => w.date === dayObj.dateStr);
       const trainedOnDay = workoutsOnThisDay.length > 0;
-
       workoutsThisWeek += workoutsOnThisDay.length;
 
       const dayBox = document.createElement("div");
       dayBox.className = "flex flex-col items-center gap-1.5";
-      
       dayBox.innerHTML = `
         <div class="w-full aspect-square rounded-xl flex items-center justify-center transition-all ${
           trainedOnDay 
@@ -618,6 +530,46 @@ function renderProfileStats() {
     });
   }
 
+  state.workouts.forEach(w => {
+    if (!w.date) return;
+    const wDate = new Date(w.date + 'T00:00:00');
+    const vol = w.total_volume_kg || 0;
+
+    if (wDate >= mondayCurrent) {
+      currentWeekVolume += vol;
+    } else if (wDate >= mondayPrevious && wDate < mondayCurrent) {
+      previousWeekVolume += vol;
+    }
+  });
+
+  if (volumeEl) volumeEl.innerHTML = `${currentWeekVolume.toLocaleString('pt-BR')} <span class="text-xs text-slate-500">kg</span>`;
+
+  if (volumeComparisonBadge) {
+    if (previousWeekVolume > 0) {
+      const percentDiff = Math.round(((currentWeekVolume - previousWeekVolume) / previousWeekVolume) * 100);
+      if (percentDiff !== 0) {
+        const sign = percentDiff > 0 ? '+' : '';
+        volumeComparisonBadge.textContent = `${sign}${percentDiff}% vs semana anterior`;
+        volumeComparisonBadge.classList.remove('hidden');
+      } else {
+        volumeComparisonBadge.classList.add('hidden');
+      }
+    } else {
+      volumeComparisonBadge.classList.add('hidden');
+    }
+  }
+
+  const weeklyTarget = state.weeklyGoal || 5;
+  if (motivationBanner && motivationText) {
+    if (workoutsThisWeek > 0) {
+      motivationBanner.classList.remove('hidden');
+      motivationText.textContent = `Você já completou ${workoutsThisWeek} ${workoutsThisWeek === 1 ? 'treino' : 'treinos'} nesta semana. Continue evoluindo!`;
+    } else {
+      motivationBanner.classList.remove('hidden');
+      motivationText.textContent = `Sua meta é ${weeklyTarget} treinos esta semana. Vamos iniciar o primeiro?`;
+    }
+  }
+
   const formattedCount = String(workoutsThisWeek).padStart(2, '0');
   const formattedTarget = String(weeklyTarget).padStart(2, '0');
 
@@ -628,6 +580,8 @@ function renderProfileStats() {
   const percentage = Math.min(Math.round((workoutsThisWeek / weeklyTarget) * 100), 100);
   if (progressBar) progressBar.style.width = `${percentage}%`;
   if (weeklyPercentageText) weeklyPercentageText.textContent = `${percentage}% da meta semanal concluída`;
+
+  renderWorkoutsHistory();
 }
 
 function populateProgressExerciseSelect() {
@@ -691,7 +645,7 @@ function isCardioExercise(exerciseName) {
 }
 
 /* -------------------------------------------------------------
-   ARSENAL DE EXERCÍCIOS & MODAIS
+   ARSENAL DE EXERCÍCIOS & MODAIS COM SUPORTE A ANIMAÇÃO FLIP
 -------------------------------------------------------------- */
 function openExerciseLibraryModal(context = 'workout') {
   state.libraryContext = context;
@@ -838,7 +792,7 @@ function selectExerciseFromLibrary(exerciseId) {
 }
 
 /* -------------------------------------------------------------
-   GERENCIAMENTO DE FICHAS
+   GERENCIAMENTO DE FICHAS (CRIAÇÃO, EDIÇÃO & EXCLUSÃO)
 -------------------------------------------------------------- */
 function appendExerciseRowToTemplateForm(name = "", sets = 3, rest = 60) {
   const container = document.getElementById("tplExerciseInputs");
@@ -863,7 +817,7 @@ function appendExerciseRowToTemplateForm(name = "", sets = 3, rest = 60) {
         <option value="180" ${rest == 180 ? 'selected' : ''}>180s</option>
       </select>
     </div>
-    <button type="button" onclick="document.getElementById('${rowId}').remove()" title="Remover" class="p-1 text-slate-500 hover:text-red-400 text-sm font-bold">&times;</button>
+    <button type="button" onclick="document.getElementById('${rowId}').remove()" title="Remover este exercício" class="p-1 text-slate-500 hover:text-red-400 text-sm font-bold">&times;</button>
   `;
   container.appendChild(div);
 }
@@ -943,7 +897,7 @@ async function saveNewTemplate() {
   const tplPayload = {
     user_id: state.user ? state.user.id : null,
     name: title,
-    title,
+    title: title,
     division,
     exercises_config: exercises
   };
@@ -1014,7 +968,108 @@ async function deleteTemplate(templateId) {
 }
 
 /* -------------------------------------------------------------
-   CRONÔMETRO DE DESCANSO
+   CONFIGURAÇÃO DE META SEMANAL (MODAL)
+-------------------------------------------------------------- */
+let tempSelectedGoal = 5;
+let tempPreferredDays = [];
+
+function openGoalModal() {
+  const modal = document.getElementById("modalGoalConfig");
+  if (!modal) return;
+  
+  tempSelectedGoal = state.weeklyGoal || 5;
+  tempPreferredDays = Array.isArray(state.preferredDays) ? [...state.preferredDays] : [];
+
+  const dayButtons = modal.querySelectorAll('.goal-days-btn');
+  dayButtons.forEach(btn => {
+    const val = parseInt(btn.getAttribute('data-val'));
+    if (val === tempSelectedGoal) {
+      btn.className = "goal-days-btn py-3 px-2 rounded-xl border border-brand-lime bg-brand-lime text-black font-mono flex flex-col items-center justify-center gap-1 shadow-md glow-lime font-bold";
+      btn.querySelector('span:last-child').className = "text-[10px] text-black/80 font-bold";
+    } else {
+      btn.className = "goal-days-btn py-3 px-2 rounded-xl border border-slate-800 bg-slate-900 text-white font-mono flex flex-col items-center justify-center gap-1 transition-all hover:border-slate-700";
+      btn.querySelector('span:last-child').className = "text-[10px] text-slate-400";
+    }
+  });
+
+  const prefButtons = modal.querySelectorAll('.pref-day-btn');
+  prefButtons.forEach(btn => {
+    const dayIndex = parseInt(btn.getAttribute('data-day'));
+    if (tempPreferredDays.includes(dayIndex)) {
+      btn.className = "pref-day-btn py-2.5 rounded-xl border border-brand-lime bg-brand-lime text-black font-mono text-xs font-bold shadow-sm glow-lime";
+    } else {
+      btn.className = "pref-day-btn py-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 font-mono text-xs font-bold transition-all";
+    }
+  });
+
+  modal.classList.remove("hidden");
+}
+
+function closeGoalModal() {
+  const modal = document.getElementById("modalGoalConfig");
+  if (modal) modal.classList.add("hidden");
+}
+
+function selectGoalDays(goalVal) {
+  tempSelectedGoal = goalVal;
+  const buttons = document.querySelectorAll('.goal-days-btn');
+  buttons.forEach(btn => {
+    const val = parseInt(btn.getAttribute('data-val'));
+    if (val === goalVal) {
+      btn.className = "goal-days-btn py-3 px-2 rounded-xl border border-brand-lime bg-brand-lime text-black font-mono flex flex-col items-center justify-center gap-1 shadow-md glow-lime font-bold";
+      btn.querySelector('span:last-child').className = "text-[10px] text-black/80 font-bold";
+    } else {
+      btn.className = "goal-days-btn py-3 px-2 rounded-xl border border-slate-800 bg-slate-900 text-white font-mono flex flex-col items-center justify-center gap-1 transition-all hover:border-slate-700";
+      btn.querySelector('span:last-child').className = "text-[10px] text-slate-400";
+    }
+  });
+}
+
+function togglePreferredDay(dayIndex) {
+  const btn = document.querySelector(`.pref-day-btn[data-day="${dayIndex}"]`);
+  if (!btn) return;
+
+  const existsIndex = tempPreferredDays.indexOf(dayIndex);
+  if (existsIndex > -1) {
+    tempPreferredDays.splice(existsIndex, 1);
+    btn.className = "pref-day-btn py-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 font-mono text-xs font-bold transition-all";
+  } else {
+    tempPreferredDays.push(dayIndex);
+    btn.className = "pref-day-btn py-2.5 rounded-xl border border-brand-lime bg-brand-lime text-black font-mono text-xs font-bold shadow-sm glow-lime";
+  }
+}
+
+async function saveUserGoal() {
+  state.weeklyGoal = tempSelectedGoal;
+  state.preferredDays = [...tempPreferredDays];
+  closeGoalModal();
+
+  renderProfileStats();
+
+  if (state.user) {
+    localStorage.setItem(`forja_goal_${state.user.id}`, state.weeklyGoal);
+    localStorage.setItem(`forja_pref_${state.user.id}`, JSON.stringify(state.preferredDays));
+  }
+
+  if (supabaseClient && state.user) {
+    const { error } = await supabaseClient
+      .from('profiles')
+      .upsert({ 
+        id: state.user.id,
+        email: state.user.email,
+        weekly_goal: state.weeklyGoal,
+        preferred_days: state.preferredDays
+      }, { onConflict: 'id' });
+
+    if (error) {
+      console.error("Erro ao salvar meta no Supabase:", error);
+      alert("Erro ao salvar meta no banco: " + error.message);
+    }
+  }
+}
+
+/* -------------------------------------------------------------
+   CRONÔMETRO DE DESCANSO AUTOMÁTICO
 -------------------------------------------------------------- */
 function startAutoRest(seconds = 60) {
   const widget = document.getElementById("restTimerWidget");
@@ -1294,6 +1349,7 @@ async function finishActiveWorkout() {
   }
 
   state.workouts.push(workoutPayload);
+  
   addXP(150, "Treino Concluído");
 
   alert(`🔥 Treino finalizado com sucesso!\nVolume total: ${totalVolume} kg\n+150 XP acumulados!`);
@@ -1304,7 +1360,7 @@ async function finishActiveWorkout() {
 }
 
 /* -------------------------------------------------------------
-   GRÁFICO DE EVOLUÇÃO
+   GRÁFICO DE EVOLUÇÃO E PROGRESSO DE CARGAS
 -------------------------------------------------------------- */
 function updateProgressChart() {
   const select = document.getElementById("progressExerciseSelect");
@@ -1345,7 +1401,9 @@ function updateProgressChart() {
     window.myProgressChart.destroy();
   }
 
-  if (dataPoints.length === 0) return;
+  if (dataPoints.length === 0) {
+    return;
+  }
 
   window.myProgressChart = new Chart(ctx, {
     type: 'line',
