@@ -1610,6 +1610,21 @@ function renderOverviewProgressStats() {
   if (consistencyEl) consistencyEl.textContent = consistencyRate + "%";
 }
 
+function setProgressPeriod(period) {
+  state.progressPeriod = period;
+  ['7D', '1M', '3M', '1A', 'ALL'].forEach(p => {
+    const btn = document.getElementById(`btnPeriod-${p}`);
+    if (btn) {
+      if (p === period) {
+        btn.className = "px-2 py-0.5 rounded bg-brand-lime text-black font-bold";
+      } else {
+        btn.className = "px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white";
+      }
+    }
+  });
+  updateProgressChart();
+}
+
 function updateProgressChart() {
   const select = document.getElementById("progressExerciseSelect");
   const canvas = document.getElementById("progressChartCanvas");
@@ -1632,14 +1647,31 @@ function updateProgressChart() {
   }
 
   const ctx = canvas.getContext("2d");
-  const dataPoints = [];
+  let dataPoints = [];
+
+  const now = new Date();
+  let cutoffDate = null;
+  if (state.progressPeriod === '7D') {
+    cutoffDate = new Date(); cutoffDate.setDate(now.getDate() - 7);
+  } else if (state.progressPeriod === '1M') {
+    cutoffDate = new Date(); cutoffDate.setMonth(now.getMonth() - 1);
+  } else if (state.progressPeriod === '3M') {
+    cutoffDate = new Date(); cutoffDate.setMonth(now.getMonth() - 3);
+  } else if (state.progressPeriod === '1A') {
+    cutoffDate = new Date(); cutoffDate.setFullYear(now.getFullYear() - 1);
+  }
 
   state.workouts.forEach(w => {
     if (!w.exercises) return;
+    
+    if (cutoffDate && w.date) {
+      const wDateObj = new Date(w.date + 'T00:00:00');
+      if (wDateObj < cutoffDate) return;
+    }
+
     w.exercises.forEach(e => {
       if (e.name && e.name.toLowerCase() === selectedExercise.toLowerCase()) {
         let metricVal = 0;
-        let cardioSummary = "";
 
         if (isCardio) {
           let totalDist = 0;
@@ -1653,12 +1685,10 @@ function updateProgressChart() {
           if (totalDist > 0 || totalTime > 0) {
             dataPoints.push({
               date: w.date || 'Recente',
-              value: totalDist,
-              labelStr: `${totalDist} km (${totalTime} min)`
+              value: totalDist
             });
           }
         } else {
-          // FILTRO ESTRITO: Apenas séries concluídas (completed === true)
           if (state.metricMode === 'maxWeight') {
             e.sets.forEach(s => {
               if (s.completed) {
@@ -1690,6 +1720,8 @@ function updateProgressChart() {
   }
 
   if (dataPoints.length === 0) {
+    const chartArea = ctx.canvas.getContext('2d');
+    chartArea.clearRect(0, 0, canvas.width, canvas.height);
     return;
   }
 
@@ -1733,6 +1765,7 @@ function renderPersonalRecords() {
   container.innerHTML = "";
 
   const prMap = {};
+  const today = new Date();
 
   state.workouts.forEach(w => {
     if (!w.exercises) return;
@@ -1752,12 +1785,22 @@ function renderPersonalRecords() {
       });
 
       if (maxW > 0) {
-        if (!prMap[e.name] || maxW > prMap[e.name].maxWeight) {
+        const isNew = !prMap[e.name] || maxW > prMap[e.name].maxWeight;
+        if (isNew) {
+          // Verifica se foi batido nos últimos 14 dias para exibir selo "Novo PR"
+          let isRecent = false;
+          if (w.date) {
+            const wDate = new Date(w.date + 'T00:00:00');
+            const diffDays = (today - wDate) / (1000 * 60 * 60 * 24);
+            if (diffDays <= 14) isRecent = true;
+          }
+
           prMap[e.name] = {
             name: e.name,
             maxWeight: maxW,
             estimated1RM: max1RM,
-            date: w.date || 'Recente'
+            date: w.date || 'Recente',
+            isRecent: isRecent
           };
         }
       }
@@ -1775,7 +1818,10 @@ function renderPersonalRecords() {
     div.className = "bg-slate-900/80 p-3 rounded-xl tactical-border flex justify-between items-center text-xs font-mono";
     div.innerHTML = `
       <div>
-        <h4 class="font-bold text-white">${pr.name}</h4>
+        <div class="flex items-center gap-2">
+          <h4 class="font-bold text-white">${pr.name}</h4>
+          ${pr.isRecent ? '<span class="px-1.5 py-0.5 rounded bg-brand-lime/20 text-brand-lime border border-brand-lime/40 text-[9px] font-bold uppercase animate-pulse">🏆 Novo PR</span>' : ''}
+        </div>
         <span class="text-[10px] text-slate-400">Batido em: ${pr.date}</span>
       </div>
       <div class="text-right">
