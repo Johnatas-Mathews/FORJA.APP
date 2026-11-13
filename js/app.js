@@ -447,38 +447,77 @@ function renderTemplates() {
     return;
   }
 
-  state.templates.forEach(tpl => {
+  state.templates.forEach((tpl, index) => {
     const div = document.createElement("div");
-    div.className = "bg-[#111620] rounded-2xl p-4 tactical-border space-y-3";
+    div.className = "bg-[#111620] rounded-2xl tactical-border overflow-hidden transition-all";
     
     const exercisesConfig = tpl.exercises_config || [];
+    
+    // Contagem automática da quantidade total de séries da ficha
+    let totalSeries = 0;
+    exercisesConfig.forEach(ex => {
+      totalSeries += (parseInt(ex.sets) || 3);
+    });
+
+    // Deixa a primeira ficha aberta por padrão, as demais fechadas
+    const isOpen = index === 0 ? 'open' : '';
 
     div.innerHTML = `
-      <div class="flex justify-between items-center">
-        <div>
-          <span class="text-[9px] font-mono text-brand-lime font-bold uppercase">Divisão ${tpl.division || 'A'}</span>
-          <h3 class="text-sm font-display font-bold text-white">${tpl.title || tpl.name}</h3>
-        </div>
-        <div class="flex items-center gap-2">
-          <button onclick="loadTemplateIntoWorkout('${tpl.id}')" class="px-3 py-1.5 bg-brand-lime text-black font-mono font-bold text-[10px] rounded-lg hover:brightness-110">
-            ⚡ Iniciar
-          </button>
-          <button onclick="openEditTemplateModal('${tpl.id}')" class="px-2 py-1.5 bg-slate-800 text-slate-300 font-mono text-[10px] rounded-lg hover:bg-slate-700">
-            ✏️
-          </button>
-          <button onclick="deleteTemplate('${tpl.id}')" class="px-2 py-1.5 bg-red-950/40 text-red-400 font-mono text-[10px] rounded-lg hover:bg-red-900/40">
-            🗑️
-          </button>
-        </div>
-      </div>
-      <div class="space-y-1 pt-1 border-t border-slate-800/80">
-        ${exercisesConfig.map(ex => `
-          <div class="flex justify-between text-xs font-mono text-slate-400">
-            <span>• ${ex.name}</span>
-            <span class="text-slate-500">${ex.sets || 3} séries (${ex.rest || 60}s)</span>
+      <details ${isOpen} class="group">
+        <!-- Resumo inicial visível do card -->
+        <summary class="p-4 cursor-pointer flex justify-between items-center select-none hover:bg-slate-900/50 transition-all list-none">
+          <div class="pr-2 space-y-0.5">
+            <span class="text-[9px] font-mono text-brand-lime font-bold uppercase tracking-wider block">Divisão ${tpl.division || 'A'}</span>
+            <h3 class="text-sm font-display font-bold text-white">${tpl.title || tpl.name}</h3>
+            <div class="flex items-center gap-3 pt-1 text-[10px] font-mono text-slate-400">
+              <span>📋 ${exercisesConfig.length} ${exercisesConfig.length === 1 ? 'exercício' : 'exercícios'}</span>
+              <span>🔄 ${totalSeries} séries</span>
+            </div>
           </div>
-        `).join('')}
-      </div>
+          
+          <div class="flex items-center gap-2" onclick="event.stopPropagation()">
+            <button onclick="loadTemplateIntoWorkout('${tpl.id}')" class="px-3 py-1.5 bg-brand-lime text-black font-mono font-bold text-[10px] rounded-lg hover:brightness-110 flex items-center gap-1 shadow-sm">
+              <span>⚡</span> Iniciar
+            </button>
+            <button onclick="openEditTemplateModal('${tpl.id}')" class="p-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 text-xs" title="Editar">
+              ✏️
+            </button>
+            <button onclick="deleteTemplate('${tpl.id}')" class="p-2 bg-red-950/40 text-red-400 rounded-lg hover:bg-red-900/40 text-xs" title="Excluir">
+              🗑️
+            </button>
+          </div>
+        </summary>
+
+        <!-- Detalhes / Lista de exercícios expandida -->
+        <div class="p-4 pt-0 border-t border-slate-800/80 space-y-2 mt-2">
+          <div class="flex justify-between items-center pb-1">
+            <span class="text-[10px] font-mono uppercase text-slate-500 tracking-wider">Composição da Ficha</span>
+          </div>
+
+          ${exercisesConfig.length === 0 ? '<p class="text-xs font-mono text-slate-500 text-center py-2">Nenhum exercício configurado.</p>' : ''}
+          
+          ${exercisesConfig.map(ex => `
+            <div class="flex justify-between items-center text-xs font-mono text-slate-300 bg-slate-950/40 px-3 py-2 rounded-xl border border-slate-800/60">
+              <span class="truncate pr-2">• ${ex.name}</span>
+              <span class="text-slate-400 flex-shrink-0 text-[11px]">${ex.sets || 3} séries (${ex.rest || 60}s)</span>
+            </div>
+          `).join('')}
+
+          <!-- Botão de recolher no rodapé para facilitar a interação mobile -->
+          <div class="pt-2 text-center">
+            <button type="button" onclick="this.closest('details').removeAttribute('open')" class="text-[10px] font-mono text-slate-500 hover:text-slate-300 underline">
+              ▲ Recolher exercícios
+            </button>
+          </div>
+        </div>
+
+        <!-- Indicador de "Ver exercícios" quando fechado -->
+        <div class="px-4 pb-3 pt-0 group-open:hidden text-center border-t border-slate-800/40">
+          <span class="text-[10px] font-mono text-brand-lime/80 hover:text-brand-lime cursor-pointer inline-flex items-center gap-1 pt-2">
+            Ver exercícios ▼
+          </span>
+        </div>
+      </details>
     `;
     container.appendChild(div);
   });
