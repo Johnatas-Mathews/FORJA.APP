@@ -176,6 +176,66 @@ window.EXERCISE_DATABASE = [
     tips: "Amplitude máxima esticando o calcanhar para baixo e contraindo forte no topo.",
     img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Calf_Raise/0.jpg"
   },
+  {
+    id: "bulgarian_split_squat",
+    name: "Agachamento Búlgaro com Halteres",
+    group: "Pernas",
+    equipment: "Halteres / Banco",
+    muscles: "Quadríceps, Glúteos, Adutores",
+    tips: "Apoie o peito do pé de trás no banco, mantenha o tronco ereto e desça o quadril verticalmente.",
+    type: "strength",
+    img: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    id: "hip_thrust",
+    name: "Elevação Pélvica (Hip Thrust)",
+    group: "Pernas",
+    equipment: "Barra / Banco / Máquina",
+    muscles: "Glúteo Máximo, Isquiotibiais",
+    tips: "Apoie as escápulas na borda do banco, faça flexão completa do quadril e contraia os glúteos no topo por 1 segundo.",
+    type: "strength",
+    img: "https://images.unsplash.com/photo-1534367507873-d2d7e24c797f?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    id: "cadeira_extensora",
+    name: "Cadeira Extensora",
+    group: "Pernas",
+    equipment: "Aparelho Extensor",
+    muscles: "Quadríceps (Reto Femoral)",
+    tips: "Ajuste o encosto para que o joelho coincida com o eixo da máquina. Execute extensão completa com controle na volta.",
+    type: "strength",
+    img: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    id: "mesa_flexora",
+    name: "Mesa Flexora",
+    group: "Pernas",
+    equipment: "Aparelho Flexor",
+    muscles: "Isquiotibiais (Posterior de Coxa)",
+    tips: "Mantenha o quadril firmemente apoiado no banco para evitar compensações com a lombar.",
+    type: "strength",
+    img: "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    id: "stiff_barra",
+    name: "Stiff com Barra",
+    group: "Pernas",
+    equipment: "Barra",
+    muscles: "Isquiotibiais, Glúteos, Lombar",
+    tips: "Mantenha as pernas semi-flexionadas, empine o quadril para trás alongando a posterior e retorne à posição inicial.",
+    type: "strength",
+    img: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    id: "panturrilha_em_pe",
+    name: "Panturrilha em Pé na Máquina",
+    group: "Pernas",
+    equipment: "Máquina / Smith",
+    muscles: "Gastrocnêmio, Sóleo",
+    tips: "Faça amplitude completa: alongue bem o calcanhar na base em baixo e suba na ponta dos pés na máxima altura.",
+    type: "strength",
+    img: "https://images.unsplash.com/photo-1549476464-37392f717541?auto=format&fit=crop&w=400&q=80"
+  },
 
   // ================= OMBROS =================
   {
