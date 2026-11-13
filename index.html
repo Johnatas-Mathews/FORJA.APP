@@ -77,13 +77,49 @@
 
     <!-- ================= 1. TELA: HOME / DASHBOARD ================= -->
     <section id="screen-home" class="space-y-4">
-      <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
-        <div class="flex justify-between items-center">
-          <span class="text-xs font-mono text-slate-400 uppercase">Frequência Semanal</span>
-          <span id="weekSessionsCount" class="text-xs font-mono font-bold text-brand-lime">0 sessões</span>
-        </div>
-        <div id="weeklyHeatmap" class="grid grid-cols-7 gap-1.5 pt-1"></div>
+      <!-- Card de Frequência Semanal (Modelo Exato Solicitado) -->
+<div class="bg-[#111620] p-5 rounded-2xl tactical-border space-y-4 relative">
+  <!-- Cabeçalho -->
+  <div class="flex justify-between items-center">
+    <span class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">FREQUÊNCIA SEMANAL</span>
+    <button onclick="openGoalModal()" title="Configurar Meta Semanal" class="p-2 bg-slate-900 border border-slate-800 rounded-xl text-brand-lime hover:bg-slate-800 transition-all flex items-center justify-center">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+    </button>
+  </div>
+
+  <!-- Bloco do Contador e Meta (Lado a Lado) -->
+  <div class="flex justify-between items-start">
+    <div>
+      <div class="flex items-baseline gap-1.5">
+        <span id="bigSessionsCount" class="text-3xl font-display font-extrabold text-brand-lime">03</span>
+        <span class="text-xl font-mono text-slate-500 font-bold" id="goalTotalDivider">/ 05</span>
       </div>
+      <span class="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mt-0.5">TREINOS CONCLUÍDOS</span>
+    </div>
+    
+    <div class="text-right cursor-pointer group" onclick="openGoalModal()">
+      <span id="metaHeaderLabel" class="text-xs font-mono font-bold text-brand-lime block">Meta: 5 dias/semana</span>
+      <span class="text-[10px] font-mono text-slate-400 group-hover:text-white transition-colors flex items-center justify-end gap-1 mt-0.5">
+        Editar meta ✏️
+      </span>
+    </div>
+  </div>
+
+  <!-- Mini-Grid dos Dias da Semana -->
+  <div id="weeklyDaysGrid" class="grid grid-cols-7 gap-1.5 pt-2">
+    <!-- Preenchido dinamicamente pelo JS -->
+  </div>
+
+  <!-- Barra de Progresso Geral da Semana -->
+  <div class="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden border border-slate-800/80">
+    <div id="weekProgressBar" class="bg-brand-lime h-full rounded-full transition-all duration-500 shadow-lg glow-lime" style="width: 0%"></div>
+  </div>
+
+  <!-- Rodapé do Card (Porcentagem concluída) -->
+  <div class="pt-0.5">
+    <span id="weeklyPercentageText" class="text-xs font-mono font-bold text-brand-lime">60% da meta semanal concluída</span>
+  </div>
+</div>
 
       <div class="grid grid-cols-2 gap-3">
         <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-1">
