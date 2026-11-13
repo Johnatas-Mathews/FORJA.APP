@@ -546,33 +546,79 @@
     </div>
   </div>
 
-  <!-- MODAL: CONFIGURAÇÃO DE META SEMANAL (Posicionado corretamente no final do HTML) -->
+  <!-- MODAL: CONFIGURAÇÃO DE META SEMANAL (Modelo Exato da Imagem) -->
   <div id="modalGoalConfig" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-    <div class="bg-[#111620] border border-slate-800 rounded-2xl w-full max-w-sm p-6 space-y-5 tactical-border shadow-2xl">
-      <div class="flex justify-between items-center">
-        <h3 class="text-sm font-display font-bold text-white uppercase tracking-wider">🎯 Definir Meta Semanal</h3>
-        <button onclick="closeGoalModal()" class="text-slate-500 hover:text-white text-lg font-bold">&times;</button>
-      </div>
-      <p class="text-xs text-slate-400 font-mono">Escolha quantos dias por semana você pretende treinar na FORJA:</p>
+    <div class="bg-[#111620] border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-5 tactical-border shadow-2xl relative">
       
-      <!-- Opções de Meta (2 a 6 dias) -->
-      <div class="grid grid-cols-5 gap-2">
-        <button type="button" onclick="selectGoalOption(2)" class="goal-btn py-3 rounded-xl border border-slate-800 bg-slate-900 text-white font-mono font-bold text-sm hover:border-brand-lime transition-all" data-val="2">2</button>
-        <button type="button" onclick="selectGoalOption(3)" class="goal-btn py-3 rounded-xl border border-slate-800 bg-slate-900 text-white font-mono font-bold text-sm hover:border-brand-lime transition-all" data-val="3">3</button>
-        <button type="button" onclick="selectGoalOption(4)" class="goal-btn py-3 rounded-xl border border-slate-800 bg-slate-900 text-white font-mono font-bold text-sm hover:border-brand-lime transition-all" data-val="4">4</button>
-        <button type="button" onclick="selectGoalOption(5)" class="goal-btn py-3 rounded-xl border border-slate-800 bg-slate-900 text-white font-mono font-bold text-sm hover:border-brand-lime transition-all" data-val="5">5</button>
-        <button type="button" onclick="selectGoalOption(6)" class="goal-btn py-3 rounded-xl border border-slate-800 bg-slate-900 text-white font-mono font-bold text-sm hover:border-brand-lime transition-all" data-val="6">6</button>
+      <!-- Cabeçalho -->
+      <div class="flex justify-between items-center">
+        <h3 class="text-sm font-display font-bold text-white uppercase tracking-wider">META SEMANAL</h3>
+        <button onclick="closeGoalModal()" class="text-slate-400 hover:text-white text-lg font-bold p-1">&times;</button>
       </div>
 
-      <button onclick="saveUserGoal()" class="w-full py-3 bg-brand-lime text-black font-mono font-bold text-xs rounded-xl hover:brightness-110 transition-all shadow-lg glow-lime">
+      <!-- Pergunta principal -->
+      <div class="space-y-3">
+        <p class="text-xs text-slate-300 font-mono">Quantos dias por semana você pretende treinar?</p>
+        
+        <!-- Grid de Quantidade de Dias (2 a 7 dias) -->
+        <div class="grid grid-cols-3 gap-2.5">
+          <button type="button" onclick="selectGoalDays(2)" class="goal-days-btn py-3 px-2 rounded-xl border border-slate-800 bg-slate-900 text-white font-mono flex flex-col items-center justify-center gap-1 transition-all hover:border-slate-700" data-val="2">
+            <span class="text-lg font-bold">2</span>
+            <span class="text-[10px] text-slate-400">dias</span>
+          </button>
+          <button type="button" onclick="selectGoalDays(3)" class="goal-days-btn py-3 px-2 rounded-xl border border-slate-800 bg-slate-900 text-white font-mono flex flex-col items-center justify-center gap-1 transition-all hover:border-slate-700" data-val="3">
+            <span class="text-lg font-bold">3</span>
+            <span class="text-[10px] text-slate-400">dias</span>
+          </button>
+          <button type="button" onclick="selectGoalDays(4)" class="goal-days-btn py-3 px-2 rounded-xl border border-slate-800 bg-slate-900 text-white font-mono flex flex-col items-center justify-center gap-1 transition-all hover:border-slate-700" data-val="4">
+            <span class="text-lg font-bold">4</span>
+            <span class="text-[10px] text-slate-400">dias</span>
+          </button>
+          <button type="button" onclick="selectGoalDays(5)" class="goal-days-btn py-3 px-2 rounded-xl border border-slate-800 bg-slate-900 text-white font-mono flex flex-col items-center justify-center gap-1 transition-all hover:border-slate-700" data-val="5">
+            <span class="text-lg font-bold">5</span>
+            <span class="text-[10px] text-slate-400">dias</span>
+          </button>
+          <button type="button" onclick="selectGoalDays(6)" class="goal-days-btn py-3 px-2 rounded-xl border border-slate-800 bg-slate-900 text-white font-mono flex flex-col items-center justify-center gap-1 transition-all hover:border-slate-700" data-val="6">
+            <span class="text-lg font-bold">6</span>
+            <span class="text-[10px] text-slate-400">dias</span>
+          </button>
+          <button type="button" onclick="selectGoalDays(7)" class="goal-days-btn py-3 px-2 rounded-xl border border-slate-800 bg-slate-900 text-white font-mono flex flex-col items-center justify-center gap-1 transition-all hover:border-slate-700" data-val="7">
+            <span class="text-lg font-bold">7</span>
+            <span class="text-[10px] text-slate-400">dias</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Divisor sutil -->
+      <div class="border-t border-slate-800/80 pt-4 space-y-3">
+        <p class="text-xs text-slate-300 font-mono">Dias preferenciais para treinar (opcional)</p>
+        
+        <!-- Seletor dos Dias Preferenciais -->
+        <div class="grid grid-cols-7 gap-1.5">
+          <button type="button" onclick="togglePreferredDay(1)" class="pref-day-btn py-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 font-mono text-xs font-bold transition-all" data-day="1">S</button>
+          <button type="button" onclick="togglePreferredDay(2)" class="pref-day-btn py-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 font-mono text-xs font-bold transition-all" data-day="2">T</button>
+          <button type="button" onclick="togglePreferredDay(3)" class="pref-day-btn py-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 font-mono text-xs font-bold transition-all" data-day="3">Q</button>
+          <button type="button" onclick="togglePreferredDay(4)" class="pref-day-btn py-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 font-mono text-xs font-bold transition-all" data-day="4">Q</button>
+          <button type="button" onclick="togglePreferredDay(5)" class="pref-day-btn py-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 font-mono text-xs font-bold transition-all" data-day="5">S</button>
+          <button type="button" onclick="togglePreferredDay(6)" class="pref-day-btn py-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 font-mono text-xs font-bold transition-all" data-day="6">S</button>
+          <button type="button" onclick="togglePreferredDay(0)" class="pref-day-btn py-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 font-mono text-xs font-bold transition-all" data-day="0">D</button>
+        </div>
+        
+        <p class="text-[10px] text-slate-500 font-mono leading-relaxed">
+          Os dias preferenciais são apenas uma sugestão de planejamento, não uma obrigação.
+        </p>
+      </div>
+
+      <!-- Botão Salvar Meta -->
+      <button onclick="saveUserGoal()" class="w-full py-3.5 bg-brand-lime text-black font-mono font-extrabold text-xs uppercase rounded-xl hover:brightness-110 transition-all shadow-lg glow-lime mt-2">
         SALVAR META
       </button>
     </div>
   </div>
 
   <!-- Scripts com quebra de cache -->
-  <script src="js/exercises-data.js?v=5"></script>
-  <script src="js/gamification.js?v=5"></script>
-  <script src="js/app.js?v=5"></script>
+  <script src="js/exercises-data.js?v=6"></script>
+  <script src="js/gamification.js?v=6"></script>
+  <script src="js/app.js?v=6"></script>
 </body>
 </html>
