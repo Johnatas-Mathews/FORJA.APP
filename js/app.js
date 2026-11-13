@@ -491,8 +491,15 @@ function renderProfileStats() {
   const volumeComparisonBadge = document.getElementById("volumeComparisonBadge");
 
   if (greetingTitle && state.user) {
-    const userName = (state.user.user_metadata?.full_name || state.user.email.split('@')[0]).toUpperCase();
-    greetingTitle.textContent = `BEM-VINDO DE VOLTA, ${userName}! 💪`;
+    let displayName = "ATLETA";
+    if (state.userProfile && state.userProfile.full_name) {
+      displayName = state.userProfile.full_name;
+    } else if (state.user.user_metadata?.full_name) {
+      displayName = state.user.user_metadata.full_name;
+    } else if (state.user.email) {
+      displayName = state.user.email.split('@')[0];
+    }
+    greetingTitle.textContent = `BEM-VINDO DE VOLTA, ${displayName.toUpperCase()}! 💪`;
   }
 
   if (countEl) countEl.textContent = state.workouts.length;
@@ -581,7 +588,7 @@ function renderProfileStats() {
   if (motivationBanner && motivationText) {
     if (workoutsThisWeek > 0) {
       motivationBanner.classList.remove('hidden');
-      motivationText.textContent = `${workoutsThisWeek} ${workoutsThisWeek === 1 ? 'sessão' : 'sessões'} Forjadas nesta semana. Mentenha a consistência!`;
+      motivationText.textContent = `${workoutsThisWeek} ${workoutsThisWeek === 1 ? 'sessão' : 'sessões'} Forjadas nesta semana. Mantenha a consistência!`;
     } else {
       motivationBanner.classList.remove('hidden');
       motivationText.textContent = `Sua meta é ${weeklyTarget} treinos esta semana. Vamos iniciar o primeiro?`;
@@ -645,13 +652,14 @@ function getMaxHistoricalWeight(exerciseName) {
   let max = 0;
   state.workouts.forEach(w => {
     if (!w.exercises) return;
-    const found = w.exercises.find(e => e.name && e.name.trim().toLowerCase() === exerciseName.trim().toLowerCase());
-    if (found && found.sets) {
-      found.sets.forEach(s => {
-        const wVal = parseFloat(s.weight) || 0;
-        if (wVal > max) max = wVal;
-      });
-    }
+    w.exercises.forEach(e => {
+      if (e.name && e.name.trim().toLowerCase() === exerciseName.trim().toLowerCase()) {
+        e.sets.forEach(s => {
+          const wVal = parseFloat(s.weight) || 0;
+          if (wVal > max) max = wVal;
+        });
+      }
+    });
   });
   return max;
 }
