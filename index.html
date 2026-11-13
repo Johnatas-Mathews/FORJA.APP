@@ -298,11 +298,25 @@
             🏃‍♂️ Exercício de Cardio detectado. Exibindo histórico de Distância e Duração em vez de carga.
           </div>
 
-          <div id="weightMetricControls" class="flex items-center justify-between pt-1">
-            <span class="text-[10px] font-mono text-slate-400 uppercase">Métrica do Gráfico</span>
-            <div class="flex gap-1">
-              <button id="btnMetricMaxWeight" onclick="setProgressMetricMode('maxWeight')" class="px-2.5 py-1 rounded bg-brand-lime text-black font-bold text-[10px] font-mono">Carga Máxima</button>
-              <button id="btnMetric1RM" onclick="setProgressMetricMode('estimated1RM')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white text-[10px] font-mono">1RM Estimado</button>
+          <div id="weightMetricControls" class="space-y-2 pt-1">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-mono text-slate-400 uppercase">Métrica do Gráfico</span>
+              <div class="flex gap-1">
+                <button id="btnMetricMaxWeight" onclick="setProgressMetricMode('maxWeight')" class="px-2.5 py-1 rounded bg-brand-lime text-black font-bold text-[10px] font-mono">Carga Máxima</button>
+                <button id="btnMetric1RM" onclick="setProgressMetricMode('estimated1RM')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white text-[10px] font-mono">1RM Estimado</button>
+              </div>
+            </div>
+            
+            <!-- Filtro de Período Rápido -->
+            <div class="flex items-center justify-between pt-1 border-t border-slate-800/60">
+              <span class="text-[10px] font-mono text-slate-400 uppercase">Período</span>
+              <div class="flex gap-1 text-[9px] font-mono">
+                <button id="btnPeriod-7D" onclick="setProgressPeriod('7D')" class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">7D</button>
+                <button id="btnPeriod-1M" onclick="setProgressPeriod('1M')" class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">1M</button>
+                <button id="btnPeriod-3M" onclick="setProgressPeriod('3M')" class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">3M</button>
+                <button id="btnPeriod-1A" onclick="setProgressPeriod('1A')" class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">1A</button>
+                <button id="btnPeriod-ALL" onclick="setProgressPeriod('ALL')" class="px-2 py-0.5 rounded bg-brand-lime text-black font-bold">Tudo</button>
+              </div>
             </div>
           </div>
 
