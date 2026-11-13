@@ -1,6 +1,6 @@
 // js/app.js - FORJA High Performance Engine (Versão Blindada & Corrigida)
 const SUPABASE_URL = "https://pzygeoqjdyvtfpxuytvg.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6eWdlb3FqZHl2dGZweHV5dHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNjczNzMsImV4cCI6MjEwODk0MzM3M30.lme2H9a6-QyI7Hf-7-tSIfr3DuvXMk03ZJoBnOemUYU";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp6eWdlb3FqZHl2dGZweHV5dHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNjczNzMsImV4cCI6MjEwODk0MzM3M30.lme2H9a6-QyI7Hf-7-tSIfr3DuvXMk03ZJoBnOemUYU";
 
 let supabaseClient = null;
 try {
@@ -281,22 +281,7 @@ async function fetchUserData() {
     state.workouts = [];
     state.xp = 0;
   }
-}
   populateWorkoutTemplateSelect();
-
-  const { data: wks } = await supabaseClient
-    .from('workouts')
-    .select('*')
-    .eq('user_id', state.user.id);
-
-  if (wks && wks.length > 0) {
-    state.workouts = wks.map(w => ({
-      ...w,
-      exercises: typeof w.exercises === 'string' ? JSON.parse(w.exercises) : (w.exercises || [])
-    })).sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
-  } else {
-    state.workouts = [];
-  }
 }
 
 function populateWorkoutTemplateSelect() {
@@ -1106,6 +1091,7 @@ async function finishActiveWorkout() {
   renderAll();
   switchTab('home');
 }
+
 /* -------------------------------------------------------------
    GRÁFICO DE EVOLUÇÃO E PROGRESSO DE CARGAS
 -------------------------------------------------------------- */
@@ -1153,7 +1139,6 @@ function updateProgressChart() {
   }
 
   if (dataPoints.length === 0) {
-    // Se não houver dados, limpa o canvas ou exibe estado vazio
     return;
   }
 
