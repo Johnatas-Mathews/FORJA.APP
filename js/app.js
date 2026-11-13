@@ -1,4 +1,4 @@
-// js/app.js - FORJA High Performance Engine (Versão Blindada & Corrigida)
+// js/app.js - FORJA High Performance Engine (Versão Blindada & Corrigida com Modal de Meta e Dias Preferenciais)
 const SUPABASE_URL = "https://pzygeoqjdyvtfpxuytvg.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6eWdlb3FqZHl2dGZweHV5dHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNjczNzMsImV4cCI6MjEwODk0MzM3M30.lme2H9a6-QyI7Hf-7-tSIfr3DuvXMk03ZJoBnOemUYU";
 let supabaseClient = null;
@@ -20,6 +20,10 @@ const state = {
   editingTemplateId: null,
   metricMode: 'maxWeight',
   
+  // META SEMANAL E DIAS PREFERENCIAIS
+  weeklyGoal: 5,
+  preferredDays: [],
+
   // CAMPOS DE GAMIFICAÇÃO & STREAK
   xp: 0,
   level: 1,
@@ -43,7 +47,6 @@ let progressChartInstance = null;
 let animationInterval = null;
 const DEFAULT_FALLBACK_IMG = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%23a3e635' stroke-width='1.5'%3E%3Cpath d='M6.5 6.5h11M6.5 17.5h11M4 9.5h16M4 14.5h16M2 12h20'/%3E%3C/svg%3E";
 
-// Helper seguro para acessar o banco de exercícios global
 function getExerciseDB() {
   if (typeof window !== 'undefined' && window.EXERCISE_DATABASE) return window.EXERCISE_DATABASE;
   if (typeof EXERCISE_DATABASE !== 'undefined') return EXERCISE_DATABASE;
@@ -111,9 +114,6 @@ function switchTab(targetScreenId) {
   }
 }
 
-/* -------------------------------------------------------------
-   ATALHO RÁPIDO PARA INICIAR TREINO VIVO
--------------------------------------------------------------- */
 function quickStartTemplate() {
   if (state.templates.length > 0) {
     loadTemplateIntoWorkout(state.templates[0].id);
@@ -209,7 +209,12 @@ async function fetchUserProfile() {
 
   if (!error && data) {
     state.userProfile = data;
+    state.weeklyGoal = data.weekly_goal || 5;
+    state.preferredDays = Array.isArray(data.preferred_days) ? data.preferred_days : [];
     applyRoleUI(data.role);
+  } else {
+    state.weeklyGoal = 5;
+    state.preferredDays = [];
   }
 }
 
@@ -273,7 +278,6 @@ async function fetchUserData() {
       exercises: typeof w.exercises === 'string' ? JSON.parse(w.exercises) : (w.exercises || [])
     })).sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
     
-    // Calcula o XP acumulado retroativamente (150 XP por treino)
     state.xp = state.workouts.length * 150;
   } else {
     state.workouts = [];
@@ -309,6 +313,100 @@ async function fetchEvaluations() {
   } catch (e) {
     state.evaluations = [];
   }
+}
+
+/* -------------------------------------------------------------
+   CONTROLE DO MODAL DE CONFIGURAÇÃO DE META E DIAS PREFERENCIAIS
+-------------------------------------------------------------- */
+let tempSelectedGoal = 5;
+let tempPreferredDays = [];
+
+function openGoalModal() {
+  const modal = document.getElementById("modalGoalConfig");
+  if (!modal) return;
+  
+  tempSelectedGoal = state.weeklyGoal || 5;
+  tempPreferredDays = Array.isArray(state.preferredDays) ? [...state.preferredDays] : [];
+
+  const dayButtons = modal.querySelectorAll('.goal-days-btn');
+  dayButtons.forEach(btn => {
+    const val = parseInt(btn.getAttribute('data-val'));
+    if (val === tempSelectedGoal) {
+      btn.className = "goal-days-btn py-3 px-2 rounded-xl border border-brand-lime bg-brand-lime text-black font-mono flex flex-col items-center justify-center gap-1 shadow-md glow-lime font-bold";
+      btn.querySelector('span:last-child').className = "text-[10px] text-black/80 font-bold";
+    } else {
+      btn.className = "goal-days-btn py-3 px-2 rounded-xl border border-slate-800 bg-slate-900 text-white font-mono flex flex-col items-center justify-center gap-1 transition-all hover:border-slate-700";
+      btn.querySelector('span:last-child').className = "text-[10px] text-slate-400";
+    }
+  });
+
+  const prefButtons = modal.querySelectorAll('.pref-day-btn');
+  prefButtons.forEach(btn => {
+    const dayIndex = parseInt(btn.getAttribute('data-day'));
+    if (tempPreferredDays.includes(dayIndex)) {
+      btn.className = "pref-day-btn py-2.5 rounded-xl border border-brand-lime bg-brand-lime text-black font-mono text-xs font-bold shadow-sm glow-lime";
+    } else {
+      btn.className = "pref-day-btn py-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 font-mono text-xs font-bold transition-all";
+    }
+  });
+
+  modal.classList.remove("hidden");
+}
+
+function closeGoalModal() {
+  const modal = document.getElementById("modalGoalConfig");
+  if (modal) modal.classList.add("hidden");
+}
+
+function selectGoalDays(goalVal) {
+  tempSelectedGoal = goalVal;
+  const buttons = document.querySelectorAll('.goal-days-btn');
+  buttons.forEach(btn => {
+    const val = parseInt(btn.getAttribute('data-val'));
+    if (val === goalVal) {
+      btn.className = "goal-days-btn py-3 px-2 rounded-xl border border-brand-lime bg-brand-lime text-black font-mono flex flex-col items-center justify-center gap-1 shadow-md glow-lime font-bold";
+      btn.querySelector('span:last-child').className = "text-[10px] text-black/80 font-bold";
+    } else {
+      btn.className = "goal-days-btn py-3 px-2 rounded-xl border border-slate-800 bg-slate-900 text-white font-mono flex flex-col items-center justify-center gap-1 transition-all hover:border-slate-700";
+      btn.querySelector('span:last-child').className = "text-[10px] text-slate-400";
+    }
+  });
+}
+
+function togglePreferredDay(dayIndex) {
+  const btn = document.querySelector(`.pref-day-btn[data-day="${dayIndex}"]`);
+  if (!btn) return;
+
+  const existsIndex = tempPreferredDays.indexOf(dayIndex);
+  if (existsIndex > -1) {
+    tempPreferredDays.splice(existsIndex, 1);
+    btn.className = "pref-day-btn py-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 font-mono text-xs font-bold transition-all";
+  } else {
+    tempPreferredDays.push(dayIndex);
+    btn.className = "pref-day-btn py-2.5 rounded-xl border border-brand-lime bg-brand-lime text-black font-mono text-xs font-bold shadow-sm glow-lime";
+  }
+}
+
+async function saveUserGoal() {
+  state.weeklyGoal = tempSelectedGoal;
+  state.preferredDays = [...tempPreferredDays];
+  closeGoalModal();
+
+  if (supabaseClient && state.user) {
+    const { error } = await supabaseClient
+      .from('profiles')
+      .update({ 
+        weekly_goal: state.weeklyGoal,
+        preferred_days: state.preferredDays
+      })
+      .eq('id', state.user.id);
+
+    if (error) {
+      console.error("Erro ao salvar meta no Supabase:", error.message);
+    }
+  }
+
+  renderProfileStats();
 }
 
 /* -------------------------------------------------------------
@@ -418,10 +516,8 @@ function renderProfileStats() {
   state.workouts.forEach(w => totalVol += (w.total_volume_kg || 0));
   if (volumeEl) volumeEl.innerHTML = `${totalVol} <span class="text-xs text-slate-500">kg</span>`;
 
-  // Garante que a meta respeita o valor salvo (padrão 5 dias)
   const weeklyTarget = state.weeklyGoal || 5;
 
-  // Lógica dos dias da semana (Segunda a Domingo)
   const today = new Date();
   const currentDayOfWeek = today.getDay(); // 0 (Dom) a 6 (Sáb)
   
@@ -450,11 +546,9 @@ function renderProfileStats() {
       const day = String(dayObj.date.getDate()).padStart(2, '0');
       const dateStr = `${year}-${month}-${day}`;
 
-      // Validação estrita: Verifica histórico real de treinos nesta data
       const workoutsOnThisDay = state.workouts.filter(w => w.date === dateStr);
       const trainedOnDay = workoutsOnThisDay.length > 0;
 
-      // Soma ao total da semana (suportando múltiplos treinos no mesmo dia)
       workoutsThisWeek += workoutsOnThisDay.length;
 
       const dayBox = document.createElement("div");
@@ -474,7 +568,6 @@ function renderProfileStats() {
     });
   }
 
-  // Atualização dos textos com o formato idêntico ao modelo
   const formattedCount = String(workoutsThisWeek).padStart(2, '0');
   const formattedTarget = String(weeklyTarget).padStart(2, '0');
 
@@ -482,7 +575,6 @@ function renderProfileStats() {
   if (goalTotalDivider) goalTotalDivider.textContent = `/ ${formattedTarget}`;
   if (metaHeaderLabel) metaHeaderLabel.textContent = `Meta: ${weeklyTarget} dias/semana`;
 
-  // Cálculo da porcentagem da meta
   const percentage = Math.min(Math.round((workoutsThisWeek / weeklyTarget) * 100), 100);
   if (progressBar) progressBar.style.width = `${percentage}%`;
   if (weeklyPercentageText) weeklyPercentageText.textContent = `${percentage}% da meta semanal concluída`;
@@ -549,7 +641,7 @@ function isCardioExercise(exerciseName) {
 }
 
 /* -------------------------------------------------------------
-   ARSENAL DE EXERCÍCIOS & MODAIS COM SUPORTE A ANIMAÇÃO FLIP
+   ARSENAL DE EXERCÍCIOS & MODAIS
 -------------------------------------------------------------- */
 function openExerciseLibraryModal(context = 'workout') {
   state.libraryContext = context;
@@ -696,7 +788,7 @@ function selectExerciseFromLibrary(exerciseId) {
 }
 
 /* -------------------------------------------------------------
-   GERENCIAMENTO DE FICHAS (CRIAÇÃO, EDIÇÃO & EXCLUSÃO)
+   GERENCIAMENTO DE FICHAS
 -------------------------------------------------------------- */
 function appendExerciseRowToTemplateForm(name = "", sets = 3, rest = 60) {
   const container = document.getElementById("tplExerciseInputs");
@@ -721,7 +813,7 @@ function appendExerciseRowToTemplateForm(name = "", sets = 3, rest = 60) {
         <option value="180" ${rest == 180 ? 'selected' : ''}>180s</option>
       </select>
     </div>
-    <button type="button" onclick="document.getElementById('${rowId}').remove()" title="Remover este exercício" class="p-1 text-slate-500 hover:text-red-400 text-sm font-bold">&times;</button>
+    <button type="button" onclick="document.getElementById('${rowId}').remove()" title="Remover" class="p-1 text-slate-500 hover:text-red-400 text-sm font-bold">&times;</button>
   `;
   container.appendChild(div);
 }
@@ -801,7 +893,7 @@ async function saveNewTemplate() {
   const tplPayload = {
     user_id: state.user ? state.user.id : null,
     name: title,
-    title: title,
+    title,
     division,
     exercises_config: exercises
   };
@@ -872,7 +964,7 @@ async function deleteTemplate(templateId) {
 }
 
 /* -------------------------------------------------------------
-   CRONÔMETRO DE DESCANSO AUTOMÁTICO
+   CRONÔMETRO DE DESCANSO
 -------------------------------------------------------------- */
 function startAutoRest(seconds = 60) {
   const widget = document.getElementById("restTimerWidget");
@@ -1152,8 +1244,6 @@ async function finishActiveWorkout() {
   }
 
   state.workouts.push(workoutPayload);
-  
-  // Recompensa com XP
   addXP(150, "Treino Concluído");
 
   alert(`🔥 Treino finalizado com sucesso!\nVolume total: ${totalVolume} kg\n+150 XP acumulados!`);
@@ -1164,7 +1254,7 @@ async function finishActiveWorkout() {
 }
 
 /* -------------------------------------------------------------
-   GRÁFICO DE EVOLUÇÃO E PROGRESSO DE CARGAS
+   GRÁFICO DE EVOLUÇÃO
 -------------------------------------------------------------- */
 function updateProgressChart() {
   const select = document.getElementById("progressExerciseSelect");
@@ -1205,9 +1295,7 @@ function updateProgressChart() {
     window.myProgressChart.destroy();
   }
 
-  if (dataPoints.length === 0) {
-    return;
-  }
+  if (dataPoints.length === 0) return;
 
   window.myProgressChart = new Chart(ctx, {
     type: 'line',
