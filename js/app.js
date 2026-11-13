@@ -149,17 +149,20 @@ function switchAuthMode(mode) {
   const btnRegister = document.getElementById("btnTabRegister");
   const submitText = document.getElementById("authSubmitText");
   const roleContainer = document.getElementById("roleSelectionContainer");
+  const nameFieldContainer = document.getElementById("nameFieldContainer"); // Novo container do nome
 
   if (mode === 'login') {
     btnLogin.className = "flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all bg-brand-lime text-black";
     btnRegister.className = "flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all text-slate-400 hover:text-white";
     submitText.textContent = "ACESSAR MINHA CONTA";
     if (roleContainer) roleContainer.classList.add("hidden");
+    if (nameFieldContainer) nameFieldContainer.classList.add("hidden"); // Oculta no login
   } else {
     btnRegister.className = "flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all bg-brand-lime text-black";
     btnLogin.className = "flex-1 py-2 text-xs font-mono font-bold tracking-wider rounded-lg transition-all text-slate-400 hover:text-white";
     submitText.textContent = "CRIAR CONTA NA FORJA";
     if (roleContainer) roleContainer.classList.remove("hidden");
+    if (nameFieldContainer) nameFieldContainer.classList.remove("hidden"); // Mostra no cadastro
   }
 }
 
@@ -167,6 +170,9 @@ async function handleAuthSubmit(e) {
   e.preventDefault();
   const email = document.getElementById("authEmail").value.trim();
   const password = document.getElementById("authPassword").value;
+  const fullNameInput = document.getElementById("authFullName");
+  const fullName = fullNameInput ? fullNameInput.value.trim() : email.split('@')[0];
+  
   const spinner = document.getElementById("authSpinner");
   const submitBtn = document.getElementById("authSubmitBtn");
 
@@ -186,12 +192,24 @@ async function handleAuthSubmit(e) {
         options: {
           data: {
             role: state.selectedRole,
-            full_name: email.split('@')[0]
+            full_name: fullName // Salva nos metadados do Auth
           }
         }
       });
       if (error) throw error;
       state.user = data.user;
+
+      // Cria ou atualiza o registro na tabela profiles com o nome
+      if (supabaseClient && state.user) {
+        await supabaseClient.from('profiles').upsert({
+          id: state.user.id,
+          email: email,
+          role: state.selectedRole,
+          full_name: fullName,
+          weekly_goal: 5
+        }, { onConflict: 'id' });
+      }
+
       alert(`Conta de ${state.selectedRole.toUpperCase()} criada com sucesso!`);
       await onAuthSuccess();
     }
