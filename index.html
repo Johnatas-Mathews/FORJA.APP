@@ -401,26 +401,61 @@
 
   </main>
 
-  <!-- BARRA DE NAVEGAÇÃO INFERIOR -->
-  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-[#0a0d14]/95 backdrop-blur-lg border-t border-slate-800 px-4 py-2">
-    <div class="max-w-md mx-auto flex justify-between items-center font-mono text-[10px]">
-      <button id="tab-home" onclick="switchTab('home')" class="flex flex-col items-center gap-1 text-brand-lime">
-        <span class="text-base">🏠</span> Início
-      </button>
-      <button id="tab-templates" onclick="switchTab('templates')" class="flex flex-col items-center gap-1 text-slate-400">
-        <span class="text-base">📋</span> Fichas
-      </button>
-      <button id="tab-workout" onclick="switchTab('workout')" class="flex flex-col items-center gap-1 text-slate-400">
-        <span class="text-base">⚡</span> Treino
-      </button>
-      <button id="tab-progress" onclick="switchTab('progress')" class="flex flex-col items-center gap-1 text-slate-400">
-        <span class="text-base">📈</span> Evolução
-      </button>
-      <button id="tab-profile" onclick="switchTab('profile')" class="flex flex-col items-center gap-1 text-slate-400">
-        <span class="text-base">👤</span> Perfil
-      </button>
-    </div>
-  </nav>
+  <!-- ================= BARRA DE NAVEGAÇÃO INFERIOR ================= -->
+<nav class="fixed bottom-0 left-0 right-0 bg-[#0b0f17]/95 backdrop-blur-md border-t border-slate-800/80 px-4 py-2 z-50">
+  <div class="max-w-md mx-auto flex justify-between items-center">
+    
+    <!-- 1. INÍCIO -->
+    <button onclick="switchTab('home')" id="tab-home" class="flex flex-col items-center gap-1 text-brand-lime font-bold transition-all group py-1">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:scale-110">
+        <path d="m12 14 4-4"/>
+        <path d="M3.34 19a10 10 0 1 1 17.32 0"/>
+      </svg>
+      <span class="text-[10px] font-mono tracking-wider">Início</span>
+    </button>
+
+    <!-- 2. FICHAS -->
+    <button onclick="switchTab('templates')" id="tab-templates" class="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-all group py-1">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:scale-110">
+        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+        <path d="M10 2v20"/>
+        <path d="M14 6h4"/>
+        <path d="M14 10h4"/>
+        <path d="M14 14h4"/>
+      </svg>
+      <span class="text-[10px] font-mono tracking-wider">Fichas</span>
+    </button>
+
+    <!-- 3. TREINO (BOTÃO CENTRAL DE DESTAQUE COM SÍMBOLO FORJA) -->
+    <button onclick="switchTab('workout')" id="tab-workout" class="flex flex-col items-center gap-1 group py-1">
+      <div class="w-12 h-12 rounded-2xl bg-brand-lime text-black flex items-center justify-center shadow-lg glow-lime transition-transform group-hover:scale-105">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a5.5 5.5 0 0 0 2.5 2.5z"/>
+        </svg>
+      </div>
+      <span class="text-[10px] font-mono font-bold text-brand-lime tracking-wider">Treino</span>
+    </button>
+
+    <!-- 4. EVOLUÇÃO -->
+    <button onclick="switchTab('progress')" id="tab-progress" class="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-all group py-1">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:scale-110">
+        <path d="M3 3v18h18"/>
+        <path d="m19 9-5 5-4-4-3 3"/>
+      </svg>
+      <span class="text-[10px] font-mono tracking-wider">Evolução</span>
+    </button>
+
+    <!-- 5. PERFIL -->
+    <button onclick="switchTab('profile')" id="tab-profile" class="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-all group py-1">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:scale-110">
+        <circle cx="12" cy="8" r="5"/>
+        <path d="M20 21a8 8 0 0 0-16 0"/>
+      </svg>
+      <span class="text-[10px] font-mono tracking-wider">Perfil</span>
+    </button>
+
+  </div>
+</nav>
 
   <!-- MODAL: AUTENTICAÇÃO GATE -->
   <div id="authGate" class="fixed inset-0 z-50 bg-[#0a0d14] flex items-center justify-center p-4">
