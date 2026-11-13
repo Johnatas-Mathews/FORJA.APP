@@ -429,6 +429,11 @@
       </div>
 
       <form onsubmit="handleAuthSubmit(event)" class="space-y-3 font-mono text-xs">
+                <!-- Campo de Nome (aparece apenas no modo de cadastro se preferir, ou sempre) -->
+        <div id="nameFieldContainer" class="hidden">
+          <label class="block text-[10px] text-slate-400 uppercase mb-1">Nome do Atleta</label>
+          <input type="text" id="authFullName" placeholder="Seu Nome ou Apelido" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-brand-lime" />
+        </div>
         <div>
           <label class="block text-[10px] text-slate-400 uppercase mb-1">E-mail</label>
           <input type="email" id="authEmail" required placeholder="seu@email.com" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-brand-lime" />
