@@ -394,23 +394,32 @@ async function saveUserGoal() {
   state.preferredDays = [...tempPreferredDays];
   closeGoalModal();
 
-  if (supabaseClient && state.user) {
-    const { error } = await supabaseClient
-      .from('profiles')
-      .update({ 
-        weekly_goal: state.weeklyGoal,
-        preferred_days: state.preferredDays
-      })
-      .eq('id', state.user.id);
+  // Atualiza o card na hora na tela
+  renderProfileStats();
 
-    if (error) {
-      console.error("Erro ao salvar meta no Supabase:", error.message);
-    }
+  if (state.user) {
+    // Backup local imediato para nunca perder a configuração
+    localStorage.setItem(`forja_goal_${state.user.id}`, state.weeklyGoal);
+    localStorage.setItem(`forja_pref_${state.user.id}`, JSON.stringify(state.preferredDays));
   }
 
-  renderProfileStats();
-}
+  if (supabaseClient && state.user) {
+    // Usa upsert para criar a linha no profiles caso ela ainda não exista
+    const { error } = await supabaseClient
+      .from('profiles')
+      .upsert({ 
+        id: state.user.id,
+        email: state.user.email,
+        weekly_goal: state.weeklyGoal,
+        preferred_days: state.preferredDays
+      }, { onConflict: 'id' });
 
+    if (error) {
+      console.error("Erro ao salvar meta no Supabase:", error);
+      alert("Erro ao salvar meta no banco: " + error.message);
+    }
+  }
+}
 /* -------------------------------------------------------------
    RENDERIZAÇÃO GERAL (FICHAS, HISTÓRICO, GRÁFICOS & PERFIL)
 -------------------------------------------------------------- */
