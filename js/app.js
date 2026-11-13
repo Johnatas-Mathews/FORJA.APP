@@ -1,4 +1,4 @@
-// js/app.js - FORJA High Performance Engine (Versão Blindada & Corrigida)
+// js/app.js - FORJA High Performance Engine (Versão Blindada & Com Cargas Anteriores)
 const SUPABASE_URL = "https://pzygeoqjdyvtfpxuytvg.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6eWdlb3FqZHl2dGZweHV5dHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNjczNzMsImV4cCI6MjEwODk0MzM3M30.lme2H9a6-QyI7Hf-7-tSIfr3DuvXMk03ZJoBnOemUYU";
 let supabaseClient = null;
@@ -236,7 +236,6 @@ async function fetchUserProfile() {
       : JSON.parse(localStorage.getItem(`forja_pref_${state.user.id}`) || '[]');
     applyRoleUI(data.role);
 
-    // Preenche input de nome na tela de perfil se existir
     const profileInput = document.getElementById("profileFullNameInput");
     if (profileInput && data.full_name) {
       profileInput.value = data.full_name;
@@ -841,18 +840,19 @@ function selectExerciseFromLibrary(exerciseId) {
 
   if (state.libraryContext === 'workout') {
     const isCardio = ex.type === 'cardio' || ex.group === 'Cardio';
-    
+    const lastSets = getLastUsedSets(ex.name);
+
     state.activeWorkout.exercises.push({
       name: ex.name,
       type: isCardio ? 'cardio' : 'weight_reps',
       rest: isCardio ? 30 : 60,
       sets: isCardio 
         ? [{ timeMin: 20, distanceKm: 2.5, completed: false }]
-        : [
-            { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false },
-            { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false },
-            { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false }
-          ]
+        : (lastSets ? lastSets : [
+            { weight: 20, reps: 10, completed: false },
+            { weight: 20, reps: 10, completed: false },
+            { weight: 20, reps: 10, completed: false }
+          ])
     });
     renderActiveWorkout();
     closeExerciseLibraryModal();
@@ -1211,17 +1211,19 @@ function loadTemplateIntoWorkout(templateId) {
 
   state.activeWorkout.exercises = tpl.exercises_config.map(ex => {
     const isCardio = isCardioExercise(ex.name);
+    const lastSets = getLastUsedSets(ex.name);
+
     return {
       name: ex.name,
       type: isCardio ? 'cardio' : 'weight_reps',
       rest: ex.rest || (isCardio ? 30 : 60),
       sets: isCardio 
         ? [{ timeMin: 20, distanceKm: 2.5, completed: false }]
-        : Array.from({ length: ex.sets || 3 }, () => ({
-            weight: getLastUsedWeight(ex.name) || 30,
+        : (lastSets ? lastSets : Array.from({ length: ex.sets || 3 }, () => ({
+            weight: 20,
             reps: 10,
             completed: false
-          }))
+          })))
     };
   });
 
@@ -1229,14 +1231,24 @@ function loadTemplateIntoWorkout(templateId) {
   switchTab('workout');
 }
 
-function getLastUsedWeight(exerciseName) {
-  for (const wk of state.workouts) {
+function getLastUsedSets(exerciseName) {
+  for (const wk of [...state.workouts].reverse()) {
     if (!wk.exercises) continue;
-    const found = wk.exercises.find(e => e.name === exerciseName);
+    const found = wk.exercises.find(e => e.name && e.name.toLowerCase() === exerciseName.toLowerCase());
     if (found && found.sets && found.sets.length > 0) {
-      return found.sets[0].weight;
+      return found.sets.map(s => ({
+        weight: parseFloat(s.weight) || 0,
+        reps: parseInt(s.reps) || 10,
+        completed: false
+      }));
     }
   }
+  return null;
+}
+
+function getLastUsedWeight(exerciseName) {
+  const sets = getLastUsedSets(exerciseName);
+  if (sets && sets.length > 0) return sets[0].weight;
   return null;
 }
 
@@ -1787,7 +1799,6 @@ function renderPersonalRecords() {
       if (maxW > 0) {
         const isNew = !prMap[e.name] || maxW > prMap[e.name].maxWeight;
         if (isNew) {
-          // Verifica se foi batido nos últimos 14 dias para exibir selo "Novo PR"
           let isRecent = false;
           if (w.date) {
             const wDate = new Date(w.date + 'T00:00:00');
