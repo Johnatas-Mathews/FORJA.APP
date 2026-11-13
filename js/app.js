@@ -405,14 +405,87 @@ function renderWorkoutsHistory() {
 function renderProfileStats() {
   const countEl = document.getElementById("profileWorkoutsCount");
   const volumeEl = document.getElementById("statWeeklyVolume");
-  const sessionsEl = document.getElementById("weekSessionsCount");
+  const bigSessionsCount = document.getElementById("bigSessionsCount");
+  const goalTotalDivider = document.getElementById("goalTotalDivider");
+  const metaHeaderLabel = document.getElementById("metaHeaderLabel");
+  const daysGrid = document.getElementById("weeklyDaysGrid");
+  const progressBar = document.getElementById("weekProgressBar");
+  const weeklyPercentageText = document.getElementById("weeklyPercentageText");
 
   if (countEl) countEl.textContent = state.workouts.length;
   
   let totalVol = 0;
   state.workouts.forEach(w => totalVol += (w.total_volume_kg || 0));
   if (volumeEl) volumeEl.innerHTML = `${totalVol} <span class="text-xs text-slate-500">kg</span>`;
-  if (sessionsEl) sessionsEl.textContent = `${state.workouts.length} sessões`;
+
+  // Garante que a meta respeita o valor salvo (padrão 5 dias)
+  const weeklyTarget = state.weeklyGoal || 5;
+
+  // Lógica dos dias da semana (Segunda a Domingo)
+  const today = new Date();
+  const currentDayOfWeek = today.getDay(); // 0 (Dom) a 6 (Sáb)
+  
+  const monday = new Date(today);
+  const diffToMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
+  monday.setDate(today.getDate() + diffToMonday);
+  monday.setHours(0, 0, 0, 0);
+
+  const weekDays = [
+    { label: 'SEG', date: new Date(monday) },
+    { label: 'TER', date: new Date(monday.setDate(monday.getDate() + 1)) },
+    { label: 'QUA', date: new Date(monday.setDate(monday.getDate() + 1)) },
+    { label: 'QUI', date: new Date(monday.setDate(monday.getDate() + 1)) },
+    { label: 'SEX', date: new Date(monday.setDate(monday.getDate() + 1)) },
+    { label: 'SÁB', date: new Date(monday.setDate(monday.getDate() + 1)) },
+    { label: 'DOM', date: new Date(monday.setDate(monday.getDate() + 1)) }
+  ];
+
+  let workoutsThisWeek = 0;
+
+  if (daysGrid) {
+    daysGrid.innerHTML = "";
+    weekDays.forEach((dayObj) => {
+      const year = dayObj.date.getFullYear();
+      const month = String(dayObj.date.getMonth() + 1).padStart(2, '0');
+      const day = String(dayObj.date.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+
+      // Validação estrita: Verifica histórico real de treinos nesta data
+      const workoutsOnThisDay = state.workouts.filter(w => w.date === dateStr);
+      const trainedOnDay = workoutsOnThisDay.length > 0;
+
+      // Soma ao total da semana (suportando múltiplos treinos no mesmo dia)
+      workoutsThisWeek += workoutsOnThisDay.length;
+
+      const dayBox = document.createElement("div");
+      dayBox.className = "flex flex-col items-center gap-1.5";
+      
+      dayBox.innerHTML = `
+        <div class="w-full aspect-square rounded-xl flex items-center justify-center transition-all ${
+          trainedOnDay 
+            ? 'bg-brand-lime text-black shadow-md glow-lime font-bold' 
+            : 'bg-slate-900/90 text-slate-400 border border-slate-800/60'
+        }">
+          <span class="text-xs font-bold">${trainedOnDay ? '✓' : '-'}</span>
+        </div>
+        <span class="text-[10px] font-mono ${trainedOnDay ? 'text-brand-lime font-bold' : 'text-slate-400'}">${dayObj.label}</span>
+      `;
+      daysGrid.appendChild(dayBox);
+    });
+  }
+
+  // Atualização dos textos com o formato idêntico ao modelo
+  const formattedCount = String(workoutsThisWeek).padStart(2, '0');
+  const formattedTarget = String(weeklyTarget).padStart(2, '0');
+
+  if (bigSessionsCount) bigSessionsCount.textContent = formattedCount;
+  if (goalTotalDivider) goalTotalDivider.textContent = `/ ${formattedTarget}`;
+  if (metaHeaderLabel) metaHeaderLabel.textContent = `Meta: ${weeklyTarget} dias/semana`;
+
+  // Cálculo da porcentagem da meta
+  const percentage = Math.min(Math.round((workoutsThisWeek / weeklyTarget) * 100), 100);
+  if (progressBar) progressBar.style.width = `${percentage}%`;
+  if (weeklyPercentageText) weeklyPercentageText.textContent = `${percentage}% da meta semanal concluída`;
 }
 
 function populateProgressExerciseSelect() {
