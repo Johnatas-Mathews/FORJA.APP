@@ -1,4 +1,4 @@
-// js/app.js - FORJA High Performance Engine (Versão Blindada & Com Cargas Anteriores)
+// js/app.js - FORJA High Performance Engine (Versão Blindada & Corrigida)
 const SUPABASE_URL = "https://pzygeoqjdyvtfpxuytvg.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6eWdlb3FqZHl2dGZweHV5dHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNjczNzMsImV4cCI6MjEwODk0MzM3M30.lme2H9a6-QyI7Hf-7-tSIfr3DuvXMk03ZJoBnOemUYU";
 let supabaseClient = null;
@@ -40,7 +40,8 @@ const state = {
     intervalId: null
   },
   libraryContext: 'workout',
-  activeGroupFilter: 'Todos'
+  activeGroupFilter: 'Todos',
+  activeEquipmentFilter: 'Todos'
 };
 
 let progressChartInstance = null;
@@ -236,6 +237,7 @@ async function fetchUserProfile() {
       : JSON.parse(localStorage.getItem(`forja_pref_${state.user.id}`) || '[]');
     applyRoleUI(data.role);
 
+    // Preenche input de nome na tela de perfil se existir
     const profileInput = document.getElementById("profileFullNameInput");
     if (profileInput && data.full_name) {
       profileInput.value = data.full_name;
@@ -719,6 +721,11 @@ function isCardioExercise(exerciseName) {
 -------------------------------------------------------------- */
 function openExerciseLibraryModal(context = 'workout') {
   state.libraryContext = context;
+  state.activeGroupFilter = 'Todos';
+  state.activeEquipmentFilter = 'Todos';
+  const search = document.getElementById("librarySearchInput");
+  if (search) search.value = "";
+  populateLibraryEquipmentFilter();
   document.getElementById("modalExerciseLibrary").classList.remove("hidden");
   renderExerciseLibraryList();
 }
@@ -733,52 +740,110 @@ function filterByGroup(group) {
 }
 
 function filterExerciseLibrary() {
+  const equipmentSelect = document.getElementById("libraryEquipmentFilter");
+  if (equipmentSelect) state.activeEquipmentFilter = equipmentSelect.value;
   renderExerciseLibraryList();
+}
+
+function clearExerciseLibraryFilters() {
+  state.activeGroupFilter = 'Todos';
+  state.activeEquipmentFilter = 'Todos';
+  const search = document.getElementById("librarySearchInput");
+  const equipment = document.getElementById("libraryEquipmentFilter");
+  if (search) search.value = '';
+  if (equipment) equipment.value = 'Todos';
+  renderExerciseLibraryList();
+}
+
+function populateLibraryEquipmentFilter() {
+  const select = document.getElementById("libraryEquipmentFilter");
+  if (!select) return;
+  const equipment = [...new Set(getExerciseDB().map(ex => ex.equipment).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  select.innerHTML = '<option value="Todos">Todos os equipamentos</option>';
+  equipment.forEach(item => {
+    const option = document.createElement('option');
+    option.value = item;
+    option.textContent = item;
+    select.appendChild(option);
+  });
+  select.value = state.activeEquipmentFilter || 'Todos';
+}
+
+function getLibrarySelectedCount() {
+  if (state.libraryContext === 'workout') {
+    return state.activeWorkout && Array.isArray(state.activeWorkout.exercises)
+      ? state.activeWorkout.exercises.length : 0;
+  }
+  return document.querySelectorAll('#tplExerciseInputs .tpl-exercise-row').length;
 }
 
 function renderExerciseLibraryList() {
   const container = document.getElementById("libraryListContainer");
   const searchInput = document.getElementById("librarySearchInput");
-  const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
+  const searchTerm = searchInput ? searchInput.value.trim().toLocaleLowerCase('pt-BR') : "";
   if (!container) return;
   container.innerHTML = "";
 
-  const db = getExerciseDB();
-  const filtered = db.filter(ex => {
-    const matchesGroup = (state.activeGroupFilter === 'Todos' || ex.group === state.activeGroupFilter);
-    const matchesSearch = ex.name.toLowerCase().includes(searchTerm) || 
-                          ex.muscles.toLowerCase().includes(searchTerm) ||
-                          ex.equipment.toLowerCase().includes(searchTerm);
-    return matchesGroup && matchesSearch;
+  document.querySelectorAll('[data-library-group]').forEach(button => {
+    button.classList.toggle('is-active', button.dataset.libraryGroup === state.activeGroupFilter);
   });
 
+  const db = getExerciseDB();
+  const filtered = db.filter(ex => {
+    const group = ex.group || '';
+    const name = ex.name || '';
+    const muscles = ex.muscles || '';
+    const equipment = ex.equipment || '';
+    const matchesGroup = (state.activeGroupFilter === 'Todos' || group === state.activeGroupFilter);
+    const matchesEquipment = (state.activeEquipmentFilter === 'Todos' || equipment === state.activeEquipmentFilter);
+    const searchable = `${name} ${muscles} ${equipment} ${group}`.toLocaleLowerCase('pt-BR');
+    return matchesGroup && matchesEquipment && searchable.includes(searchTerm);
+  });
+
+  const resultsCount = document.getElementById('libraryResultsCount');
+  if (resultsCount) resultsCount.textContent = `${filtered.length} ${filtered.length === 1 ? 'movimento' : 'movimentos'}`;
+  const selectedCount = document.getElementById('librarySelectedCount');
+  if (selectedCount) selectedCount.textContent = getLibrarySelectedCount();
+
   if (filtered.length === 0) {
-    container.innerHTML = `<div class="p-6 text-center text-xs font-mono text-slate-500">Nenhum exercício encontrado.</div>`;
+    container.innerHTML = `
+      <div class="p-8 sm:p-12 text-center rounded-2xl border border-dashed border-slate-700/70 bg-slate-900/30">
+        <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-slate-800/80 flex items-center justify-center text-brand-lime text-xl">⌕</div>
+        <p class="text-sm font-bold text-white">Nenhum movimento encontrado</p>
+        <p class="text-[11px] text-slate-500 mt-1">Tente outro nome ou ajuste os filtros.</p>
+        <button type="button" onclick="clearExerciseLibraryFilters()" class="mt-4 px-4 py-2 rounded-lg bg-slate-800 text-brand-lime text-[10px] font-mono font-bold">LIMPAR FILTROS</button>
+      </div>`;
     return;
   }
 
   filtered.forEach(ex => {
-    const div = document.createElement("div");
-    div.className = "bg-slate-900/80 p-3 rounded-xl tactical-border flex items-center justify-between gap-3 hover:border-slate-700 transition-all";
+    const div = document.createElement("article");
+    div.className = "library-exercise-card";
+    const imageSrc = ex.img || DEFAULT_FALLBACK_IMG;
     div.innerHTML = `
-      <div class="flex items-center gap-3">
-        <img src="${ex.img}" alt="${ex.name}" class="w-12 h-12 rounded-lg object-cover bg-slate-950 border border-slate-800 flex-shrink-0" onerror="this.onerror=null; this.src='${DEFAULT_FALLBACK_IMG}';" />
-        <div>
-          <div class="flex items-center gap-1.5">
-            <span class="text-[9px] font-mono text-brand-lime uppercase font-bold">${ex.group}</span>
-            <span class="text-[9px] text-slate-500 font-mono">• ${ex.equipment}</span>
+      <div class="flex items-stretch gap-3 p-2.5 sm:p-3">
+        <button type="button" onclick="showExerciseDetail('${ex.id}')" title="Ver demonstração de ${ex.name}" class="library-exercise-image relative w-[100px] h-[112px] sm:w-[124px] sm:h-[124px] rounded-xl overflow-hidden border border-slate-700/70 flex-shrink-0 group">
+          <img src="${imageSrc}" alt="Demonstração: ${ex.name}" loading="lazy" class="w-full h-full object-contain p-1.5 transition-transform duration-300 group-hover:scale-105" onerror="this.onerror=null; this.src='${DEFAULT_FALLBACK_IMG}';" />
+          <span class="absolute bottom-1.5 right-1.5 w-7 h-7 rounded-lg bg-black/70 border border-white/10 text-brand-lime flex items-center justify-center backdrop-blur-sm">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </span>
+        </button>
+        <div class="min-w-0 flex-1 flex flex-col py-0.5">
+          <div class="flex items-center gap-1.5 flex-wrap mb-1.5">
+            <span class="text-[9px] font-mono text-brand-lime uppercase font-extrabold tracking-wider">${ex.group || 'Geral'}</span>
+            <span class="w-1 h-1 rounded-full bg-slate-600"></span>
+            <span class="text-[9px] text-slate-400 font-mono">${ex.equipment || 'Sem equipamento'}</span>
           </div>
-          <h4 class="text-xs font-bold text-white leading-tight mt-0.5">${ex.name}</h4>
-          <p class="text-[10px] text-slate-400 truncate max-w-[190px] mt-0.5">${ex.muscles}</p>
+          <h4 class="text-[13px] sm:text-sm font-extrabold text-white leading-snug">${ex.name}</h4>
+          <p class="text-[10px] sm:text-[11px] text-slate-400 leading-relaxed mt-1.5 line-clamp-2">${ex.muscles || 'Músculos não informados'}</p>
+          <div class="mt-auto pt-2.5 flex items-center justify-between gap-2">
+            <button type="button" onclick="showExerciseDetail('${ex.id}')" class="text-[9px] font-mono font-bold text-slate-400 hover:text-brand-lime transition-colors">VER DETALHES ↗</button>
+            <button type="button" onclick="selectExerciseFromLibrary('${ex.id}')" class="px-3 py-2 rounded-lg bg-brand-lime text-[#0a0d14] font-mono font-extrabold text-[10px] hover:brightness-110 active:scale-95 transition-all shadow-[0_0_14px_rgba(163,230,53,.13)] whitespace-nowrap">
+              + ADICIONAR
+            </button>
+          </div>
         </div>
-      </div>
-      <div class="flex items-center gap-1.5 flex-shrink-0">
-        <button type="button" onclick="showExerciseDetail('${ex.id}')" title="Ver postura" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs">
-          👁️
-        </button>
-        <button type="button" onclick="selectExerciseFromLibrary('${ex.id}')" class="px-2.5 py-1.5 bg-brand-lime text-black font-mono font-bold text-xs rounded-lg hover:brightness-110">
-          + Usar
-        </button>
       </div>
     `;
     container.appendChild(div);
@@ -840,19 +905,18 @@ function selectExerciseFromLibrary(exerciseId) {
 
   if (state.libraryContext === 'workout') {
     const isCardio = ex.type === 'cardio' || ex.group === 'Cardio';
-    const lastSets = getLastUsedSets(ex.name);
-
+    
     state.activeWorkout.exercises.push({
       name: ex.name,
       type: isCardio ? 'cardio' : 'weight_reps',
       rest: isCardio ? 30 : 60,
       sets: isCardio 
         ? [{ timeMin: 20, distanceKm: 2.5, completed: false }]
-        : (lastSets ? lastSets : [
-            { weight: 20, reps: 10, completed: false },
-            { weight: 20, reps: 10, completed: false },
-            { weight: 20, reps: 10, completed: false }
-          ])
+        : [
+            { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false },
+            { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false },
+            { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false }
+          ]
     });
     renderActiveWorkout();
     closeExerciseLibraryModal();
@@ -1211,19 +1275,17 @@ function loadTemplateIntoWorkout(templateId) {
 
   state.activeWorkout.exercises = tpl.exercises_config.map(ex => {
     const isCardio = isCardioExercise(ex.name);
-    const lastSets = getLastUsedSets(ex.name);
-
     return {
       name: ex.name,
       type: isCardio ? 'cardio' : 'weight_reps',
       rest: ex.rest || (isCardio ? 30 : 60),
       sets: isCardio 
         ? [{ timeMin: 20, distanceKm: 2.5, completed: false }]
-        : (lastSets ? lastSets : Array.from({ length: ex.sets || 3 }, () => ({
-            weight: 20,
+        : Array.from({ length: ex.sets || 3 }, () => ({
+            weight: getLastUsedWeight(ex.name) || 30,
             reps: 10,
             completed: false
-          })))
+          }))
     };
   });
 
@@ -1231,24 +1293,14 @@ function loadTemplateIntoWorkout(templateId) {
   switchTab('workout');
 }
 
-function getLastUsedSets(exerciseName) {
-  for (const wk of [...state.workouts].reverse()) {
+function getLastUsedWeight(exerciseName) {
+  for (const wk of state.workouts) {
     if (!wk.exercises) continue;
-    const found = wk.exercises.find(e => e.name && e.name.toLowerCase() === exerciseName.toLowerCase());
+    const found = wk.exercises.find(e => e.name === exerciseName);
     if (found && found.sets && found.sets.length > 0) {
-      return found.sets.map(s => ({
-        weight: parseFloat(s.weight) || 0,
-        reps: parseInt(s.reps) || 10,
-        completed: false
-      }));
+      return found.sets[0].weight;
     }
   }
-  return null;
-}
-
-function getLastUsedWeight(exerciseName) {
-  const sets = getLastUsedSets(exerciseName);
-  if (sets && sets.length > 0) return sets[0].weight;
   return null;
 }
 
@@ -1799,6 +1851,7 @@ function renderPersonalRecords() {
       if (maxW > 0) {
         const isNew = !prMap[e.name] || maxW > prMap[e.name].maxWeight;
         if (isNew) {
+          // Verifica se foi batido nos últimos 14 dias para exibir selo "Novo PR"
           let isRecent = false;
           if (w.date) {
             const wDate = new Date(w.date + 'T00:00:00');
