@@ -237,26 +237,6 @@ window.EXERCISE_DATABASE = [
     img: "https://images.unsplash.com/photo-1549476464-37392f717541?auto=format&fit=crop&w=400&q=80"
   },
   {
-    id: "cadeira_abdutora",
-    name: "Cadeira Abdutora",
-    group: "Pernas",
-    equipment: "Aparelho Abdutor",
-    muscles: "Glúteo médio, Glúteo mínimo, Tensor da fáscia lata",
-    tips: "Mantenha o tronco apoiado contra o encosto e realize a abertura controlada das pernas.",
-    type: "strength",
-    img: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    id: "cadeira_adutora",
-    name: "Cadeira Adutora",
-    group: "Pernas",
-    equipment: "Aparelho Adutor",
-    muscles: "Complexo adutor da coxa",
-    tips: "Controle o movimento tanto na fase concêntrica quanto no retorno para evitar impacto brusco.",
-    type: "strength",
-    img: "https://images.unsplash.com/photo-1534367507873-d2d7e24c797f?auto=format&fit=crop&w=400&q=80"
-  },
-  {
     id: "cadeira_flexora_sentada",
     name: "Cadeira Flexora Sentada",
     group: "Pernas",
