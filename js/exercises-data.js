@@ -17,7 +17,7 @@ window.EXERCISE_DATABASE = [
     equipment: "Halteres / Banco Reto",
     muscles: "Peitoral maior, tríceps, deltoide anterior",
     tips: "Mantenha os pés firmes no chão, escápulas retraídas e desça os halteres controlados até a linha do peito.",
-    img: "assets/3d-avatars/peito-supino-reto.png" // Futuro boneco 3D
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press/0.jpg" // Futuro boneco 3D
   },
   {
     id: "supino-inclinado-halteres",
@@ -26,7 +26,7 @@ window.EXERCISE_DATABASE = [
     equipment: "Halteres / Banco 30º-45º",
     muscles: "Peitoral superior, tríceps",
     tips: "Ajuste o banco entre 30º e 45º para focar na porção clavicular (superior) do peitoral.",
-    img: "assets/3d-avatars/supino-inclinado.gif" // Apontando para o seu novo arquivo local
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Press/0.jpg" // Apontando para o seu novo arquivo local
   },
   {
     id: "supino-declinado-halteres",
@@ -35,7 +35,7 @@ window.EXERCISE_DATABASE = [
     equipment: "Halteres / Banco Declinado",
     muscles: "Peitoral maior (porção inferior), tríceps",
     tips: "Trave bem os pés no suporte do banco declinado e realize o movimento com amplitude controlada.",
-    img: "assets/3d-avatars/peito-supino-declinado.png" // Futuro boneco 3D
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Dumbbell_Bench_Press/0.jpg" // Futuro boneco 3D
   },
   {
     id: "crucifixo-polia",
@@ -72,6 +72,574 @@ window.EXERCISE_DATABASE = [
     muscles: "Peitoral superior, deltoide anterior, core",
     tips: "Apoie os pés em uma superfície elevada e mantenha o abdômen altamente contraído.",
     img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Push-Up/0.jpg"
+  },
+
+
+
+  // ================= PEITO - EXPANSÃO DO CATÁLOGO =================
+  {
+    "id": "supino-maquina-articulada",
+    "name": "Supino na Máquina Articulada",
+    "group": "Peito",
+    "equipment": "Máquina de supino",
+    "muscles": "Peitoral maior, tríceps, deltoide anterior",
+    "tips": "Ajuste o banco para que as manoplas fiquem na linha média do peito. Empurre sem travar os cotovelos e retorne controlando.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lever_Chest_Press/0.jpg"
+  },
+  {
+    "id": "supino-maquina-convergente",
+    "name": "Supino na Máquina Convergente",
+    "group": "Peito",
+    "equipment": "Máquina convergente",
+    "muscles": "Peitoral maior, tríceps, deltoide anterior",
+    "tips": "Mantenha as costas apoiadas e acompanhe a trajetória convergente das alavancas sem tirar os ombros do encosto.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lever_Chest_Press/0.jpg"
+  },
+  {
+    "id": "supino-smith-reto",
+    "name": "Supino Reto no Smith",
+    "group": "Peito",
+    "equipment": "Smith / Banco reto",
+    "muscles": "Peitoral maior, tríceps, deltoide anterior",
+    "tips": "Posicione o banco para que a barra desça à linha média do peito. Mantenha os pés firmes e use amplitude confortável.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Smith_Machine_Bench_Press/0.jpg"
+  },
+  {
+    "id": "supino-smith-inclinado",
+    "name": "Supino Inclinado no Smith",
+    "group": "Peito",
+    "equipment": "Smith / Banco inclinado",
+    "muscles": "Peitoral superior, tríceps, deltoide anterior",
+    "tips": "Ajuste o banco entre 30° e 45°. Desça a barra em direção à parte alta do peito sem elevar os ombros.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Smith_Machine_Incline_Bench_Press/0.jpg"
+  },
+  {
+    "id": "supino-smith-declinado",
+    "name": "Supino Declinado no Smith",
+    "group": "Peito",
+    "equipment": "Smith / Banco declinado",
+    "muscles": "Peitoral inferior, tríceps",
+    "tips": "Prenda os pés no suporte e controle a descida em direção à região inferior do peito.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Smith_Machine_Decline_Press/0.jpg"
+  },
+  {
+    "id": "supino-inclinado-barra",
+    "name": "Supino Inclinado com Barra",
+    "group": "Peito",
+    "equipment": "Barra / Banco inclinado",
+    "muscles": "Peitoral superior, tríceps, deltoide anterior",
+    "tips": "Use inclinação moderada, retraia as escápulas e desça a barra com controle até a parte superior do tórax.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Barbell_Bench_Press/0.jpg"
+  },
+  {
+    "id": "supino-maquina-inclinado",
+    "name": "Supino Inclinado na Máquina",
+    "group": "Peito",
+    "equipment": "Máquina de supino inclinado",
+    "muscles": "Peitoral superior, tríceps, deltoide anterior",
+    "tips": "Regule o assento para alinhar as manoplas ao alto do peito. Evite estender completamente os cotovelos.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Lever_Chest_Press/0.jpg"
+  },
+  {
+    "id": "supino-maquina-declinado",
+    "name": "Supino Declinado na Máquina",
+    "group": "Peito",
+    "equipment": "Máquina de supino declinado",
+    "muscles": "Peitoral inferior, tríceps",
+    "tips": "Ajuste a posição para empurrar na linha inferior do peitoral, mantendo as costas apoiadas.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Lever_Chest_Press/0.jpg"
+  },
+  {
+    "id": "supino-halteres-pegada-neutra",
+    "name": "Supino com Halteres e Pegada Neutra",
+    "group": "Peito",
+    "equipment": "Halteres / Banco reto",
+    "muscles": "Peitoral maior, tríceps",
+    "tips": "Mantenha as palmas voltadas uma para a outra e os cotovelos próximos ao tronco durante a descida.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press/0.jpg"
+  },
+  {
+    "id": "supino-inclinado-pegada-neutra",
+    "name": "Supino Inclinado com Halteres e Pegada Neutra",
+    "group": "Peito",
+    "equipment": "Halteres / Banco inclinado",
+    "muscles": "Peitoral superior, tríceps",
+    "tips": "Use inclinação moderada e mantenha os punhos alinhados aos antebraços durante todo o movimento.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Press/0.jpg"
+  },
+  {
+    "id": "crucifixo-reto-halteres",
+    "name": "Crucifixo Reto com Halteres",
+    "group": "Peito",
+    "equipment": "Halteres / Banco reto",
+    "muscles": "Peitoral maior",
+    "tips": "Mantenha cotovelos levemente flexionados e abra os braços até sentir alongamento confortável, sem forçar os ombros.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "isolamento",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Flyes/0.jpg"
+  },
+  {
+    "id": "crucifixo-inclinado-halteres",
+    "name": "Crucifixo Inclinado com Halteres",
+    "group": "Peito",
+    "equipment": "Halteres / Banco inclinado",
+    "muscles": "Peitoral superior",
+    "tips": "Mantenha a mesma flexão dos cotovelos durante o arco e evite descer além da amplitude confortável.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "isolamento",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Flyes/0.jpg"
+  },
+  {
+    "id": "crucifixo-declinado-halteres",
+    "name": "Crucifixo Declinado com Halteres",
+    "group": "Peito",
+    "equipment": "Halteres / Banco declinado",
+    "muscles": "Peitoral inferior",
+    "tips": "Estabilize o tronco no banco e conduza os halteres em arco, sem transformar o movimento em supino.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "isolamento",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Dumbbell_Flyes/0.jpg"
+  },
+  {
+    "id": "crucifixo-maquina",
+    "name": "Crucifixo na Máquina (Peck Deck)",
+    "group": "Peito",
+    "equipment": "Máquina peck deck",
+    "muscles": "Peitoral maior",
+    "tips": "Ajuste os braços ou apoios para alinhar à altura do peito. Feche sem bater os braços e retorne lentamente.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "isolamento",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lever_Pec_Deck_Fly/0.jpg"
+  },
+  {
+    "id": "crucifixo-polia-alta",
+    "name": "Crossover na Polia Alta",
+    "group": "Peito",
+    "equipment": "Polias altas",
+    "muscles": "Peitoral maior, ênfase inferior",
+    "tips": "Dê um passo à frente, mantenha o tronco estável e conduza as mãos para baixo e para o centro.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "isolamento",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Crossover/0.jpg"
+  },
+  {
+    "id": "crucifixo-polia-baixa",
+    "name": "Crossover na Polia Baixa",
+    "group": "Peito",
+    "equipment": "Polias baixas",
+    "muscles": "Peitoral maior, ênfase superior",
+    "tips": "Parta com as mãos próximas aos quadris e eleve em arco até a frente da parte superior do peito.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "isolamento",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Low_Cable_Crossover/0.jpg"
+  },
+  {
+    "id": "crucifixo-polia-unilateral",
+    "name": "Crucifixo Unilateral na Polia",
+    "group": "Peito",
+    "equipment": "Polia individual",
+    "muscles": "Peitoral maior",
+    "tips": "Mantenha o quadril e o tronco estáveis enquanto leva a mão à frente do peito. Faça os dois lados.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "isolamento",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Single-Arm_Cable_Crossover/0.jpg"
+  },
+  {
+    "id": "crossover-polia-media",
+    "name": "Crossover na Polia na Altura do Peito",
+    "group": "Peito",
+    "equipment": "Polias ajustadas na altura do peito",
+    "muscles": "Peitoral maior",
+    "tips": "Alinhe as polias ao meio do tórax e aproxime as mãos à frente do corpo sem perder a postura.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "isolamento",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Crossover/0.jpg"
+  },
+  {
+    "id": "press-peito-hammer",
+    "name": "Chest Press na Máquina (Pegada Neutra)",
+    "group": "Peito",
+    "equipment": "Máquina chest press",
+    "muscles": "Peitoral maior, tríceps",
+    "tips": "Ajuste o assento para manter as manoplas na altura do peito e empurre sem tirar as costas do encosto.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lever_Chest_Press/0.jpg"
+  },
+  {
+    "id": "press-peito-unilateral-maquina",
+    "name": "Chest Press Unilateral na Máquina",
+    "group": "Peito",
+    "equipment": "Máquina chest press",
+    "muscles": "Peitoral maior, tríceps",
+    "tips": "Execute um braço por vez mantendo o tronco quadrado e evitando girar o corpo.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Single-Arm_Lever_Chest_Press/0.jpg"
+  },
+  {
+    "id": "flexao-tradicional",
+    "name": "Flexão de Braços Tradicional",
+    "group": "Peito",
+    "equipment": "Peso corporal",
+    "muscles": "Peitoral maior, tríceps, deltoide anterior",
+    "tips": "Mantenha cabeça, tronco e quadril alinhados. Desça o peito em direção ao chão e empurre sem deixar o quadril cair.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pushups/0.jpg"
+  },
+  {
+    "id": "flexao-joelhos",
+    "name": "Flexão de Braços com Joelhos Apoiados",
+    "group": "Peito",
+    "equipment": "Peso corporal",
+    "muscles": "Peitoral maior, tríceps",
+    "tips": "Apoie os joelhos e mantenha o tronco alinhado dos ombros aos joelhos durante a descida e subida.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Kneeling_Pushups/0.jpg"
+  },
+  {
+    "id": "flexao-maos-elevadas",
+    "name": "Flexão com as Mãos Elevadas",
+    "group": "Peito",
+    "equipment": "Banco / suporte firme",
+    "muscles": "Peitoral maior, tríceps",
+    "tips": "Apoie as mãos em uma superfície estável. Quanto mais alta a superfície, menor tende a ser a dificuldade.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Pushups/0.jpg"
+  },
+  {
+    "id": "flexao-fechada",
+    "name": "Flexão com Pegada Fechada",
+    "group": "Peito",
+    "equipment": "Peso corporal",
+    "muscles": "Peitoral, tríceps",
+    "tips": "Aproxime as mãos sem desconforto nos punhos e mantenha os cotovelos próximos ao corpo.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Pushup/0.jpg"
+  },
+  {
+    "id": "flexao-larga",
+    "name": "Flexão com Pegada Ampla",
+    "group": "Peito",
+    "equipment": "Peso corporal",
+    "muscles": "Peitoral maior, deltoide anterior",
+    "tips": "Posicione as mãos um pouco além da largura dos ombros e mantenha o controle da descida.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide_Hands_Pushup/0.jpg"
+  },
+  {
+    "id": "flexao-diamante",
+    "name": "Flexão Diamante",
+    "group": "Peito",
+    "equipment": "Peso corporal",
+    "muscles": "Tríceps, peitoral maior",
+    "tips": "Aproxime as mãos sob o peito apenas até onde os punhos permitirem, mantendo cotovelos controlados.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Diamond_Pushup/0.jpg"
+  },
+  {
+    "id": "flexao-smith",
+    "name": "Flexão na Barra do Smith",
+    "group": "Peito",
+    "equipment": "Smith",
+    "muscles": "Peitoral maior, tríceps",
+    "tips": "Ajuste a altura da barra para escolher a dificuldade e mantenha o corpo alinhado durante as repetições.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Smith_Machine_Pushup/0.jpg"
+  },
+  {
+    "id": "supino-terra-barra",
+    "name": "Supino no Chão com Barra",
+    "group": "Peito",
+    "equipment": "Barra / chão",
+    "muscles": "Peitoral maior, tríceps",
+    "tips": "Deite no chão, mantenha os cotovelos apoiando suavemente no solo e pressione a barra sem quicar.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Floor_Press/0.jpg"
+  },
+  {
+    "id": "supino-terra-halteres",
+    "name": "Supino no Chão com Halteres",
+    "group": "Peito",
+    "equipment": "Halteres / chão",
+    "muscles": "Peitoral maior, tríceps",
+    "tips": "Desça até os braços tocarem suavemente o chão e pressione os halteres mantendo os punhos alinhados.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Floor_Press/0.jpg"
+  },
+  {
+    "id": "supino-guilhotina-smith",
+    "name": "Supino Inclinado Pegada Aberta no Smith",
+    "group": "Peito",
+    "equipment": "Smith / Banco inclinado",
+    "muscles": "Peitoral superior, deltoide anterior, tríceps",
+    "tips": "Use carga conservadora e amplitude sem dor. Não force a barra em direção ao pescoço; mantenha a trajetória na região alta do peito.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Smith_Machine_Incline_Bench_Press/0.jpg"
+  },
+  {
+    "id": "squeeze-press-halteres",
+    "name": "Squeeze Press com Halteres",
+    "group": "Peito",
+    "equipment": "Halteres / Banco reto",
+    "muscles": "Peitoral maior, tríceps",
+    "tips": "Mantenha os halteres pressionados um contra o outro e faça o supino sem perder essa pressão.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Squeeze_Press/0.jpg"
+  },
+  {
+    "id": "hex-press",
+    "name": "Hex Press com Halteres",
+    "group": "Peito",
+    "equipment": "Halteres / Banco reto",
+    "muscles": "Peitoral maior, tríceps",
+    "tips": "Pressione as faces internas dos halteres juntas durante a subida e descida, com cotovelos controlados.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Squeeze_Press/0.jpg"
+  },
+  {
+    "id": "pullover-polia",
+    "name": "Pullover na Polia Alta",
+    "group": "Peito",
+    "equipment": "Polia alta / barra ou corda",
+    "muscles": "Peitoral maior, grande dorsal",
+    "tips": "Com braços quase estendidos, leve a barra em arco até as coxas sem balançar o tronco.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "isolamento",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Pullover/0.jpg"
+  },
+  {
+    "id": "pullover-maquina",
+    "name": "Pullover na Máquina",
+    "group": "Peito",
+    "equipment": "Máquina pullover",
+    "muscles": "Peitoral maior, grande dorsal, serrátil",
+    "tips": "Ajuste o eixo da máquina ao ombro e mova os braços em arco mantendo o abdômen firme.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "isolamento",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lever_Pullover/0.jpg"
+  },
+  {
+    "id": "pullover-barra",
+    "name": "Pullover com Barra",
+    "group": "Peito",
+    "equipment": "Barra / Banco reto",
+    "muscles": "Peitoral maior, grande dorsal, tríceps",
+    "tips": "Use carga leve, cotovelos discretamente flexionados e não force a amplitude atrás da cabeça.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "isolamento",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bent-Arm_Dumbbell_Pullover/0.jpg"
+  },
+  {
+    "id": "supino-inclinado-cabo",
+    "name": "Supino Inclinado na Polia",
+    "group": "Peito",
+    "equipment": "Polias baixas / banco inclinado",
+    "muscles": "Peitoral superior, tríceps",
+    "tips": "Posicione o banco entre as polias baixas e pressione as manoplas para cima e para dentro.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Cable_Press/0.jpg"
+  },
+  {
+    "id": "supino-cabo-reto",
+    "name": "Supino Reto na Polia",
+    "group": "Peito",
+    "equipment": "Polias / banco reto",
+    "muscles": "Peitoral maior, tríceps",
+    "tips": "Ajuste as polias à altura do peito e empurre as manoplas à frente mantendo escápulas estáveis.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Bench_Press/0.jpg"
+  },
+  {
+    "id": "supino-unilateral-cabo",
+    "name": "Supino Unilateral em Pé na Polia",
+    "group": "Peito",
+    "equipment": "Polia individual",
+    "muscles": "Peitoral maior, tríceps, core",
+    "tips": "Fique de costas para a polia e pressione uma mão à frente sem permitir rotação do tronco.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Single-Arm_Cable_Press/0.jpg"
+  },
+  {
+    "id": "crucifixo-cabo-deitado",
+    "name": "Crucifixo Deitado na Polia",
+    "group": "Peito",
+    "equipment": "Polias baixas / banco reto",
+    "muscles": "Peitoral maior",
+    "tips": "Deite entre as polias, mantenha cotovelos levemente flexionados e feche os braços em arco.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "isolamento",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Flyes/0.jpg"
+  },
+  {
+    "id": "crucifixo-cabo-inclinado",
+    "name": "Crucifixo Inclinado na Polia",
+    "group": "Peito",
+    "equipment": "Polias baixas / banco inclinado",
+    "muscles": "Peitoral superior",
+    "tips": "Ajuste o banco e conduza as mãos em arco à frente da parte alta do peito.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "isolamento",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Cable_Flyes/0.jpg"
+  },
+  {
+    "id": "crucifixo-cabo-declinado",
+    "name": "Crucifixo Declinado na Polia",
+    "group": "Peito",
+    "equipment": "Polias altas / banco declinado",
+    "muscles": "Peitoral inferior",
+    "tips": "Mantenha o tronco apoiado e feche os braços em arco sem elevar os ombros.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "isolamento",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Cable_Flyes/0.jpg"
+  },
+  {
+    "id": "press-isometrico-peito",
+    "name": "Pressão Isométrica de Peito",
+    "group": "Peito",
+    "equipment": "Peso corporal",
+    "muscles": "Peitoral maior",
+    "tips": "Pressione as palmas das mãos uma contra a outra à frente do peito, mantendo tensão constante e respiração fluida.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "isolamento",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Chest_Squeeze/0.jpg"
+  },
+  {
+    "id": "pulso-peitoral-maquina",
+    "name": "Contração Isométrica no Peck Deck",
+    "group": "Peito",
+    "equipment": "Máquina peck deck",
+    "muscles": "Peitoral maior",
+    "tips": "Feche os braços até uma posição confortável e sustente a contração sem prender a respiração.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "isolamento",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lever_Pec_Deck_Fly/0.jpg"
+  },
+  {
+    "id": "supino-barra-pegada-fechada",
+    "name": "Supino com Barra e Pegada Fechada",
+    "group": "Peito",
+    "equipment": "Barra / Banco reto",
+    "muscles": "Tríceps, peitoral maior",
+    "tips": "Use pegada um pouco mais fechada que a tradicional, sem aproximar excessivamente as mãos; mantenha punhos alinhados.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Barbell_Bench_Press/0.jpg"
+  },
+  {
+    "id": "supino-inclinado-smith-pegada-media",
+    "name": "Supino Inclinado no Smith com Pegada Média",
+    "group": "Peito",
+    "equipment": "Smith / Banco inclinado",
+    "muscles": "Peitoral superior, tríceps",
+    "tips": "Mantenha pegada média e punhos alinhados, descendo a barra de forma controlada à parte alta do tórax.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Smith_Machine_Incline_Bench_Press/0.jpg"
+  },
+  {
+    "id": "flexao-paralela-assistida",
+    "name": "Mergulho nas Paralelas Assistido (Ênfase Peitoral)",
+    "group": "Peito",
+    "equipment": "Máquina assistida / paralelas",
+    "muscles": "Peitoral maior, tríceps, deltoide anterior",
+    "tips": "Incline levemente o tronco e desça somente até uma amplitude confortável para os ombros.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Assisted_Dips/0.jpg"
+  },
+  {
+    "id": "mergulho-paralelas-peso-corporal",
+    "name": "Mergulho nas Paralelas (Ênfase Peitoral)",
+    "group": "Peito",
+    "equipment": "Barras paralelas",
+    "muscles": "Peitoral maior, tríceps",
+    "tips": "Incline moderadamente o tronco, mantenha os ombros estáveis e evite descer além da mobilidade confortável.",
+    "type": "strength",
+    "level": "intermediario",
+    "movementType": "composto",
+    "img": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dips/0.jpg"
   },
 
   // ================= COSTAS =================
@@ -184,7 +752,7 @@ window.EXERCISE_DATABASE = [
     muscles: "Quadríceps, Glúteos, Adutores",
     tips: "Apoie o peito do pé de trás no banco, mantenha o tronco ereto e desça o quadril verticalmente.",
     type: "strength",
-    img: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=400&q=80"
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Split_Squat_with_Dumbbells/0.jpg"
   },
   {
     id: "hip_thrust",
@@ -194,7 +762,7 @@ window.EXERCISE_DATABASE = [
     muscles: "Glúteo Máximo, Isquiotibiais",
     tips: "Apoie as escápulas na borda do banco, faça flexão completa do quadril e contraia os glúteos no topo por 1 segundo.",
     type: "strength",
-    img: "https://images.unsplash.com/photo-1534367507873-d2d7e24c797f?auto=format&fit=crop&w=400&q=80"
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Hip_Thrust/0.jpg"
   },
   {
     id: "cadeira_extensora",
@@ -204,7 +772,7 @@ window.EXERCISE_DATABASE = [
     muscles: "Quadríceps (Reto Femoral)",
     tips: "Ajuste o encosto para que o joelho coincida com o eixo da máquina. Execute extensão completa com controle na volta.",
     type: "strength",
-    img: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&w=400&q=80"
+    img: "assets/3d-avatars/cadeira-extensora.gif"
   },
   {
     id: "mesa_flexora",
@@ -214,7 +782,7 @@ window.EXERCISE_DATABASE = [
     muscles: "Isquiotibiais (Posterior de Coxa)",
     tips: "Mantenha o quadril firmemente apoiado no banco para evitar compensações com a lombar.",
     type: "strength",
-    img: "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=400&q=80"
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_Leg_Curls/0.jpg"
   },
   {
     id: "stiff_barra",
@@ -224,7 +792,7 @@ window.EXERCISE_DATABASE = [
     muscles: "Isquiotibiais, Glúteos, Lombar",
     tips: "Mantenha as pernas semi-flexionadas, empine o quadril para trás alongando a posterior e retorne à posição inicial.",
     type: "strength",
-    img: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=400&q=80"
+    img: "assets/3d-avatars/stiff_com_barra .gif"
   },
   {
     id: "panturrilha_em_pe",
@@ -234,47 +802,7 @@ window.EXERCISE_DATABASE = [
     muscles: "Gastrocnêmio, Sóleo",
     tips: "Faça amplitude completa: alongue bem o calcanhar na base em baixo e suba na ponta dos pés na máxima altura.",
     type: "strength",
-    img: "https://images.unsplash.com/photo-1549476464-37392f717541?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    id: "cadeira_flexora_sentada",
-    name: "Cadeira Flexora Sentada",
-    group: "Pernas",
-    equipment: "Aparelho Flexor Sentado",
-    muscles: "Isquiotibiais (Posterior de coxa)",
-    tips: "Ajuste a almofada firmemente sobre as coxas logo acima dos joelhos para máxima eficiência.",
-    type: "strength",
-    img: "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    id: "afundo_halteres",
-    name: "Afundo com Halteres",
-    group: "Pernas",
-    equipment: "Halteres",
-    muscles: "Quadríceps, Glúteos, Estabilizadores",
-    tips: "Mantenha o tronco vertical e desça o joelho de trás em direção ao solo em um movimento controlado.",
-    type: "strength",
-    img: "https://images.unsplash.com/photo-1566241142559-40e1dab266c6?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    id: "agachamento_hack",
-    name: "Agachamento Hack (Hack Machine)",
-    group: "Pernas",
-    equipment: "Máquina Hack",
-    muscles: "Quadríceps, Glúteos",
-    tips: "Mantenha as costas e os ombros firmemente apoiados na almofada durante todo o percurso.",
-    type: "strength",
-    img: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    id: "panturrilha_sentado",
-    name: "Elevação de Panturrilha Sentado",
-    group: "Pernas",
-    equipment: "Máquina de Panturrilha Sentada",
-    muscles: "Músculo Sóleo",
-    tips: "Realize amplitude completa esticando o calcanhar totalmente para baixo na base.",
-    type: "strength",
-    img: "https://images.unsplash.com/photo-1549476464-37392f717541?auto=format&fit=crop&w=400&q=80"
+    img: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Calf_Raises/0.jpg"
   },
 
   // ================= OMBROS =================
