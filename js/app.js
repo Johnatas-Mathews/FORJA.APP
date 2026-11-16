@@ -432,20 +432,53 @@ function renderTemplates() {
             <span class="text-[9px] font-mono text-brand-lime font-bold uppercase tracking-wider block">Divisão ${tpl.division || 'A'}</span>
             <h3 class="text-sm font-display font-bold text-white">${tpl.title || tpl.name}</h3>
             <div class="flex items-center gap-3 pt-1 text-[10px] font-mono text-slate-400">
-              <span>📋 ${exercisesConfig.length} ${exercisesConfig.length === 1 ? 'exercício' : 'exercícios'}</span>
-              <span>🔄 ${totalSeries} séries</span>
+              <span class="inline-flex items-center gap-1.5">
+                <span class="w-[18px] h-[18px] rounded-[5px] bg-[#263421] inline-flex items-center justify-center shrink-0">
+                  <svg viewBox="0 0 24 24" class="w-3 h-3 text-[#A3E635]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M6 9v6M3 8v8M6 12h12M18 9v6M21 8v8"/>
+                  </svg>
+                </span>
+                <span>${exercisesConfig.length} ${exercisesConfig.length === 1 ? 'exercício' : 'exercícios'}</span>
+              </span>
+              <span class="inline-flex items-center gap-1.5">
+                <span class="w-[18px] h-[18px] rounded-[5px] bg-[#263421] inline-flex items-center justify-center shrink-0">
+                  <svg viewBox="0 0 24 24" class="w-3 h-3 text-[#A3E635]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m12 2 9 5-9 5-9-5 9-5Z"/>
+                    <path d="m3 12 9 5 9-5"/>
+                    <path d="m3 17 9 5 9-5"/>
+                  </svg>
+                </span>
+                <span>${totalSeries} séries</span>
+              </span>
             </div>
           </div>
           
           <div class="flex items-center gap-2" onclick="event.stopPropagation()">
-            <button onclick="loadTemplateIntoWorkout('${tpl.id}')" class="px-3 py-1.5 bg-brand-lime text-black font-mono font-bold text-[10px] rounded-lg hover:brightness-110 flex items-center gap-1 shadow-sm">
-              <span>⚡</span> Iniciar
+            <button onclick="loadTemplateIntoWorkout('${tpl.id}')"
+              class="h-[38px] px-3 bg-[#A3E635] text-[#17210A] font-mono font-bold text-[10px] rounded-xl hover:brightness-110 active:scale-[0.97] transition-all flex items-center justify-center gap-1.5 shadow-sm"
+              title="Iniciar treino" aria-label="Iniciar treino">
+              <svg viewBox="0 0 24 24" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m13 2-3 8h7l-6 12 1-9H5l8-11Z"/>
+              </svg>
+              Iniciar
             </button>
-            <button onclick="openEditTemplateModal('${tpl.id}')" class="p-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 text-xs" title="Editar">
-              ✏️
+            <button onclick="openEditTemplateModal('${tpl.id}')"
+              class="w-[38px] h-[38px] bg-[#202B3D] text-[#DCE6F5] rounded-xl hover:bg-[#2B394F] active:scale-[0.97] transition-all inline-flex items-center justify-center"
+              title="Editar ficha" aria-label="Editar ficha">
+              <svg viewBox="0 0 24 24" class="w-[17px] h-[17px]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m16 4 4 4"/>
+                <path d="M4 20l4.5-1 10.8-10.8a2.1 2.1 0 0 0-3-3L5.5 16 4 20Z"/>
+              </svg>
             </button>
-            <button onclick="deleteTemplate('${tpl.id}')" class="p-2 bg-red-950/40 text-red-400 rounded-lg hover:bg-red-900/40 text-xs" title="Excluir">
-              🗑️
+            <button onclick="deleteTemplate('${tpl.id}')"
+              class="w-[38px] h-[38px] bg-[#321D25] text-[#FB7185] rounded-xl hover:bg-[#482631] active:scale-[0.97] transition-all inline-flex items-center justify-center"
+              title="Excluir ficha" aria-label="Excluir ficha">
+              <svg viewBox="0 0 24 24" class="w-[17px] h-[17px]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 6h18"/>
+                <path d="M8 6V4h8v2"/>
+                <path d="m19 6-1 14H6L5 6"/>
+                <path d="M10 11v5M14 11v5"/>
+              </svg>
             </button>
           </div>
         </summary>
