@@ -236,6 +236,66 @@ window.EXERCISE_DATABASE = [
     type: "strength",
     img: "https://images.unsplash.com/photo-1549476464-37392f717541?auto=format&fit=crop&w=400&q=80"
   },
+  {
+    id: "cadeira_abdutora",
+    name: "Cadeira Abdutora",
+    group: "Pernas",
+    equipment: "Aparelho Abdutor",
+    muscles: "Glúteo médio, Glúteo mínimo, Tensor da fáscia lata",
+    tips: "Mantenha o tronco apoiado contra o encosto e realize a abertura controlada das pernas.",
+    type: "strength",
+    img: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    id: "cadeira_adutora",
+    name: "Cadeira Adutora",
+    group: "Pernas",
+    equipment: "Aparelho Adutor",
+    muscles: "Complexo adutor da coxa",
+    tips: "Controle o movimento tanto na fase concêntrica quanto no retorno para evitar impacto brusco.",
+    type: "strength",
+    img: "https://images.unsplash.com/photo-1534367507873-d2d7e24c797f?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    id: "cadeira_flexora_sentada",
+    name: "Cadeira Flexora Sentada",
+    group: "Pernas",
+    equipment: "Aparelho Flexor Sentado",
+    muscles: "Isquiotibiais (Posterior de coxa)",
+    tips: "Ajuste a almofada firmemente sobre as coxas logo acima dos joelhos para máxima eficiência.",
+    type: "strength",
+    img: "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    id: "afundo_halteres",
+    name: "Afundo com Halteres",
+    group: "Pernas",
+    equipment: "Halteres",
+    muscles: "Quadríceps, Glúteos, Estabilizadores",
+    tips: "Mantenha o tronco vertical e desça o joelho de trás em direção ao solo em um movimento controlado.",
+    type: "strength",
+    img: "https://images.unsplash.com/photo-1566241142559-40e1dab266c6?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    id: "agachamento_hack",
+    name: "Agachamento Hack (Hack Machine)",
+    group: "Pernas",
+    equipment: "Máquina Hack",
+    muscles: "Quadríceps, Glúteos",
+    tips: "Mantenha as costas e os ombros firmemente apoiados na almofada durante todo o percurso.",
+    type: "strength",
+    img: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    id: "panturrilha_sentado",
+    name: "Elevação de Panturrilha Sentado",
+    group: "Pernas",
+    equipment: "Máquina de Panturrilha Sentada",
+    muscles: "Músculo Sóleo",
+    tips: "Realize amplitude completa esticando o calcanhar totalmente para baixo na base.",
+    type: "strength",
+    img: "https://images.unsplash.com/photo-1549476464-37392f717541?auto=format&fit=crop&w=400&q=80"
+  },
 
   // ================= OMBROS =================
   {
