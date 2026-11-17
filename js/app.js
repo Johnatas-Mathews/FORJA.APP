@@ -50,6 +50,124 @@ let progressChartInstance = null;
 let animationInterval = null;
 const DEFAULT_FALLBACK_IMG = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%23a3e635' stroke-width='1.5'%3E%3Cpath d='M6.5 6.5h11M6.5 17.5h11M4 9.5h16M4 14.5h16M2 12h20'/%3E%3C/svg%3E";
 
+/* -------------------------------------------------------------
+   CENTRAL DE NOTIFICAÇÕES FORJA
+   Avisos padronizados + confirmações próprias, sem diálogos nativos.
+-------------------------------------------------------------- */
+(function initForjaNotifications() {
+  const style = document.createElement('style');
+  style.id = 'forja-notifications-style';
+  style.textContent = `
+    #forja-toast-region { position:fixed; top:max(18px,env(safe-area-inset-top)); right:18px; z-index:10000; width:min(calc(100vw - 36px),420px); display:flex; flex-direction:column; gap:12px; pointer-events:none; }
+    .forja-toast { --notify-accent:#a3e635; position:relative; isolation:isolate; display:grid; grid-template-columns:48px minmax(0,1fr) 28px; gap:12px; align-items:start; padding:15px 15px 16px; overflow:hidden; color:#f8fafc; background:linear-gradient(125deg,#182231 0%,#101722 58%,#0b111a 100%); border:1px solid rgba(163,230,53,.22); border-radius:13px 19px 13px 19px; box-shadow:0 18px 48px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.045); pointer-events:auto; animation:forjaToastIn .28s cubic-bezier(.2,.8,.2,1) both; }
+    .forja-toast:before { content:''; position:absolute; z-index:-1; width:180px;height:130px;right:-70px;top:-75px;background:radial-gradient(circle, color-mix(in srgb,var(--notify-accent) 18%,transparent),transparent 70%);pointer-events:none; }
+    .forja-toast:after { content:''; position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--notify-accent);box-shadow:0 0 16px color-mix(in srgb,var(--notify-accent) 55%,transparent); }
+    .forja-toast.success { --notify-accent:#a3e635; border-color:rgba(163,230,53,.30); } .forja-toast.info { --notify-accent:#7dd3fc; border-color:rgba(125,211,252,.25); } .forja-toast.warning { --notify-accent:#fbbf24; border-color:rgba(251,191,36,.25); } .forja-toast.error { --notify-accent:#fb7185; border-color:rgba(251,113,133,.28); }
+    .forja-toast-brand { grid-column:1/-1;display:flex;align-items:center;gap:8px;margin:-2px 0 1px 1px;color:#9aa8b8;font:800 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.19em;text-transform:uppercase; }
+    .forja-toast-brand-mark { width:19px;height:19px;display:grid;place-items:center;background:var(--notify-accent);color:#101720;font:italic 950 13px/1 Arial,sans-serif;transform:skew(-9deg);box-shadow:0 0 14px color-mix(in srgb,var(--notify-accent) 25%,transparent); }
+    .forja-toast-icon { width:44px;height:44px;border-radius:10px 14px 10px 14px;display:grid;place-items:center;color:#101720;background:var(--notify-accent);font-size:21px;font-weight:950;box-shadow:0 5px 18px color-mix(in srgb,var(--notify-accent) 20%,transparent); }
+    .forja-toast-title { margin:1px 0 5px;font:900 12px/1.25 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.075em;color:#fff;text-transform:uppercase; }
+    .forja-toast-message { margin:0;color:#c5cfda;font-size:12px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere; }
+    .forja-toast-close { width:28px;height:28px;border:1px solid rgba(148,163,184,.14);border-radius:8px;background:rgba(255,255,255,.035);color:#94a3b8;font-size:18px;cursor:pointer; }
+    .forja-toast-close:hover { background:rgba(255,255,255,.1);color:#fff; }
+    .forja-toast-progress { position:absolute;left:3px;bottom:0;height:3px;background:linear-gradient(90deg,var(--notify-accent),color-mix(in srgb,var(--notify-accent) 35%,#fff));box-shadow:0 0 10px color-mix(in srgb,var(--notify-accent) 40%,transparent);border-radius:0 3px 0 0;animation:forjaToastProgress linear forwards; }
+    #forja-confirm-layer { position:fixed;inset:0;z-index:10001;display:grid;place-items:center;padding:20px;background:rgba(3,7,12,.82);backdrop-filter:blur(12px); }
+    #forja-confirm-layer.hidden { display:none; }
+    .forja-confirm-card { position:relative;width:min(100%,420px);padding:24px;background:linear-gradient(145deg,#1a2635,#0c131d);border:1px solid rgba(163,230,53,.32);border-radius:14px 22px 14px 22px;box-shadow:0 28px 80px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.05);animation:forjaToastIn .22s ease-out both; }
+    .forja-confirm-card:before { content:'F';position:absolute;right:18px;top:8px;color:rgba(163,230,53,.07);font:italic 950 76px/1 Arial,sans-serif;pointer-events:none; }
+    .forja-confirm-actions { display:flex;gap:10px;margin-top:22px; }
+    .forja-confirm-actions button { flex:1;min-height:46px;border-radius:9px 13px 9px 13px;font:900 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.09em;transition:transform .15s,filter .15s; }
+    .forja-confirm-actions button:hover { transform:translateY(-1px);filter:brightness(1.08); }
+    @keyframes forjaToastIn { from { opacity:0;transform:translateY(-10px) scale(.975); } to { opacity:1;transform:translateY(0) scale(1); } }
+    @keyframes forjaToastOut { to { opacity:0;transform:translateX(14px) scale(.98); } }
+    @keyframes forjaToastProgress { from { width:100%; } to { width:0%; } }
+    @media(max-width:480px) { #forja-toast-region { top:max(10px,env(safe-area-inset-top));left:10px;right:10px;width:auto;gap:9px; } .forja-toast { grid-template-columns:42px minmax(0,1fr) 26px;gap:10px;padding:13px 12px 15px; } .forja-toast-icon { width:40px;height:40px; } .forja-toast-title { font-size:11px; } .forja-toast-message { font-size:11px; } }
+    @media(prefers-reduced-motion:reduce) { .forja-toast,.forja-confirm-card { animation:none; } .forja-toast-progress { animation:none; } }
+  `;
+  document.head.appendChild(style);
+
+  function ensureRegion() {
+    let region = document.getElementById('forja-toast-region');
+    if (!region) {
+      region = document.createElement('div');
+      region.id = 'forja-toast-region';
+      region.setAttribute('aria-live', 'polite');
+      region.setAttribute('aria-atomic', 'false');
+      document.body.appendChild(region);
+    }
+    return region;
+  }
+
+  function classify(message, requestedType) {
+    if (requestedType) return requestedType;
+    const text = String(message).toLowerCase();
+    if (/erro|falha|não foi possível|nao foi possivel|inválid|invalido|não autenticado/.test(text)) return 'error';
+    if (/atenção|atencao|verifique|obrigatóri|obrigatori|adicione|insira|selecione|não encontrado|nao encontrado/.test(text)) return 'warning';
+    if (/sucesso|salva|salvo|criada|criado|atualizada|atualizado|concluído|concluido|finalizado/.test(text)) return 'success';
+    return 'info';
+  }
+
+  function notify(message, options = {}) {
+    const text = String(message ?? '');
+    const type = classify(text, options.type);
+    const titles = { success:'FORJADO COM SUCESSO', info:'CENTRAL FORJA', warning:'ATENÇÃO, FORJADOR', error:'FALHA NA OPERAÇÃO' };
+    const icons = { success:'✓', info:'i', warning:'!', error:'×' };
+    const contextualTitle = /ficha/i.test(text) ? 'FICHA FORJADA' : /avaliação/i.test(text) ? 'AVALIAÇÃO REGISTRADA' : /treino/i.test(text) ? 'TREINO FORJADO' : /perfil|nome/i.test(text) ? 'PERFIL ATUALIZADO' : /meta/i.test(text) ? 'META ATUALIZADA' : titles[type];
+    const region = ensureRegion();
+    const toast = document.createElement('section');
+    toast.className = `forja-toast ${type}`;
+    toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    const brand = document.createElement('div'); brand.className='forja-toast-brand';
+    const brandMark = document.createElement('span'); brandMark.className='forja-toast-brand-mark'; brandMark.textContent='F';
+    const brandText = document.createElement('span'); brandText.textContent='FORJA  /  CENTRAL DE COMANDO';
+    brand.append(brandMark,brandText);
+    const icon = document.createElement('div'); icon.className='forja-toast-icon'; icon.textContent=icons[type];
+    const content = document.createElement('div');
+    const title = document.createElement('p'); title.className='forja-toast-title'; title.textContent=options.title || contextualTitle;
+    const body = document.createElement('p'); body.className='forja-toast-message'; body.textContent=text;
+    content.append(title,body);
+    const close = document.createElement('button'); close.type='button'; close.className='forja-toast-close'; close.setAttribute('aria-label','Fechar notificação'); close.textContent='×';
+    const progress = document.createElement('div'); progress.className='forja-toast-progress';
+    const duration = Math.max(1800, Number(options.duration) || (type === 'error' ? 6500 : 4200));
+    progress.style.animationDuration = `${duration}ms`;
+    const dismiss = () => { if (!toast.isConnected) return; toast.style.animation='forjaToastOut .18s ease-in forwards'; setTimeout(()=>toast.remove(),180); };
+    close.addEventListener('click',dismiss);
+    toast.append(brand,icon,content,close,progress); region.appendChild(toast);
+    const timer = setTimeout(dismiss,duration);
+    toast.addEventListener('mouseenter',()=>{ clearTimeout(timer); progress.style.animationPlayState='paused'; });
+    toast.addEventListener('mouseleave',()=>{ progress.style.animationPlayState='running'; });
+    while (region.children.length > 4) region.firstElementChild.remove();
+    return toast;
+  }
+
+  function confirmAction(message, options = {}) {
+    return new Promise(resolve => {
+      const existing = document.getElementById('forja-confirm-layer');
+      if (existing) existing.remove();
+      const layer = document.createElement('div'); layer.id='forja-confirm-layer'; layer.setAttribute('role','presentation');
+      const card = document.createElement('section'); card.className='forja-confirm-card'; card.setAttribute('role','dialog'); card.setAttribute('aria-modal','true');
+      const eyebrow = document.createElement('p'); eyebrow.className='mb-2 text-[9px] font-mono font-bold tracking-[.2em] text-brand-lime'; eyebrow.textContent='FORJA • CONFIRMAÇÃO';
+      const heading = document.createElement('h2'); heading.className='text-lg font-extrabold text-white'; heading.textContent=options.title || 'Tem certeza?';
+      const body = document.createElement('p'); body.className='mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-300'; body.textContent=String(message ?? '');
+      const actions = document.createElement('div'); actions.className='forja-confirm-actions';
+      const cancel = document.createElement('button'); cancel.type='button'; cancel.className='border border-slate-700 bg-slate-900 text-slate-300'; cancel.textContent=options.cancelText || 'CANCELAR';
+      const accept = document.createElement('button'); accept.type='button'; accept.className='bg-brand-lime text-black'; accept.textContent=options.confirmText || 'CONFIRMAR';
+      let settled=false;
+      const finish = value => { if(settled)return; settled=true; layer.remove(); document.removeEventListener('keydown',onKey); resolve(value); };
+      const onKey = event => { if(event.key==='Escape') finish(false); if(event.key==='Enter') finish(true); };
+      cancel.addEventListener('click',()=>finish(false)); accept.addEventListener('click',()=>finish(true));
+      layer.addEventListener('click',event=>{if(event.target===layer)finish(false);});
+      actions.append(cancel,accept); card.append(eyebrow,heading,body,actions); layer.appendChild(card); document.body.appendChild(layer);
+      document.addEventListener('keydown',onKey); accept.focus();
+    });
+  }
+
+  window.FORJA = window.FORJA || {};
+  window.FORJA.notify = notify;
+  window.FORJA.confirm = confirmAction;
+})();
+
+
 // Helper seguro para acessar o banco de exercícios global
 function getExerciseDB() {
   if (typeof window !== 'undefined' && window.EXERCISE_DATABASE) return window.EXERCISE_DATABASE;
@@ -212,11 +330,11 @@ async function handleAuthSubmit(e) {
         }, { onConflict: 'id' });
       }
 
-      alert(`Conta de ${state.selectedRole.toUpperCase()} criada com sucesso!`);
+      FORJA.notify(`Conta de ${state.selectedRole.toUpperCase()} criada com sucesso!`);
       await onAuthSuccess();
     }
   } catch (err) {
-    alert("Erro de autenticação: " + (err.message || "Verifique seus dados."));
+    FORJA.notify("Erro de autenticação: " + (err.message || "Verifique seus dados."));
   } finally {
     spinner.classList.add("hidden");
     submitBtn.disabled = false;
@@ -256,12 +374,12 @@ async function updateProfileFullName() {
   const newName = input.value.trim();
 
   if (!newName) {
-    alert("Insira um nome válido!");
+    FORJA.notify("Insira um nome válido!");
     return;
   }
 
   if (!state.user) {
-    alert("Usuário não autenticado.");
+    FORJA.notify("Usuário não autenticado.");
     return;
   }
 
@@ -281,12 +399,12 @@ async function updateProfileFullName() {
 
     if (error) {
       console.error("Erro ao atualizar nome no Supabase:", error);
-      alert("Erro ao atualizar nome na nuvem: " + error.message);
+      FORJA.notify("Erro ao atualizar nome na nuvem: " + error.message);
       return;
     }
   }
 
-  alert("Nome de perfil atualizado com sucesso!");
+  FORJA.notify("Nome de perfil atualizado com sucesso!");
   renderProfileStats();
 }
 
@@ -1044,7 +1162,7 @@ async function saveNewTemplate() {
   const title = document.getElementById("tplNameInput").value.trim();
   const division = document.getElementById("tplDivisionInput").value.trim() || 'A';
   if (!title) {
-    alert("Dê um nome para a sua ficha!");
+    FORJA.notify("Dê um nome para a sua ficha!");
     return;
   }
 
@@ -1063,7 +1181,7 @@ async function saveNewTemplate() {
   });
 
   if (exercises.length === 0) {
-    alert("Adicione ao menos 1 exercício na lista antes de salvar!");
+    FORJA.notify("Adicione ao menos 1 exercício na lista antes de salvar!");
     return;
   }
 
@@ -1083,7 +1201,7 @@ async function saveNewTemplate() {
         .eq('id', state.editingTemplateId);
 
       if (error) {
-        alert("Erro ao atualizar no banco: " + error.message);
+        FORJA.notify("Erro ao atualizar no banco: " + error.message);
         return;
       }
     }
@@ -1092,12 +1210,12 @@ async function saveNewTemplate() {
     if (index !== -1) {
       state.templates[index] = { ...state.templates[index], ...tplPayload };
     }
-    alert("Ficha atualizada com sucesso!");
+    FORJA.notify("Ficha atualizada com sucesso!");
   } else {
     if (supabaseClient && state.user) {
       const { data, error } = await supabaseClient.from('templates').insert([tplPayload]).select();
       if (error) {
-        alert("Erro ao salvar no banco: " + error.message);
+        FORJA.notify("Erro ao salvar no banco: " + error.message);
         return;
       }
       if (data && data.length > 0) {
@@ -1105,7 +1223,7 @@ async function saveNewTemplate() {
       }
     }
     state.templates.unshift(tplPayload);
-    alert("Ficha criada e salva com sucesso!");
+    FORJA.notify("Ficha criada e salva com sucesso!");
   }
 
   closeCreateTemplateModal();
@@ -1119,7 +1237,7 @@ async function deleteTemplate(templateId) {
   const tpl = state.templates.find(t => t.id === templateId);
   const tplName = tpl ? (tpl.title || tpl.name) : "esta ficha";
 
-  if (!confirm(`Deseja apagar a ficha "${tplName}"?`)) return;
+  if (!(await FORJA.confirm(`Deseja apagar a ficha "${tplName}"?`, { title: "Excluir ficha", confirmText: "EXCLUIR" }))) return;
 
   if (supabaseClient && state.user) {
     const { error } = await supabaseClient
@@ -1128,7 +1246,7 @@ async function deleteTemplate(templateId) {
       .eq('id', templateId);
 
     if (error) {
-      alert("Erro ao excluir do banco: " + error.message);
+      FORJA.notify("Erro ao excluir do banco: " + error.message);
       return;
     }
   }
@@ -1236,7 +1354,7 @@ async function saveUserGoal() {
 
     if (error) {
       console.error("Erro ao salvar meta no Supabase:", error);
-      alert("Erro ao salvar meta no banco: " + error.message);
+      FORJA.notify("Erro ao salvar meta no banco: " + error.message);
     }
   }
 }
@@ -1459,7 +1577,7 @@ function inspectExerciseByName(name) {
   if (found) {
     showExerciseDetail(found.id);
   } else {
-    alert(`Detalhes não encontrados para: ${name}`);
+    FORJA.notify(`Detalhes não encontrados para: ${name}`);
   }
 }
 
@@ -1490,7 +1608,7 @@ function toggleSetComplete(exIdx, setIdx) {
 
 async function finishActiveWorkout() {
   if (state.activeWorkout.exercises.length === 0) {
-    alert("Adicione pelo menos um exercício antes de concluir o treino!");
+    FORJA.notify("Adicione pelo menos um exercício antes de concluir o treino!");
     return;
   }
 
@@ -1516,7 +1634,7 @@ async function finishActiveWorkout() {
   if (supabaseClient && state.user) {
     const { error } = await supabaseClient.from('workouts').insert([workoutPayload]);
     if (error) {
-      alert("Erro ao salvar treino no banco: " + error.message);
+      FORJA.notify("Erro ao salvar treino no banco: " + error.message);
       return;
     }
   }
@@ -1525,7 +1643,7 @@ async function finishActiveWorkout() {
   
   addXP(150, "Treino Concluído");
 
-  alert(`🔥 Treino finalizado com sucesso!
+  FORJA.notify(`🔥 Treino finalizado com sucesso!
 Volume total: ${totalVolume} kg
 +150 XP acumulados!`);
 
@@ -2004,6 +2122,42 @@ const EVALUATION_FIELDS = {
   right_calf_cm: "evalPanturrilhaD", left_calf_cm: "evalPanturrilhaE"
 };
 
+
+// Guia visual de medidas corporais — FORJA
+const MEASUREMENT_GUIDES = {
+  'cintura': { title:'Cintura', image:'cintura.webp', position:'Meça na região natural da cintura, aproximadamente a meio caminho entre a última costela palpável e o topo do osso do quadril (crista ilíaca), conforme o protocolo adotado.', steps:['Fique em pé, com o abdômen relaxado e os pés próximos.','Passe a fita ao redor do tronco no ponto definido pelo protocolo.','Mantenha a fita horizontal, ajustada ao corpo sem comprimir a pele.','Faça a leitura ao final de uma expiração normal.'], tip:'Não confunda cintura com a linha do cós da roupa. Use sempre o mesmo ponto anatômico nas próximas avaliações.' },
+  'abdomen': { title:'Abdômen', image:'abdomen.webp', position:'A imagem ilustra uma referência comum na altura do umbigo. O ponto exato deve seguir o protocolo de avaliação escolhido pelo profissional.', steps:['Fique em pé e mantenha o abdômen relaxado.','Posicione a fita horizontalmente na referência definida (por exemplo, nível umbilical).','Confira se a fita não está inclinada nem pressionando a pele.','Registre a medida sem contrair o abdômen.'], tip:'Cintura e abdômen não são necessariamente a mesma medida. Registre sempre cada uma no seu ponto padronizado.' },
+  'quadril': { title:'Quadril', image:'quadril.webp', position:'Passe a fita ao redor da região de maior circunferência dos glúteos/quadril, mantendo-a paralela ao chão.', steps:['Fique em pé, com os pés juntos ou na posição definida pelo protocolo.','Passe a fita ao redor do quadril, na maior projeção dos glúteos.','Confira de lado se a fita está nivelada e horizontal.','Ajuste sem apertar e registre a medida.'], tip:'A fita deve contornar a região mais larga, sem subir nas costas ou descer na frente.' },
+  'peitoral': { title:'Peitoral', image:'peitoral.webp', position:'A referência visual mostra a fita ao redor do tórax na altura definida pelo protocolo de avaliação, mantendo-a horizontal.', steps:['Fique em pé, com os braços relaxados ao lado do corpo.','Posicione a fita ao redor do tórax no ponto anatômico padronizado.','Mantenha a fita nivelada nas costas e na frente.','Faça a leitura sem expandir ou contrair exageradamente o peito.'], tip:'O ponto de referência pode variar entre protocolos. O profissional deve escolher um padrão e repeti-lo nas próximas avaliações.' },
+  'braco-direito': { title:'Braço direito', image:'braco-direito.webp', position:'A imagem demonstra a fita ao redor do braço. Para medidas padronizadas, o ponto costuma ser definido pela maior circunferência ou por um ponto anatômico previamente marcado.', steps:['Deixe o braço direito relaxado, conforme o protocolo escolhido.','Posicione a fita perpendicular ao eixo do braço.','Ajuste sem comprimir a pele e confira se não está inclinada.','Registre e repita o mesmo procedimento nas próximas avaliações.'], tip:'Não compare braço contraído com braço relaxado. Mantenha a mesma condição em todas as medições.' },
+  'braco-esquerdo': { title:'Braço esquerdo', image:'braco-esquerdo.webp', position:'Repita no braço esquerdo o mesmo ponto anatômico e a mesma condição usados no braço direito.', steps:['Mantenha o braço esquerdo na posição definida pelo protocolo.','Passe a fita no mesmo ponto relativo utilizado no braço direito.','Deixe a fita perpendicular ao braço, sem apertar.','Registre o valor separadamente.'], tip:'Use o mesmo método nos dois lados para que a comparação entre braço direito e esquerdo seja válida.' },
+  'coxa-direita': { title:'Coxa direita', image:'coxa-direita.webp', position:'A imagem mostra a fita ao redor da coxa. O ponto deve ser definido pelo protocolo (por exemplo, ponto médio entre referências anatômicas ou maior circunferência).', steps:['Fique em pé com o peso distribuído conforme orientação do profissional.','Posicione a fita no ponto padronizado da coxa direita.','Mantenha a fita perpendicular ao eixo da perna e sem comprimir.','Registre a medida.'], tip:'Marque ou registre a distância do ponto de referência para repetir a medição no mesmo local.' },
+  'coxa-esquerda': { title:'Coxa esquerda', image:'coxa-esquerda.webp', position:'Repita no lado esquerdo o mesmo ponto anatômico utilizado na coxa direita.', steps:['Adote a mesma postura usada na medição do lado direito.','Posicione a fita na referência equivalente da coxa esquerda.','Confira se a fita está nivelada e sem compressão.','Registre separadamente.'], tip:'A comparação entre lados só é útil quando a posição e a técnica são iguais.' },
+  'panturrilha-direita': { title:'Panturrilha direita', image:'panturrilha-direita.webp', position:'A referência ilustrada é a maior circunferência da panturrilha direita.', steps:['Fique em pé e mantenha a musculatura relaxada.','Desloque a fita até encontrar a maior circunferência da panturrilha.','Mantenha a fita perpendicular à perna, sem apertar.','Registre a medida.'], tip:'Não meça sobre a roupa. Procure a maior circunferência e repita o mesmo ponto nas avaliações futuras.' },
+  'panturrilha-esquerda': { title:'Panturrilha esquerda', image:'panturrilha-esquerda.webp', position:'Repita no lado esquerdo a busca pela maior circunferência da panturrilha.', steps:['Fique na mesma posição usada para medir a perna direita.','Localize a maior circunferência da panturrilha esquerda.','Mantenha a fita nivelada e sem compressão.','Registre o valor separadamente.'], tip:'Mantenha o mesmo procedimento nos dois lados para acompanhar a evolução de forma consistente.' }
+};
+
+function openMeasurementGuide(key) {
+  const guide = MEASUREMENT_GUIDES[key];
+  const modal = document.getElementById('measurementGuideModal');
+  if (!guide || !modal) return;
+  document.getElementById('measurementGuideTitle').textContent = guide.title;
+  const image = document.getElementById('measurementGuideImage');
+  image.src = `assets/measurement-guides/${guide.image}`;
+  image.alt = `Demonstração visual de como medir ${guide.title.toLowerCase()}`;
+  document.getElementById('measurementGuidePosition').textContent = guide.position;
+  document.getElementById('measurementGuideTip').textContent = guide.tip;
+  document.getElementById('measurementGuideSteps').innerHTML = guide.steps.map(step => `<li>${step}</li>`).join('');
+  modal.classList.remove('hidden');
+  document.body.classList.add('overflow-hidden');
+}
+
+function closeMeasurementGuide() {
+  const modal = document.getElementById('measurementGuideModal');
+  if (modal) modal.classList.add('hidden');
+  document.body.classList.remove('overflow-hidden');
+}
+
 const EVALUATION_DB_COLUMNS = {
   evaluation_date: "data_avaliacao",
   weight_kg: "peso_kg",
@@ -2159,7 +2313,7 @@ function editPhysicalEvaluation(id) {
 
 async function savePhysicalEvaluation() {
   if (!supabaseClient || !state.user) {
-    alert("Faça login para salvar sua avaliação.");
+    FORJA.notify("Faça login para salvar sua avaliação.");
     return;
   }
   // Monta primeiro o objeto lógico da interface e depois converte para os nomes
@@ -2177,7 +2331,7 @@ async function savePhysicalEvaluation() {
     !["user_id","evaluation_date","responsible","method","observations"].includes(key) && value !== null
   ) || !!appPayload.observations;
   if (!hasData) {
-    alert("Informe pelo menos um dado corporal antes de salvar.");
+    FORJA.notify("Informe pelo menos um dado corporal antes de salvar.");
     showEvaluationStep(2);
     return;
   }
@@ -2198,7 +2352,7 @@ async function savePhysicalEvaluation() {
     await fetchEvaluations();
     renderPhysicalEvaluations();
     cancelPhysicalEvaluation();
-    alert("Avaliação salva com sucesso!");
+    FORJA.notify("Avaliação salva com sucesso!");
   } catch (error) {
     console.error("Erro ao salvar avaliação física:", error);
     const detail = [
@@ -2207,7 +2361,7 @@ async function savePhysicalEvaluation() {
       error?.details ? `Detalhes: ${error.details}` : null,
       error?.hint ? `Sugestão: ${error.hint}` : null
     ].filter(Boolean).join("\\n") || "Erro desconhecido retornado pelo Supabase.";
-    alert(`Não foi possível salvar a avaliação.\\n\\n${detail}`);
+    FORJA.notify(`Não foi possível salvar a avaliação.\\n\\n${detail}`);
   } finally {
     saveButton.disabled = false;
     saveButton.textContent = "SALVAR AVALIAÇÃO";
@@ -2215,7 +2369,7 @@ async function savePhysicalEvaluation() {
 }
 
 async function deletePhysicalEvaluation(id) {
-  if (!confirm("Deseja excluir esta avaliação? Esta ação não poderá ser desfeita.")) return;
+  if (!(await FORJA.confirm("Deseja excluir esta avaliação? Esta ação não poderá ser desfeita.", { title: "Excluir avaliação", confirmText: "EXCLUIR" }))) return;
   try {
     const { error } = await supabaseClient.from("avaliacoes_fisicas")
       .delete().eq("id", id).eq("user_id", state.user.id);
@@ -2224,7 +2378,7 @@ async function deletePhysicalEvaluation(id) {
     renderPhysicalEvaluations();
   } catch (error) {
     console.error("Erro ao excluir avaliação:", error);
-    alert("Não foi possível excluir a avaliação.");
+    FORJA.notify("Não foi possível excluir a avaliação.");
   }
 }
 

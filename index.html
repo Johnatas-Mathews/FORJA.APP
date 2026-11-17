@@ -442,16 +442,16 @@
           <div id="evalStep3" class="eval-step hidden space-y-3">
             <p class="text-xs text-slate-400">Preencha as medidas disponíveis em centímetros. Os campos são opcionais.</p>
             <div class="grid grid-cols-2 gap-3">
-              <div><label class="eval-label">Cintura (cm)</label><input id="evalCintura" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
-              <div><label class="eval-label">Abdômen (cm)</label><input id="evalAbdomen" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
-              <div><label class="eval-label">Quadril (cm)</label><input id="evalQuadril" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
-              <div><label class="eval-label">Peitoral (cm)</label><input id="evalPeitoral" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
-              <div><label class="eval-label">Braço direito (cm)</label><input id="evalBracoD" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
-              <div><label class="eval-label">Braço esquerdo (cm)</label><input id="evalBracoE" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
-              <div><label class="eval-label">Coxa direita (cm)</label><input id="evalCoxaD" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
-              <div><label class="eval-label">Coxa esquerda (cm)</label><input id="evalCoxaE" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
-              <div><label class="eval-label">Panturrilha direita (cm)</label><input id="evalPanturrilhaD" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
-              <div><label class="eval-label">Panturrilha esquerda (cm)</label><input id="evalPanturrilhaE" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><div class="flex items-center justify-between gap-2"><label class="eval-label">Cintura (cm)</label><button type="button" onclick="openMeasurementGuide('cintura')" class="mb-1 inline-flex items-center gap-1 text-[9px] font-mono font-bold text-brand-lime hover:text-white" aria-label="Como medir Cintura"><span class="text-sm">ⓘ</span> COMO MEDIR</button></div><input id="evalCintura" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><div class="flex items-center justify-between gap-2"><label class="eval-label">Abdômen (cm)</label><button type="button" onclick="openMeasurementGuide('abdomen')" class="mb-1 inline-flex items-center gap-1 text-[9px] font-mono font-bold text-brand-lime hover:text-white" aria-label="Como medir Abdômen"><span class="text-sm">ⓘ</span> COMO MEDIR</button></div><input id="evalAbdomen" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><div class="flex items-center justify-between gap-2"><label class="eval-label">Quadril (cm)</label><button type="button" onclick="openMeasurementGuide('quadril')" class="mb-1 inline-flex items-center gap-1 text-[9px] font-mono font-bold text-brand-lime hover:text-white" aria-label="Como medir Quadril"><span class="text-sm">ⓘ</span> COMO MEDIR</button></div><input id="evalQuadril" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><div class="flex items-center justify-between gap-2"><label class="eval-label">Peitoral (cm)</label><button type="button" onclick="openMeasurementGuide('peitoral')" class="mb-1 inline-flex items-center gap-1 text-[9px] font-mono font-bold text-brand-lime hover:text-white" aria-label="Como medir Peitoral"><span class="text-sm">ⓘ</span> COMO MEDIR</button></div><input id="evalPeitoral" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><div class="flex items-center justify-between gap-2"><label class="eval-label">Braço direito (cm)</label><button type="button" onclick="openMeasurementGuide('braco-direito')" class="mb-1 inline-flex items-center gap-1 text-[9px] font-mono font-bold text-brand-lime hover:text-white" aria-label="Como medir Braço direito"><span class="text-sm">ⓘ</span> COMO MEDIR</button></div><input id="evalBracoD" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><div class="flex items-center justify-between gap-2"><label class="eval-label">Braço esquerdo (cm)</label><button type="button" onclick="openMeasurementGuide('braco-esquerdo')" class="mb-1 inline-flex items-center gap-1 text-[9px] font-mono font-bold text-brand-lime hover:text-white" aria-label="Como medir Braço esquerdo"><span class="text-sm">ⓘ</span> COMO MEDIR</button></div><input id="evalBracoE" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><div class="flex items-center justify-between gap-2"><label class="eval-label">Coxa direita (cm)</label><button type="button" onclick="openMeasurementGuide('coxa-direita')" class="mb-1 inline-flex items-center gap-1 text-[9px] font-mono font-bold text-brand-lime hover:text-white" aria-label="Como medir Coxa direita"><span class="text-sm">ⓘ</span> COMO MEDIR</button></div><input id="evalCoxaD" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><div class="flex items-center justify-between gap-2"><label class="eval-label">Coxa esquerda (cm)</label><button type="button" onclick="openMeasurementGuide('coxa-esquerda')" class="mb-1 inline-flex items-center gap-1 text-[9px] font-mono font-bold text-brand-lime hover:text-white" aria-label="Como medir Coxa esquerda"><span class="text-sm">ⓘ</span> COMO MEDIR</button></div><input id="evalCoxaE" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><div class="flex items-center justify-between gap-2"><label class="eval-label">Panturrilha direita (cm)</label><button type="button" onclick="openMeasurementGuide('panturrilha-direita')" class="mb-1 inline-flex items-center gap-1 text-[9px] font-mono font-bold text-brand-lime hover:text-white" aria-label="Como medir Panturrilha direita"><span class="text-sm">ⓘ</span> COMO MEDIR</button></div><input id="evalPanturrilhaD" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><div class="flex items-center justify-between gap-2"><label class="eval-label">Panturrilha esquerda (cm)</label><button type="button" onclick="openMeasurementGuide('panturrilha-esquerda')" class="mb-1 inline-flex items-center gap-1 text-[9px] font-mono font-bold text-brand-lime hover:text-white" aria-label="Como medir Panturrilha esquerda"><span class="text-sm">ⓘ</span> COMO MEDIR</button></div><input id="evalPanturrilhaE" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
             </div>
           </div>
 
@@ -845,9 +845,28 @@
     </div>
   </div>
 
+
+  <!-- Guia visual de medidas corporais FORJA -->
+  <div id="measurementGuideModal" class="hidden fixed inset-0 z-[250] bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5" role="dialog" aria-modal="true" aria-labelledby="measurementGuideTitle" onclick="if(event.target===this) closeMeasurementGuide()">
+    <div class="w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-2xl border border-slate-700 bg-[#111620] shadow-2xl">
+      <div class="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-slate-800 bg-[#111620]/95 px-4 py-3 backdrop-blur">
+        <div class="flex items-center gap-2"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-lime text-black">ⓘ</span><div><p class="text-[9px] font-mono tracking-widest text-brand-lime">FORJA • GUIA VISUAL</p><h3 id="measurementGuideTitle" class="text-sm font-bold text-white">Como medir</h3></div></div>
+        <button type="button" onclick="closeMeasurementGuide()" class="h-9 w-9 rounded-lg border border-slate-700 text-xl text-slate-400 hover:text-white" aria-label="Fechar">&times;</button>
+      </div>
+      <div class="space-y-4 p-4">
+        <div class="overflow-hidden rounded-xl border border-slate-700 bg-slate-900"><img id="measurementGuideImage" src="" alt="Demonstração do posicionamento da fita métrica" class="block aspect-[4/3] w-full object-cover"/><div class="flex items-center justify-between gap-2 border-t border-slate-700 px-3 py-2"><span class="text-[9px] font-mono uppercase tracking-wider text-slate-400">Referência visual</span><span class="text-[9px] font-mono text-brand-lime">MEDIDA EM CM</span></div></div>
+        <div class="rounded-xl border border-slate-800 bg-slate-900/70 p-3"><p class="mb-2 text-[10px] font-mono font-bold uppercase tracking-wider text-brand-lime">POSICIONAMENTO</p><p id="measurementGuidePosition" class="text-sm leading-relaxed text-slate-200"></p></div>
+        <div class="rounded-xl border border-slate-800 bg-slate-900/70 p-3"><p class="mb-2 text-[10px] font-mono font-bold uppercase tracking-wider text-brand-lime">PASSO A PASSO</p><ol id="measurementGuideSteps" class="list-decimal space-y-2 pl-4 text-xs leading-relaxed text-slate-300"></ol></div>
+        <div class="rounded-xl border border-brand-lime/20 bg-brand-lime/5 p-3"><p class="mb-1 text-[10px] font-mono font-bold uppercase text-brand-lime">DICA FORJA</p><p id="measurementGuideTip" class="text-xs leading-relaxed text-slate-300"></p></div>
+        <p class="text-[9px] leading-relaxed text-slate-500">Material educativo de apoio. Para avaliações padronizadas, siga o protocolo adotado pelo profissional responsável; diferentes protocolos podem definir pontos anatômicos específicos.</p>
+        <button type="button" onclick="closeMeasurementGuide()" class="w-full rounded-xl bg-brand-lime py-3 text-xs font-mono font-extrabold text-black">ENTENDI</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts com quebra de cache -->
   <script src="js/exercises-data.js?v=6"></script>
   <script src="js/gamification.js?v=6"></script>
-  <script src="js/app.js?v=9"></script>
+  <script src="js/app.js?v=12"></script>
 </body>
 </html>
