@@ -7,7 +7,7 @@
   
   <!-- Favicon e Ícones PWA para Telemóvel -->
   <link rel="icon" type="image/svg+xml" href="assets/icons/LOGO-FORJA.svg" />
-  <link rel="apple-touch-icon" href="assets/icons/LOGO-FORJA-appleea.png" />
+  <link rel="apple-touch-icon" href="assets/icons/LOGO-FORJA.svg" />
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -49,6 +49,25 @@
     .glow-lime {
       box-shadow: 0 0 15px rgba(163, 230, 53, 0.25);
     }
+    .library-filter-chip {
+      flex: 0 0 auto; padding: .55rem .9rem; border-radius: .7rem;
+      border: 1px solid rgba(100,116,139,.28); background: #111d2e;
+      color: #aab6c8; font: 700 10px 'JetBrains Mono', monospace;
+      transition: all .18s ease;
+    }
+    .library-filter-chip:hover { border-color: rgba(163,230,53,.45); color: #fff; }
+    .library-filter-chip.is-active {
+      color: #0a0d14; background: #a3e635; border-color: #a3e635;
+      box-shadow: 0 0 16px rgba(163,230,53,.2);
+    }
+    .library-exercise-card {
+      overflow: hidden; border: 1px solid rgba(100,116,139,.24); border-radius: 1rem;
+      background: linear-gradient(145deg, rgba(22,35,54,.96), rgba(13,22,36,.98));
+      transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+    }
+    .library-exercise-card:hover { border-color: rgba(163,230,53,.38); box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+    .library-exercise-image { background: radial-gradient(circle at 50% 45%, rgba(163,230,53,.12), transparent 60%), #080e18; }
+    @media (min-width: 640px) { .library-exercise-card:hover { transform: translateY(-1px); } }
   </style>
 </head>
 <body class="pb-24 select-none antialiased min-h-screen">
@@ -368,99 +387,123 @@
         </button>
       </div>
 
-      <!-- AVALIAÇÃO FÍSICA (ACORDEÃO) -->
-      <details class="bg-[#111620] rounded-2xl tactical-border overflow-hidden mb-4 group">
-        <summary class="p-4 cursor-pointer font-display font-bold text-sm text-white flex justify-between items-center select-none hover:bg-slate-900/55 transition-all">
-          <span class="flex items-center gap-2">📊 Avaliação Física & Medidas</span>
-          <span class="text-brand-lime text-xs font-mono group-open:rotate-180 transition-transform">▼</span>
-        </summary>
-        
-        <div class="p-4 border-t border-slate-800 space-y-4">
+      <!-- MÓDULO FORJA: AVALIAÇÃO FÍSICA PREMIUM -->
+      <section id="physicalEvaluationModule" class="space-y-4">
+        <div class="flex items-start justify-between gap-3">
           <div>
-            <h2 class="text-md font-display font-extrabold text-white">Avaliação Física</h2>
-            <p class="text-xs text-slate-400">Controle de composição corporal e histórico biométrico</p>
+            <p class="text-[10px] font-mono uppercase tracking-[.2em] text-brand-lime">FORJA / PERFORMANCE</p>
+            <h2 class="text-xl font-display font-extrabold text-white mt-1">Avaliação física</h2>
+            <p class="text-xs text-slate-400 mt-1">Acompanhe seus indicadores e sua evolução corporal.</p>
+          </div>
+          <span class="rounded-lg border border-brand-lime/30 bg-brand-lime/10 px-2 py-1 text-[9px] font-mono text-brand-lime">BIOMETRIA</span>
+        </div>
+
+        <div class="rounded-2xl border border-slate-800 bg-gradient-to-br from-[#172131] to-[#0d121c] p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] uppercase tracking-widest text-slate-400 font-mono">Seu acompanhamento</span>
+            <span class="text-[10px] text-slate-500 font-mono" id="evalLastDate">Ainda sem registros</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div><p class="text-[10px] text-slate-500">Avaliações</p><p id="evalTotalCount" class="text-2xl font-display font-extrabold text-white">0</p></div>
+            <div><p class="text-[10px] text-slate-500">Peso atual</p><p id="evalCurrentWeight" class="text-2xl font-display font-extrabold text-white">--</p><p class="text-[9px] text-slate-500">kg</p></div>
+            <div><p class="text-[10px] text-slate-500">Gordura</p><p id="evalCurrentFat" class="text-2xl font-display font-extrabold text-white">--</p><p class="text-[9px] text-slate-500">%</p></div>
+          </div>
+          <button type="button" onclick="startPhysicalEvaluation()" class="w-full rounded-xl bg-brand-lime py-3 text-xs font-mono font-extrabold uppercase tracking-wide text-black shadow-lg shadow-lime-900/20 hover:brightness-110">
+            + Realizar avaliação
+          </button>
+        </div>
+
+        <!-- WIZARD DE CADASTRO -->
+        <div id="physicalEvaluationWizard" class="hidden rounded-2xl border border-slate-800 bg-[#111620] p-4 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-[10px] font-mono uppercase tracking-widest text-brand-lime" id="evalStepEyebrow">ETAPA 01 / 05</p>
+              <h3 class="text-base font-display font-bold text-white" id="evalStepTitle">Identificação</h3>
+            </div>
+            <button type="button" onclick="cancelPhysicalEvaluation()" class="text-xs text-slate-500 hover:text-white">Cancelar ✕</button>
+          </div>
+          <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden"><div id="evalStepProgress" class="h-full rounded-full bg-brand-lime transition-all" style="width:20%"></div></div>
+
+          <div id="evalStep1" class="eval-step space-y-3">
+            <p class="text-xs text-slate-400">Informe quando a avaliação foi realizada e quem fez o acompanhamento.</p>
+            <div><label class="eval-label">Data da avaliação</label><input id="evalDate" type="date" class="eval-input"/></div>
+            <div><label class="eval-label">Responsável pela avaliação <span class="text-slate-600">(opcional)</span></label><input id="evalResponsible" type="text" placeholder="Nome do profissional" class="eval-input"/></div>
           </div>
 
-          <!-- FORMULÁRIO DE NOVA AVALIAÇÃO FÍSICA -->
-          <div class="bg-slate-950/60 rounded-xl p-3 space-y-4 border border-slate-800">
-            <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
-              <h3 class="text-xs font-mono uppercase text-brand-lime font-bold">Nova Avaliação Física</h3>
-              <span class="text-[10px] font-mono text-slate-500">Data: Hoje</span>
+          <div id="evalStep2" class="eval-step hidden space-y-3">
+            <p class="text-xs text-slate-400">Registre os dados gerais. O IMC será calculado automaticamente quando houver peso e altura.</p>
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="eval-label">Peso (kg)</label><input id="evalPeso" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ex.: 78,5" class="eval-input" oninput="updateEvaluationBMI()"/></div>
+              <div><label class="eval-label">Altura (cm)</label><input id="evalAltura" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ex.: 175" class="eval-input" oninput="updateEvaluationBMI()"/></div>
             </div>
-
-            <!-- 1. Dados Gerais -->
-            <div class="space-y-2">
-              <span class="text-[10px] font-mono uppercase text-slate-400 block">1. Dados Gerais</span>
-              <div class="grid grid-cols-2 gap-2 font-mono text-xs">
-                <div>
-                  <label class="block text-[10px] text-slate-500 mb-1">Peso (kg)</label>
-                  <input type="number" step="0.1" id="evalPeso" placeholder="Ex: 78.5" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-brand-lime" />
-                </div>
-                <div>
-                  <label class="block text-[10px] text-slate-500 mb-1">Altura (cm)</label>
-                  <input type="number" id="evalAltura" placeholder="Ex: 175" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-brand-lime" />
-                </div>
-              </div>
-            </div>
-
-            <!-- 2. Circunferências Corporais -->
-            <div class="space-y-2">
-              <span class="text-[10px] font-mono uppercase text-slate-400 block">2. Circunferências Corporais (cm)</span>
-              <div class="grid grid-cols-2 gap-2 font-mono text-xs">
-                <div><label class="block text-[9px] text-slate-500 mb-0.5">Cintura</label><input type="number" step="0.5" id="evalCintura" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-                <div><label class="block text-[9px] text-slate-500 mb-0.5">Abdômen</label><input type="number" step="0.5" id="evalAbdomen" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-                <div><label class="block text-[9px] text-slate-500 mb-0.5">Quadril</label><input type="number" step="0.5" id="evalQuadril" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-                <div><label class="block text-[9px] text-slate-500 mb-0.5">Peitoral</label><input type="number" step="0.5" id="evalPeitoral" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-                <div><label class="block text-[9px] text-slate-500 mb-0.5">Braço Direito</label><input type="number" step="0.5" id="evalBracoDir" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-                <div><label class="block text-[9px] text-slate-500 mb-0.5">Braço Esquerdo</label><input type="number" step="0.5" id="evalBracoEsq" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-                <div><label class="block text-[9px] text-slate-500 mb-0.5">Coxa Direita</label><input type="number" step="0.5" id="evalCoxaDir" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-                <div><label class="block text-[9px] text-slate-500 mb-0.5">Coxa Esquerda</label><input type="number" step="0.5" id="evalCoxaEsq" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-                <div><label class="block text-[9px] text-slate-500 mb-0.5">Panturrilha Direita</label><input type="number" step="0.5" id="evalPantsDir" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-                <div><label class="block text-[9px] text-slate-500 mb-0.5">Panturrilha Esquerda</label><input type="number" step="0.5" id="evalPantsEsq" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-white" /></div>
-              </div>
-            </div>
-
-            <!-- 3. Composição Corporal -->
-            <div class="space-y-2">
-              <span class="text-[10px] font-mono uppercase text-slate-400 block">3. Composição Corporal</span>
-              <div class="grid grid-cols-2 gap-2 font-mono text-xs">
-                <div>
-                  <label class="block text-[10px] text-slate-500 mb-1">Gordura Corporal (%)</label>
-                  <input type="number" step="0.1" id="evalGordura" placeholder="Ex: 15.5" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white" />
-                </div>
-                <div>
-                  <label class="block text-[10px] text-slate-500 mb-1">Massa Muscular (kg)</label>
-                  <input type="number" step="0.1" id="evalMassa" placeholder="Ex: 36" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white" />
-                </div>
-              </div>
-              <div class="pt-1">
-                <label class="block text-[10px] font-mono uppercase text-slate-400 mb-1">Método de Avaliação</label>
-                <select id="evalMetodo" class="w-full bg-slate-900 border border-slate-800 text-xs text-white rounded-lg p-2 focus:outline-none">
-                  <option value="Bioimpedância">Bioimpedância</option>
-                  <option value="Adipômetro (Dobras Cutâneas)">Adipômetro (Dobras Cutâneas)</option>
-                  <option value="Outro método">Outro método</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- 4. Observações -->
-            <div class="space-y-1">
-              <span class="text-[10px] font-mono uppercase text-slate-400 block">4. Observações</span>
-              <textarea id="evalObs" rows="2" placeholder="Descreva observações, metas ou pontos de atenção..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none"></textarea>
-            </div>
-
-            <button type="button" onclick="savePhysicalEvaluation()" class="w-full py-2.5 bg-brand-lime text-black font-mono font-bold text-xs uppercase rounded-xl hover:brightness-110 shadow-lg glow-lime">
-              Salvar Avaliação Física Completa
-            </button>
+            <div class="rounded-xl border border-slate-800 bg-slate-900/70 p-3 flex items-center justify-between"><div><p class="text-[10px] text-slate-500 uppercase">IMC estimado</p><p id="evalBMIValue" class="text-xl font-bold text-white">--</p></div><p id="evalBMIStatus" class="text-[10px] text-slate-500">Informe peso e altura</p></div>
           </div>
 
-          <!-- Histórico de Avaliações Salvas -->
-          <div class="bg-slate-950/60 rounded-xl p-3 space-y-2 border border-slate-800">
-            <h3 class="text-xs font-mono uppercase text-slate-400">Histórico de Avaliações</h3>
-            <div id="evaluationsHistoryList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+          <div id="evalStep3" class="eval-step hidden space-y-3">
+            <p class="text-xs text-slate-400">Preencha as medidas disponíveis em centímetros. Os campos são opcionais.</p>
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="eval-label">Cintura (cm)</label><input id="evalCintura" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><label class="eval-label">Abdômen (cm)</label><input id="evalAbdomen" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><label class="eval-label">Quadril (cm)</label><input id="evalQuadril" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><label class="eval-label">Peitoral (cm)</label><input id="evalPeitoral" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><label class="eval-label">Braço direito (cm)</label><input id="evalBracoD" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><label class="eval-label">Braço esquerdo (cm)</label><input id="evalBracoE" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><label class="eval-label">Coxa direita (cm)</label><input id="evalCoxaD" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><label class="eval-label">Coxa esquerda (cm)</label><input id="evalCoxaE" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><label class="eval-label">Panturrilha direita (cm)</label><input id="evalPanturrilhaD" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+              <div><label class="eval-label">Panturrilha esquerda (cm)</label><input id="evalPanturrilhaE" type="number" step="0.1" inputmode="decimal" class="eval-input"/></div>
+            </div>
+          </div>
+
+          <div id="evalStep4" class="eval-step hidden space-y-3">
+            <p class="text-xs text-slate-400">Informe os indicadores de composição corporal disponíveis.</p>
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="eval-label">Gordura corporal (%)</label><input id="evalGordura" type="number" min="0" max="100" step="0.1" inputmode="decimal" placeholder="Ex.: 15,5" class="eval-input"/></div>
+              <div><label class="eval-label">Massa muscular (kg)</label><input id="evalMassa" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Ex.: 36" class="eval-input"/></div>
+            </div>
+            <div><label class="eval-label">Método de avaliação</label><select id="evalMetodo" class="eval-input"><option value="">Não informado</option><option value="Bioimpedância">Bioimpedância</option><option value="Adipômetro (Dobras cutâneas)">Adipômetro (dobras cutâneas)</option><option value="Antropometria">Antropometria</option><option value="Outro método">Outro método</option></select></div>
+          </div>
+
+          <div id="evalStep5" class="eval-step hidden space-y-3">
+            <p class="text-xs text-slate-400">Finalize com observações, metas ou pontos de atenção. Revise os dados antes de salvar.</p>
+            <div><label class="eval-label">Observações</label><textarea id="evalObs" rows="4" placeholder="Descreva observações, metas ou pontos de atenção..." class="eval-input resize-y"></textarea></div>
+            <div id="evalReviewSummary" class="rounded-xl border border-slate-800 bg-slate-900/70 p-3 text-xs text-slate-300 space-y-1"></div>
+            <p class="text-[10px] text-slate-500">Você pode salvar mesmo sem preencher todas as medidas. Pelo menos peso, altura ou uma medida corporal deve ser informada.</p>
+          </div>
+
+          <div class="flex gap-2 pt-2">
+            <button id="evalBackBtn" type="button" onclick="changeEvaluationStep(-1)" class="hidden flex-1 rounded-xl border border-slate-700 py-3 text-xs font-mono font-bold text-slate-300">VOLTAR</button>
+            <button id="evalNextBtn" type="button" onclick="changeEvaluationStep(1)" class="flex-1 rounded-xl bg-brand-lime py-3 text-xs font-mono font-extrabold text-black">CONTINUAR</button>
+            <button id="evalSaveBtn" type="button" onclick="savePhysicalEvaluation()" class="hidden flex-1 rounded-xl bg-brand-lime py-3 text-xs font-mono font-extrabold text-black">SALVAR AVALIAÇÃO</button>
           </div>
         </div>
-      </details>
+
+        <!-- EVOLUÇÃO -->
+        <div class="rounded-2xl border border-slate-800 bg-[#111620] p-4 space-y-3">
+          <div class="flex items-center justify-between"><h3 class="text-xs font-mono font-bold uppercase tracking-wider text-white">Evolução corporal</h3><span class="text-[9px] text-slate-500">HISTÓRICO</span></div>
+          <div id="evalEvolutionEmpty" class="py-5 text-center"><div class="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-brand-lime">↗</div><p class="text-xs text-slate-300">Sua evolução começa na primeira avaliação.</p><p class="text-[10px] text-slate-500 mt-1">Registre seus dados para liberar os comparativos.</p></div>
+          <div id="evalEvolutionContent" class="hidden space-y-3">
+            <div class="grid grid-cols-2 gap-2">
+              <div class="rounded-xl bg-slate-900/80 p-3"><p class="text-[9px] uppercase text-slate-500">Variação de peso</p><p id="evalWeightDelta" class="text-lg font-bold text-white">--</p><p class="text-[9px] text-slate-500">entre avaliações</p></div>
+              <div class="rounded-xl bg-slate-900/80 p-3"><p class="text-[9px] uppercase text-slate-500">Variação de cintura</p><p id="evalWaistDelta" class="text-lg font-bold text-white">--</p><p class="text-[9px] text-slate-500">entre avaliações</p></div>
+            </div>
+            <div id="evalTrendList" class="space-y-2"></div>
+          </div>
+        </div>
+
+        <!-- HISTÓRICO -->
+        <div class="rounded-2xl border border-slate-800 bg-[#111620] p-4 space-y-3">
+          <div class="flex items-center justify-between"><h3 class="text-xs font-mono font-bold uppercase tracking-wider text-white">Histórico de avaliações</h3><span id="evalHistoryCount" class="text-[10px] text-slate-500">0 registros</span></div>
+          <div id="evaluationsHistoryList" class="space-y-2"><p class="py-4 text-center text-xs text-slate-500">Nenhuma avaliação registrada.</p></div>
+        </div>
+      </section>
+
+      <style>
+        .eval-label{display:block;margin-bottom:6px;font:10px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.04em;color:#94a3b8}
+        .eval-input{width:100%;border:1px solid #263244;border-radius:10px;background:#0f1724;padding:11px 12px;color:#f8fafc;font:12px ui-monospace,monospace;outline:none}
+        .eval-input:focus{border-color:#a3e635;box-shadow:0 0 0 2px rgba(163,230,53,.10)}
+        .eval-input::placeholder{color:#64748b}
+      </style>
               <!-- BLOCO DE EDIÇÃO DO NOME DE PERFIL -->
         <div class="bg-[#111620] rounded-2xl p-4 tactical-border space-y-3">
           <h3 class="text-xs font-mono uppercase text-slate-400">Meu Nome de Perfil</h3>
@@ -607,41 +650,63 @@
     </div>
   </div>
 
-  <!-- MODAL: ARSENAL DE EXERCÍCIOS -->
-  <div id="modalExerciseLibrary" class="hidden fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-[#111620] border border-slate-800 rounded-2xl w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-      
-      <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
-        <div>
-          <span class="text-[9px] font-mono text-brand-lime font-bold uppercase tracking-wider">BANCO DE DADOS TÁTICO</span>
-          <h3 class="text-sm font-display font-bold text-white">Arsenal de Exercícios</h3>
+  <!-- MODAL: ARSENAL DE EXERCÍCIOS — FORJA SPORT TECH -->
+  <div id="modalExerciseLibrary" class="hidden fixed inset-0 z-[200] bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4">
+    <div class="forja-arsenal-shell bg-[#090f1c] border border-slate-700/80 rounded-2xl sm:rounded-3xl w-full max-w-2xl max-h-[94dvh] flex flex-col shadow-[0_24px_90px_rgba(0,0,0,.65)] overflow-hidden">
+
+      <div class="relative px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-800 bg-gradient-to-r from-[#111d2d] via-[#0d1726] to-[#101b2b]">
+        <div class="absolute inset-y-0 left-0 w-1 bg-brand-lime shadow-[0_0_18px_rgba(163,230,53,.7)]"></div>
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="w-2 h-2 rounded-full bg-brand-lime shadow-[0_0_10px_rgba(163,230,53,.9)]"></span>
+              <span class="text-[9px] sm:text-[10px] font-mono text-brand-lime font-bold uppercase tracking-[.2em]">FORJA / CENTRAL DE MOVIMENTOS</span>
+            </div>
+            <h3 class="text-lg sm:text-xl font-display font-extrabold text-white tracking-tight">Arsenal de Exercícios</h3>
+            <p class="text-[11px] sm:text-xs text-slate-400 mt-1">Encontre seus movimentos. Construa sua evolução.</p>
+          </div>
+          <button onclick="closeExerciseLibraryModal()" aria-label="Fechar arsenal" class="w-9 h-9 rounded-xl bg-slate-900/80 border border-slate-700 text-slate-400 hover:text-white hover:border-brand-lime/50 flex items-center justify-center text-xl transition-all">&times;</button>
         </div>
-        <button onclick="closeExerciseLibraryModal()" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold text-sm transition-all">&times;</button>
       </div>
 
-      <div class="p-4 space-y-3 bg-slate-950/30 border-b border-slate-800/60">
+      <div class="px-4 sm:px-6 pt-4 pb-3 space-y-3 bg-[#0c1523] border-b border-slate-800/90">
         <div class="relative">
-          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">🔍</span>
-          <input type="text" id="librarySearchInput" oninput="filterExerciseLibrary()" placeholder="Buscar por nome, músculo ou equipamento..." class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-lime transition-all" />
+          <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-brand-lime"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg></span>
+          <input type="text" id="librarySearchInput" oninput="filterExerciseLibrary()" placeholder="Buscar exercício, músculo ou equipamento..." class="w-full bg-[#111d2e] border border-slate-700/80 rounded-xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand-lime/70 focus:ring-2 focus:ring-brand-lime/10 transition-all" />
         </div>
 
-        <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-          <button type="button" onclick="filterByGroup('Todos')" class="px-3 py-1.5 rounded-lg bg-brand-lime text-black font-mono font-bold text-[10px] flex-shrink-0 transition-all">Todos</button>
-          <button type="button" onclick="filterByGroup('Peito')" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono text-[10px] flex-shrink-0 hover:border-slate-700 transition-all">Peito</button>
-          <button type="button" onclick="filterByGroup('Costas')" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono text-[10px] flex-shrink-0 hover:border-slate-700 transition-all">Costas</button>
-          <button type="button" onclick="filterByGroup('Pernas')" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono text-[10px] flex-shrink-0 hover:border-slate-700 transition-all">Pernas</button>
-          <button type="button" onclick="filterByGroup('Ombros')" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono text-[10px] flex-shrink-0 hover:border-slate-700 transition-all">Ombros</button>
-          <button type="button" onclick="filterByGroup('Braços')" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono text-[10px] flex-shrink-0 hover:border-slate-700 transition-all">Braços</button>
-          <button type="button" onclick="filterByGroup('Core')" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono text-[10px] flex-shrink-0 hover:border-slate-700 transition-all">Core</button>
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-[.16em]">Grupo muscular</span>
+          <span id="libraryResultsCount" class="text-[10px] font-mono text-brand-lime">0 movimentos</span>
+        </div>
+        <div id="libraryGroupFilters" class="flex gap-2 overflow-x-auto pb-1 scrollbar-none" aria-label="Filtrar por grupo muscular">
+          <button type="button" data-library-group="Todos" onclick="filterByGroup('Todos')" class="library-filter-chip is-active">Todos</button>
+          <button type="button" data-library-group="Peito" onclick="filterByGroup('Peito')" class="library-filter-chip">Peito</button>
+          <button type="button" data-library-group="Costas" onclick="filterByGroup('Costas')" class="library-filter-chip">Costas</button>
+          <button type="button" data-library-group="Pernas" onclick="filterByGroup('Pernas')" class="library-filter-chip">Pernas</button>
+          <button type="button" data-library-group="Ombros" onclick="filterByGroup('Ombros')" class="library-filter-chip">Ombros</button>
+          <button type="button" data-library-group="Braços" onclick="filterByGroup('Braços')" class="library-filter-chip">Braços</button>
+          <button type="button" data-library-group="Core" onclick="filterByGroup('Core')" class="library-filter-chip">Core</button>
+          <button type="button" data-library-group="Cardio" onclick="filterByGroup('Cardio')" class="library-filter-chip">Cardio</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <svg class="w-3.5 h-3.5 text-slate-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16M7 12h10m-7 7h4"></path></svg>
+          <select id="libraryEquipmentFilter" onchange="filterExerciseLibrary()" aria-label="Filtrar por equipamento" class="min-w-0 flex-1 bg-[#111d2e] border border-slate-700/80 rounded-lg px-3 py-2 text-[11px] text-slate-300 focus:outline-none focus:border-brand-lime/70">
+            <option value="Todos">Todos os equipamentos</option>
+          </select>
+          <button type="button" onclick="clearExerciseLibraryFilters()" class="text-[10px] text-slate-500 hover:text-brand-lime whitespace-nowrap transition-colors">Limpar filtros</button>
         </div>
       </div>
 
-      <div id="libraryListContainer" class="p-4 space-y-2.5 overflow-y-auto flex-1 max-h-[50vh] scrollbar-thin"></div>
+      <div id="libraryListContainer" class="px-4 sm:px-6 py-4 space-y-3 overflow-y-auto flex-1 min-h-0 scrollbar-thin bg-[#090f1c]"></div>
 
-      <div class="p-3 border-t border-slate-800 bg-slate-950/55 text-center">
-        <span class="text-[10px] font-mono text-slate-500">Toque em "+ Usar" para adicionar o exercício à sua ficha ou treino atual.</span>
+      <div class="px-4 sm:px-6 py-3 border-t border-slate-800 bg-[#0d1726] flex items-center justify-between gap-3">
+        <div class="min-w-0">
+          <div class="text-[10px] font-bold text-white">Sua seleção <span id="librarySelectedCount" class="text-brand-lime">0</span></div>
+          <p class="text-[9px] text-slate-500 mt-0.5">Toque em adicionar para incluir na ficha atual.</p>
+        </div>
+        <div class="flex items-center gap-1.5 text-[9px] font-mono text-brand-lime uppercase tracking-wider flex-shrink-0"><span class="w-1.5 h-1.5 rounded-full bg-brand-lime"></span> Banco FORJA</div>
       </div>
-
     </div>
   </div>
 
@@ -783,6 +848,6 @@
   <!-- Scripts com quebra de cache -->
   <script src="js/exercises-data.js?v=6"></script>
   <script src="js/gamification.js?v=6"></script>
-  <script src="js/app.js?v=6"></script>
+  <script src="js/app.js?v=9"></script>
 </body>
 </html>

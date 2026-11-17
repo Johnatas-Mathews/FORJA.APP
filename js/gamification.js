@@ -100,14 +100,27 @@ function renderGamificationCard() {
   const percentage = Math.min(Math.round((currentXP / targetXP) * 100), 100);
   const currentStreak = calculateStreak();
 
+  // Insígnia visual da patente atual. A progressão e o cálculo de XP permanecem inalterados.
+  const patentBadges = {
+    'Ferro Bruto': 'assets/patentes/ferro-bruto.svg',
+    'Ferro Forjado': 'assets/patentes/ferro-forjado.svg',
+    'Aço Temperado': 'assets/patentes/aco-temperado.svg',
+    'Liga Titânio': 'assets/patentes/liga-titanio.svg',
+    'Mestre Forjador': 'assets/patentes/mestre-forjador.svg'
+  };
+  const patentBadge = patentBadges[state.patente] || patentBadges['Ferro Bruto'];
+
   container.innerHTML = `
     <div class="bg-[#111620] p-4 rounded-2xl tactical-border space-y-3 relative overflow-hidden">
       <div class="flex justify-between items-center">
-        <div>
-          <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">PATENTE ATUAL</span>
-          <h3 class="text-base font-display font-bold text-brand-lime flex items-center gap-1.5">
-            🛡️ ${state.patente} <span class="text-xs text-slate-400 font-mono">(Nível ${state.level})</span>
-          </h3>
+        <div class="flex items-center gap-3 min-w-0">
+          <img src="${patentBadge}" alt="Insígnia ${state.patente}" class="w-12 h-12 object-contain shrink-0 drop-shadow-[0_3px_8px_rgba(0,0,0,0.45)]" />
+          <div class="min-w-0">
+            <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">PATENTE ATUAL</span>
+            <h3 class="text-base font-display font-bold text-brand-lime flex items-center gap-1.5 flex-wrap">
+              ${state.patente} <span class="text-xs text-slate-400 font-mono">(Nível ${state.level})</span>
+            </h3>
+          </div>
         </div>
         <div class="text-right">
           <span class="text-xs font-mono font-bold text-white">${currentXP} / ${targetXP}</span>

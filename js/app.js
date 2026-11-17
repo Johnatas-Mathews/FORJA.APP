@@ -17,6 +17,8 @@ const state = {
   templates: [],
   workouts: [],
   evaluations: [],
+  editingEvaluationId: null,
+  evaluationStep: 1,
   editingTemplateId: null,
   metricMode: 'maxWeight',
   
@@ -373,14 +375,16 @@ function populateWorkoutTemplateSelect() {
 async function fetchEvaluations() {
   if (!supabaseClient || !state.user) return;
   try {
-    const { data } = await supabaseClient
+    const { data, error } = await supabaseClient
       .from('avaliacoes_fisicas')
       .select('*')
       .eq('user_id', state.user.id)
       .order('created_at', { ascending: false });
 
-    if (data) state.evaluations = data;
+    if (error) throw error;
+    state.evaluations = (data || []).map(mapEvaluationFromDatabase);
   } catch (e) {
+    console.error('Erro ao carregar avaliações físicas:', e);
     state.evaluations = [];
   }
 }
@@ -389,6 +393,7 @@ async function fetchEvaluations() {
    RENDERIZAÇÃO GERAL (FICHAS, HISTÓRICO, GRÁFICOS & PERFIL)
 -------------------------------------------------------------- */
 function renderAll() {
+  renderPhysicalEvaluations();
   renderTemplates();
   renderWorkoutsHistory();
   renderProfileStats();
@@ -1973,4 +1978,323 @@ function renderMuscleVolumeAnalysis() {
     `;
     container.appendChild(div);
   });
+}
+
+
+/* -------------------------------------------------------------
+   AVALIAÇÃO FÍSICA FORJA — WIZARD, HISTÓRICO E EVOLUÇÃO
+-------------------------------------------------------------- */
+const EVALUATION_STEPS = [
+  { title: "Identificação", eyebrow: "ETAPA 01 / 05" },
+  { title: "Dados gerais", eyebrow: "ETAPA 02 / 05" },
+  { title: "Circunferências", eyebrow: "ETAPA 03 / 05" },
+  { title: "Composição corporal", eyebrow: "ETAPA 04 / 05" },
+  { title: "Revisão e observações", eyebrow: "ETAPA 05 / 05" }
+];
+
+// Chaves internas da interface -> nomes reais das colunas em public.avaliacoes_fisicas.
+// A interface mantém nomes estáveis; a camada abaixo faz a conversão para o schema do Supabase.
+const EVALUATION_FIELDS = {
+  weight_kg: "evalPeso", height_cm: "evalAltura",
+  body_fat_pct: "evalGordura", muscle_mass_kg: "evalMassa",
+  waist_cm: "evalCintura", abdomen_cm: "evalAbdomen",
+  hip_cm: "evalQuadril", chest_cm: "evalPeitoral",
+  right_arm_cm: "evalBracoD", left_arm_cm: "evalBracoE",
+  right_thigh_cm: "evalCoxaD", left_thigh_cm: "evalCoxaE",
+  right_calf_cm: "evalPanturrilhaD", left_calf_cm: "evalPanturrilhaE"
+};
+
+const EVALUATION_DB_COLUMNS = {
+  evaluation_date: "data_avaliacao",
+  weight_kg: "peso_kg",
+  height_cm: "altura_cm",
+  body_fat_pct: "gordura_percentual",
+  muscle_mass_kg: "massa_muscular_kg",
+  responsible: "responsavel",
+  method: "metodo_avaliacao",
+  observations: "observacoes",
+  waist_cm: "cintura_cm",
+  abdomen_cm: "abdomen_cm",
+  hip_cm: "quadril_cm",
+  chest_cm: "peitoral_cm",
+  right_arm_cm: "braco_direito_cm",
+  left_arm_cm: "braco_esquerdo_cm",
+  right_thigh_cm: "coxa_direita_cm",
+  left_thigh_cm: "coxa_esquerda_cm",
+  right_calf_cm: "panturrilha_direita_cm",
+  left_calf_cm: "panturrilha_esquerda_cm"
+};
+
+function mapEvaluationFromDatabase(row) {
+  const mapped = { ...row };
+  Object.entries(EVALUATION_DB_COLUMNS).forEach(([appKey, dbKey]) => {
+    mapped[appKey] = row[dbKey] ?? null;
+  });
+  return mapped;
+}
+
+function mapEvaluationToDatabase(payload) {
+  const mapped = {};
+  Object.entries(payload).forEach(([appKey, value]) => {
+    const dbKey = EVALUATION_DB_COLUMNS[appKey] || appKey;
+    mapped[dbKey] = value;
+  });
+  return mapped;
+}
+
+function evaluationNumber(id) {
+  const el = document.getElementById(id);
+  if (!el || el.value.trim() === "") return null;
+  const value = Number(String(el.value).replace(",", "."));
+  return Number.isFinite(value) ? value : null;
+}
+
+function setEvaluationField(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.value = value === null || value === undefined ? "" : value;
+}
+
+function startPhysicalEvaluation() {
+  state.editingEvaluationId = null;
+  state.evaluationStep = 1;
+  clearPhysicalEvaluationForm();
+  const date = document.getElementById("evalDate");
+  if (date) date.value = new Date().toISOString().slice(0, 10);
+  document.getElementById("physicalEvaluationWizard")?.classList.remove("hidden");
+  showEvaluationStep(1);
+  document.getElementById("physicalEvaluationWizard")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function cancelPhysicalEvaluation() {
+  document.getElementById("physicalEvaluationWizard")?.classList.add("hidden");
+  state.editingEvaluationId = null;
+}
+
+function clearPhysicalEvaluationForm() {
+  ["evalDate","evalResponsible","evalPeso","evalAltura","evalCintura","evalAbdomen",
+   "evalQuadril","evalPeitoral","evalBracoD","evalBracoE","evalCoxaD","evalCoxaE",
+   "evalPanturrilhaD","evalPanturrilhaE","evalGordura","evalMassa","evalMetodo","evalObs"]
+    .forEach(id => setEvaluationField(id, ""));
+  updateEvaluationBMI();
+}
+
+function showEvaluationStep(step) {
+  state.evaluationStep = Math.max(1, Math.min(5, step));
+  document.querySelectorAll(".eval-step").forEach((el, index) => {
+    el.classList.toggle("hidden", index + 1 !== state.evaluationStep);
+  });
+  const meta = EVALUATION_STEPS[state.evaluationStep - 1];
+  document.getElementById("evalStepEyebrow").textContent = meta.eyebrow;
+  document.getElementById("evalStepTitle").textContent = meta.title;
+  document.getElementById("evalStepProgress").style.width = `${state.evaluationStep * 20}%`;
+  document.getElementById("evalBackBtn").classList.toggle("hidden", state.evaluationStep === 1);
+  document.getElementById("evalNextBtn").classList.toggle("hidden", state.evaluationStep === 5);
+  document.getElementById("evalSaveBtn").classList.toggle("hidden", state.evaluationStep !== 5);
+  if (state.evaluationStep === 5) updateEvaluationReview();
+}
+
+function changeEvaluationStep(direction) {
+  const next = state.evaluationStep + direction;
+  if (next < 1 || next > 5) return;
+  if (next === 2 && !document.getElementById("evalDate").value) {
+    document.getElementById("evalDate").value = new Date().toISOString().slice(0, 10);
+  }
+  showEvaluationStep(next);
+}
+
+function updateEvaluationBMI() {
+  const weight = evaluationNumber("evalPeso");
+  const height = evaluationNumber("evalAltura");
+  const value = document.getElementById("evalBMIValue");
+  const status = document.getElementById("evalBMIStatus");
+  if (!value || !status) return;
+  if (!weight || !height || height <= 0) {
+    value.textContent = "--";
+    status.textContent = "Informe peso e altura";
+    return;
+  }
+  const bmi = weight / Math.pow(height / 100, 2);
+  value.textContent = bmi.toFixed(1).replace(".", ",");
+  status.textContent = bmi < 18.5 ? "Abaixo da faixa de referência" :
+    bmi < 25 ? "Faixa de referência para adultos" :
+    bmi < 30 ? "Acima da faixa de referência" : "Faixa elevada — requer avaliação";
+}
+
+function updateEvaluationReview() {
+  const summary = document.getElementById("evalReviewSummary");
+  if (!summary) return;
+  const weight = evaluationNumber("evalPeso");
+  const height = evaluationNumber("evalAltura");
+  const bmi = weight && height ? (weight / Math.pow(height / 100, 2)).toFixed(1).replace(".", ",") : "--";
+  const filled = Object.values(EVALUATION_FIELDS).filter(id => evaluationNumber(id) !== null).length;
+  summary.innerHTML = `
+    <p class="font-bold text-white mb-2">RESUMO DA AVALIAÇÃO</p>
+    <p>Data: ${escapeEvaluationText(document.getElementById("evalDate").value || "Não informada")}</p>
+    <p>Peso: ${weight ?? "--"} kg · Altura: ${height ?? "--"} cm · IMC: ${bmi}</p>
+    <p>Gordura: ${evaluationNumber("evalGordura") ?? "--"}% · Massa muscular: ${evaluationNumber("evalMassa") ?? "--"} kg</p>
+    <p>Campos numéricos preenchidos: ${filled}</p>`;
+}
+
+function escapeEvaluationText(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  }[char]));
+}
+
+function editPhysicalEvaluation(id) {
+  const item = state.evaluations.find(ev => String(ev.id) === String(id));
+  if (!item) return;
+  state.editingEvaluationId = item.id;
+  clearPhysicalEvaluationForm();
+  setEvaluationField("evalDate", item.evaluation_date || (item.created_at || "").slice(0,10));
+  setEvaluationField("evalResponsible", item.responsible || "");
+  Object.entries(EVALUATION_FIELDS).forEach(([column, fieldId]) => setEvaluationField(fieldId, item[column]));
+  setEvaluationField("evalMetodo", item.method || "");
+  setEvaluationField("evalObs", item.observations || "");
+  updateEvaluationBMI();
+  document.getElementById("physicalEvaluationWizard")?.classList.remove("hidden");
+  showEvaluationStep(1);
+  document.getElementById("physicalEvaluationWizard")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+async function savePhysicalEvaluation() {
+  if (!supabaseClient || !state.user) {
+    alert("Faça login para salvar sua avaliação.");
+    return;
+  }
+  // Monta primeiro o objeto lógico da interface e depois converte para os nomes
+  // reais das colunas existentes no Supabase.
+  const appPayload = {
+    user_id: state.user.id,
+    evaluation_date: document.getElementById("evalDate").value || new Date().toISOString().slice(0,10),
+    responsible: document.getElementById("evalResponsible").value.trim() || null,
+    method: document.getElementById("evalMetodo").value || null,
+    observations: document.getElementById("evalObs").value.trim() || null
+  };
+  Object.entries(EVALUATION_FIELDS).forEach(([key, fieldId]) => appPayload[key] = evaluationNumber(fieldId));
+
+  const hasData = Object.entries(appPayload).some(([key, value]) =>
+    !["user_id","evaluation_date","responsible","method","observations"].includes(key) && value !== null
+  ) || !!appPayload.observations;
+  if (!hasData) {
+    alert("Informe pelo menos um dado corporal antes de salvar.");
+    showEvaluationStep(2);
+    return;
+  }
+
+  const payload = mapEvaluationToDatabase(appPayload);
+  const saveButton = document.getElementById("evalSaveBtn");
+  saveButton.disabled = true;
+  saveButton.textContent = "SALVANDO...";
+  try {
+    let result;
+    if (state.editingEvaluationId) {
+      result = await supabaseClient.from("avaliacoes_fisicas")
+        .update(payload).eq("id", state.editingEvaluationId).eq("user_id", state.user.id);
+    } else {
+      result = await supabaseClient.from("avaliacoes_fisicas").insert(payload);
+    }
+    if (result.error) throw result.error;
+    await fetchEvaluations();
+    renderPhysicalEvaluations();
+    cancelPhysicalEvaluation();
+    alert("Avaliação salva com sucesso!");
+  } catch (error) {
+    console.error("Erro ao salvar avaliação física:", error);
+    const detail = [
+      error?.message ? `Mensagem: ${error.message}` : null,
+      error?.code ? `Código: ${error.code}` : null,
+      error?.details ? `Detalhes: ${error.details}` : null,
+      error?.hint ? `Sugestão: ${error.hint}` : null
+    ].filter(Boolean).join("\\n") || "Erro desconhecido retornado pelo Supabase.";
+    alert(`Não foi possível salvar a avaliação.\\n\\n${detail}`);
+  } finally {
+    saveButton.disabled = false;
+    saveButton.textContent = "SALVAR AVALIAÇÃO";
+  }
+}
+
+async function deletePhysicalEvaluation(id) {
+  if (!confirm("Deseja excluir esta avaliação? Esta ação não poderá ser desfeita.")) return;
+  try {
+    const { error } = await supabaseClient.from("avaliacoes_fisicas")
+      .delete().eq("id", id).eq("user_id", state.user.id);
+    if (error) throw error;
+    await fetchEvaluations();
+    renderPhysicalEvaluations();
+  } catch (error) {
+    console.error("Erro ao excluir avaliação:", error);
+    alert("Não foi possível excluir a avaliação.");
+  }
+}
+
+function formatEvaluationDate(dateValue) {
+  if (!dateValue) return "Data não informada";
+  const date = new Date(`${dateValue.slice(0,10)}T12:00:00`);
+  return Number.isNaN(date.getTime()) ? dateValue : date.toLocaleDateString("pt-BR");
+}
+
+function renderPhysicalEvaluations() {
+  const items = [...(state.evaluations || [])].sort((a,b) =>
+    String(b.evaluation_date || b.created_at || "").localeCompare(String(a.evaluation_date || a.created_at || ""))
+  );
+  const latest = items[0];
+  const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+  setText("evalTotalCount", items.length);
+  setText("evalCurrentWeight", latest?.weight_kg != null ? Number(latest.weight_kg).toLocaleString("pt-BR",{maximumFractionDigits:1}) : "--");
+  setText("evalCurrentFat", latest?.body_fat_pct != null ? Number(latest.body_fat_pct).toLocaleString("pt-BR",{maximumFractionDigits:1}) : "--");
+  setText("evalLastDate", latest ? `Última: ${formatEvaluationDate(latest.evaluation_date || latest.created_at)}` : "Ainda sem registros");
+  setText("evalHistoryCount", `${items.length} ${items.length === 1 ? "registro" : "registros"}`);
+
+  const history = document.getElementById("evaluationsHistoryList");
+  if (history) {
+    if (!items.length) {
+      history.innerHTML = '<p class="py-4 text-center text-xs text-slate-500">Nenhuma avaliação registrada. Sua primeira avaliação aparecerá aqui.</p>';
+    } else {
+      history.innerHTML = items.map(item => `
+        <article class="rounded-xl border border-slate-800 bg-slate-900/60 p-3 space-y-2">
+          <div class="flex items-start justify-between gap-2">
+            <div><p class="text-xs font-bold text-white">${formatEvaluationDate(item.evaluation_date || item.created_at)}</p>
+            <p class="text-[10px] text-slate-500">${escapeEvaluationText(item.method || "Método não informado")}</p></div>
+            <span class="rounded-md bg-brand-lime/10 px-2 py-1 text-[9px] font-mono text-brand-lime">${item.weight_kg != null ? `${Number(item.weight_kg).toLocaleString("pt-BR")} kg` : "Sem peso"}</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-[10px]">
+            <div><span class="text-slate-500 block">Gordura</span><strong class="text-slate-200">${item.body_fat_pct != null ? `${item.body_fat_pct}%` : "--"}</strong></div>
+            <div><span class="text-slate-500 block">Músculo</span><strong class="text-slate-200">${item.muscle_mass_kg != null ? `${item.muscle_mass_kg} kg` : "--"}</strong></div>
+            <div><span class="text-slate-500 block">Cintura</span><strong class="text-slate-200">${item.waist_cm != null ? `${item.waist_cm} cm` : "--"}</strong></div>
+          </div>
+          <div class="flex gap-2 pt-1">
+            <button type="button" onclick="editPhysicalEvaluation('${String(item.id).replace(/'/g,"")}')" class="flex-1 rounded-lg border border-slate-700 py-2 text-[10px] font-mono text-slate-300">EDITAR</button>
+            <button type="button" onclick="deletePhysicalEvaluation('${String(item.id).replace(/'/g,"")}')" class="rounded-lg border border-red-900/60 px-3 py-2 text-[10px] font-mono text-red-400">EXCLUIR</button>
+          </div>
+        </article>`).join("");
+    }
+  }
+
+  const empty = document.getElementById("evalEvolutionEmpty");
+  const content = document.getElementById("evalEvolutionContent");
+  if (empty && content) {
+    empty.classList.toggle("hidden", items.length > 0);
+    content.classList.toggle("hidden", items.length === 0);
+  }
+  if (items.length) {
+    const oldest = items[items.length - 1];
+    const delta = (newValue, oldValue, unit) => newValue == null || oldValue == null ? "--" :
+      `${Number(newValue-oldValue)>0?"+":""}${Number(newValue-oldValue).toLocaleString("pt-BR",{maximumFractionDigits:1})} ${unit}`;
+    setText("evalWeightDelta", delta(latest.weight_kg, oldest.weight_kg, "kg"));
+    setText("evalWaistDelta", delta(latest.waist_cm, oldest.waist_cm, "cm"));
+    const trend = document.getElementById("evalTrendList");
+    if (trend) {
+      const metrics = [
+        ["Peso", "weight_kg", "kg"], ["Gordura corporal", "body_fat_pct", "%"],
+        ["Massa muscular", "muscle_mass_kg", "kg"], ["Cintura", "waist_cm", "cm"]
+      ];
+      trend.innerHTML = metrics.map(([label,key,unit]) => {
+        const values = items.filter(x => x[key] != null).slice(0,6).reverse();
+        if (!values.length) return "";
+        const max = Math.max(...values.map(x => Number(x[key])), 1);
+        return `<div class="rounded-lg bg-slate-900/60 p-2"><div class="mb-2 flex justify-between text-[10px]"><span class="text-slate-400">${label}</span><strong class="text-white">${values[values.length-1][key]} ${unit}</strong></div><div class="flex h-10 items-end gap-1">${values.map(x => `<div title="${formatEvaluationDate(x.evaluation_date || x.created_at)}: ${x[key]} ${unit}" class="flex-1 rounded-t bg-brand-lime/70" style="height:${Math.max(12,Number(x[key])/max*100)}%"></div>`).join("")}</div></div>`;
+      }).join("");
+    }
+  }
 }
