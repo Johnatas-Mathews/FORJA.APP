@@ -76,7 +76,7 @@
   <header class="sticky top-0 z-40 bg-[#0a0d14]/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 flex justify-between items-center">
     <div class="flex items-center gap-2.5">
       <!-- LOGO OFICIAL VETORIAL (HEADER) -->
-      <img src="assets/icons/LOGO-FORJA-512.png?v=14" alt="FORJA Logo" class="w-9 h-9 object-contain" />
+      <img src="assets/icons/LOGO-FORJA.svg" alt="FORJA Logo" class="w-9 h-9 drop-shadow-[0_0_10px_rgba(163,230,53,0.25)]" />
       <div>
         <h1 class="font-display font-extrabold text-sm tracking-widest text-white uppercase italic">FORJA</h1>
         <span class="text-[9px] font-mono text-slate-400 block -mt-1 tracking-wider">HIGH PERFORMANCE</span>
@@ -313,8 +313,14 @@
             <select id="progressExerciseSelect" onchange="updateProgressChart()" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs font-mono text-white focus:outline-none focus:border-brand-lime"></select>
           </div>
 
-          <div id="cardioMetricNotice" class="hidden bg-brand-lime/10 border border-brand-lime/30 rounded-xl p-3 text-xs font-mono text-brand-lime">
-            🏃‍♂️ Exercício de Cardio detectado. Exibindo histórico de Distância e Duração em vez de carga.
+          <div id="cardioMetricNotice" class="hidden bg-brand-lime/10 border border-brand-lime/30 rounded-xl p-3 text-xs font-mono text-brand-lime space-y-2">
+            <div>🏃‍♂️ Exercício de cardio detectado. Selecione qual indicador deseja acompanhar:</div>
+            <select id="cardioMetricSelect" onchange="updateProgressChart()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white">
+              <option value="distanceKm">Distância (km)</option>
+              <option value="duration">Duração (minutos)</option>
+              <option value="calories">Calorias (kcal)</option>
+              <option value="avgSpeedKmh">Velocidade média (km/h)</option>
+            </select>
           </div>
 
           <div id="weightMetricControls" class="space-y-2 pt-1">
@@ -604,7 +610,7 @@
     <div class="w-full max-w-sm bg-[#111620] rounded-2xl p-6 tactical-border space-y-5">
       <div class="text-center space-y-1">
         <!-- LOGO OFICIAL VETORIAL (MODAL DE LOGIN) -->
-        <img src="assets/icons/LOGO-FORJA-512.png?v=14" alt="FORJA Logo" class="w-16 h-16 mx-auto mb-2 object-contain" />
+        <img src="assets/icons/LOGO-FORJA.svg" alt="FORJA Logo" class="w-16 h-16 mx-auto mb-2 drop-shadow-[0_0_15px_rgba(163,230,53,0.3)]" />
         <h2 class="text-lg font-display font-black text-white uppercase tracking-wider pt-2">FORJA </h2>
         <p class="text-xs text-slate-400">Acesse sua conta para sincronizar seus treinos</p>
       </div>
@@ -865,8 +871,8 @@
   </div>
 
   <!-- Scripts com quebra de cache -->
-  <script src="js/exercises-data.js?v=6"></script>
+  <script src="js/exercises-data.js?v=7"></script>
   <script src="js/gamification.js?v=6"></script>
-  <script src="js/app.js?v=12"></script>
+  <script src="js/app.js?v=13"></script>
 </body>
 </html>

@@ -872,6 +872,17 @@ function isCardioExercise(exerciseName) {
   return ex ? (ex.type === 'cardio' || ex.group === 'Cardio') : false;
 }
 
+function createCardioSet(overrides = {}) {
+  return { timeMin: 0, timeSec: 0, distanceKm: 0, avgSpeedKmh: 0, calories: 0, intensity: 'moderada', resistanceLevel: '', completed: false, ...overrides };
+}
+
+function calculateCardioSpeed(set) {
+  const minutes = (parseFloat(set.timeMin) || 0) + ((parseFloat(set.timeSec) || 0) / 60);
+  const distance = parseFloat(set.distanceKm) || 0;
+  return minutes > 0 && distance > 0 ? Number((distance / (minutes / 60)).toFixed(2)) : 0;
+}
+
+
 /* -------------------------------------------------------------
    ARSENAL DE EXERCÍCIOS & MODAIS COM SUPORTE A ANIMAÇÃO FLIP
 -------------------------------------------------------------- */
@@ -1067,7 +1078,7 @@ function selectExerciseFromLibrary(exerciseId) {
       type: isCardio ? 'cardio' : 'weight_reps',
       rest: isCardio ? 30 : 60,
       sets: isCardio 
-        ? [{ timeMin: 20, distanceKm: 2.5, completed: false }]
+        ? [createCardioSet({ timeMin: 20, distanceKm: 2.5 })]
         : [
             { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false },
             { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false },
@@ -1077,7 +1088,7 @@ function selectExerciseFromLibrary(exerciseId) {
     renderActiveWorkout();
     closeExerciseLibraryModal();
   } else {
-    appendExerciseRowToTemplateForm(ex.name, 3, 60);
+    appendExerciseRowToTemplateForm(ex.name, 3, 60, ex.type === 'cardio' || ex.group === 'Cardio');
     closeExerciseLibraryModal();
   }
 }
@@ -1085,13 +1096,15 @@ function selectExerciseFromLibrary(exerciseId) {
 /* -------------------------------------------------------------
    GERENCIAMENTO DE FICHAS (CRIAÇÃO, EDIÇÃO & EXCLUSÃO)
 -------------------------------------------------------------- */
-function appendExerciseRowToTemplateForm(name = "", sets = 3, rest = 60) {
+function appendExerciseRowToTemplateForm(name = "", sets = 3, rest = 60, cardio = null) {
   const container = document.getElementById("tplExerciseInputs");
   if (!container) return;
   const rowId = "tpl-row-" + Date.now() + Math.floor(Math.random() * 1000);
   const div = document.createElement("div");
   div.id = rowId;
   div.className = "tpl-exercise-row flex items-center gap-1.5 bg-slate-950/60 p-2 rounded-xl tactical-border";
+  const matchedExercise = getExerciseDB().find(e => e.name.toLowerCase() === String(name).toLowerCase());
+  div.dataset.exerciseType = cardio === true || (cardio === null && matchedExercise && (matchedExercise.type === 'cardio' || matchedExercise.group === 'Cardio')) ? 'cardio' : 'weight_reps';
   div.innerHTML = `
     <div class="flex-1">
       <input type="text" list="exerciseSuggestionsList" value="${name}" placeholder="Nome do exercício..." class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-brand-lime" />
@@ -1146,7 +1159,7 @@ function openEditTemplateModal(templateId) {
     appendExerciseRowToTemplateForm("", 3, 60);
   } else {
     exercises.forEach(ex => {
-      appendExerciseRowToTemplateForm(ex.name, ex.sets || 3, ex.rest || 60);
+      appendExerciseRowToTemplateForm(ex.name, ex.sets || 3, ex.rest || 60, ex.type === 'cardio' || isCardioExercise(ex.name));
     });
   }
 
@@ -1174,7 +1187,8 @@ async function saveNewTemplate() {
     if (inputs[0] && inputs[0].value.trim()) {
       exercises.push({
         name: inputs[0].value.trim(),
-        sets: parseInt(inputs[1].value) || 3,
+        type: (r.dataset.exerciseType === 'cardio' || isCardioExercise(inputs[0].value.trim())) ? 'cardio' : 'weight_reps',
+        sets: (r.dataset.exerciseType === 'cardio' || isCardioExercise(inputs[0].value.trim())) ? 1 : (parseInt(inputs[1].value) || 3),
         rest: parseInt(restSelect ? restSelect.value : 60) || 60
       });
     }
@@ -1430,13 +1444,13 @@ function loadTemplateIntoWorkout(templateId) {
   if (nameInput) nameInput.value = tpl.title;
 
   state.activeWorkout.exercises = tpl.exercises_config.map(ex => {
-    const isCardio = isCardioExercise(ex.name);
+    const isCardio = ex.type === 'cardio' || isCardioExercise(ex.name);
     return {
       name: ex.name,
       type: isCardio ? 'cardio' : 'weight_reps',
       rest: ex.rest || (isCardio ? 30 : 60),
       sets: isCardio 
-        ? [{ timeMin: 20, distanceKm: 2.5, completed: false }]
+        ? [createCardioSet({ timeMin: 20, distanceKm: 2.5 })]
         : Array.from({ length: ex.sets || 3 }, () => ({
             weight: getLastUsedWeight(ex.name) || 30,
             reps: 10,
@@ -1471,7 +1485,7 @@ function addSetToExercise(exIdx) {
   const isCardio = isCardioExercise(ex.name) || ex.type === 'cardio';
   
   if (isCardio) {
-    ex.sets.push({ timeMin: 10, distanceKm: 1.0, completed: false });
+    ex.sets.push(createCardioSet({ timeMin: 10, distanceKm: 1.0 }));
   } else {
     const lastSet = ex.sets.length > 0 ? ex.sets[ex.sets.length - 1] : null;
     const defaultWeight = lastSet ? lastSet.weight : (getLastUsedWeight(ex.name) || 20);
@@ -1517,22 +1531,26 @@ function renderActiveWorkout() {
           <button type="button" onclick="removeActiveExercise(${exIdx})" class="text-slate-500 hover:text-red-400 font-bold text-sm">&times;</button>
         </div>
       </div>
-      <div class="text-[10px] font-mono text-slate-500">
-        Recorde histórico: <span class="text-white font-bold">${maxPrevWeight} kg</span>
-      </div>
+      ${isCardio ? '<div class="text-[10px] font-mono text-brand-lime">Registro cardiovascular • acompanhe tempo, distância e intensidade</div>' : `<div class="text-[10px] font-mono text-slate-500">Recorde histórico: <span class="text-white font-bold">${maxPrevWeight} kg</span></div>`}
       <div class="space-y-2 pt-1">
         ${ex.sets.map((set, setIdx) => {
           if (isCardio) {
+            const speed = calculateCardioSpeed(set);
             return `
-              <div class="flex items-center gap-2 bg-slate-950/50 p-2 rounded-lg border border-slate-800/80">
-                <span class="text-[10px] font-mono text-slate-500 w-6">#${setIdx + 1}</span>
-                <div class="flex-1 flex gap-2">
-                  <input type="number" value="${set.timeMin}" onchange="updateCardioSet(${exIdx}, ${setIdx}, 'timeMin', this.value)" placeholder="Min" class="w-1/2 bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-white text-center" />
-                  <input type="number" step="0.1" value="${set.distanceKm}" onchange="updateCardioSet(${exIdx}, ${setIdx}, 'distanceKm', this.value)" placeholder="Km" class="w-1/2 bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-white text-center" />
+              <div class="bg-slate-950/50 p-3 rounded-lg border border-slate-800/80 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-mono text-slate-500">CARDIO • ETAPA #${setIdx + 1}</span>
+                  <button type="button" onclick="toggleSetComplete(${exIdx}, ${setIdx})" class="px-3 py-1 rounded-lg text-xs font-mono font-bold ${set.completed ? 'bg-brand-lime text-black' : 'bg-slate-800 text-slate-400'}">${set.completed ? 'FEITO' : 'CONCLUIR'}</button>
                 </div>
-                <button type="button" onclick="toggleSetComplete(${exIdx}, ${setIdx})" class="px-3 py-1 rounded-lg text-xs font-mono font-bold ${set.completed ? 'bg-brand-lime text-black' : 'bg-slate-800 text-slate-400'}">
-                  ${set.completed ? 'FEITO' : 'OK'}
-                </button>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <label class="text-[9px] text-slate-500">MINUTOS<input type="number" min="0" value="${set.timeMin ?? 0}" onchange="updateCardioSet(${exIdx}, ${setIdx}, 'timeMin', this.value)" class="mt-1 w-full bg-slate-900 border border-slate-800 rounded px-2 py-2 text-xs text-white text-center" /></label>
+                  <label class="text-[9px] text-slate-500">SEGUNDOS<input type="number" min="0" max="59" value="${set.timeSec ?? 0}" onchange="updateCardioSet(${exIdx}, ${setIdx}, 'timeSec', this.value)" class="mt-1 w-full bg-slate-900 border border-slate-800 rounded px-2 py-2 text-xs text-white text-center" /></label>
+                  <label class="text-[9px] text-slate-500">DISTÂNCIA (KM)<input type="number" min="0" step="0.01" value="${set.distanceKm ?? 0}" onchange="updateCardioSet(${exIdx}, ${setIdx}, 'distanceKm', this.value)" class="mt-1 w-full bg-slate-900 border border-slate-800 rounded px-2 py-2 text-xs text-white text-center" /></label>
+                  <label class="text-[9px] text-slate-500">VEL. MÉDIA<input type="text" value="${speed.toFixed(2)} km/h" readonly data-cardio-speed="${exIdx}-${setIdx}" class="mt-1 w-full bg-slate-900/70 border border-slate-800 rounded px-2 py-2 text-xs text-brand-lime text-center" /></label>
+                  <label class="text-[9px] text-slate-500">CALORIAS (KCAL)<input type="number" min="0" value="${set.calories ?? 0}" onchange="updateCardioSet(${exIdx}, ${setIdx}, 'calories', this.value)" class="mt-1 w-full bg-slate-900 border border-slate-800 rounded px-2 py-2 text-xs text-white text-center" /></label>
+                  <label class="text-[9px] text-slate-500">INTENSIDADE<select onchange="updateCardioSet(${exIdx}, ${setIdx}, 'intensity', this.value)" class="mt-1 w-full bg-slate-900 border border-slate-800 rounded px-2 py-2 text-xs text-white"><option value="leve" ${set.intensity === 'leve' ? 'selected' : ''}>Leve</option><option value="moderada" ${!set.intensity || set.intensity === 'moderada' ? 'selected' : ''}>Moderada</option><option value="alta" ${set.intensity === 'alta' ? 'selected' : ''}>Alta</option><option value="máxima" ${set.intensity === 'máxima' ? 'selected' : ''}>Máxima</option></select></label>
+                  <label class="text-[9px] text-slate-500">RESISTÊNCIA (OPC.)<input type="number" min="0" step="1" value="${set.resistanceLevel ?? ''}" onchange="updateCardioSet(${exIdx}, ${setIdx}, 'resistanceLevel', this.value)" placeholder="Nível" class="mt-1 w-full bg-slate-900 border border-slate-800 rounded px-2 py-2 text-xs text-white text-center" /></label>
+                </div>
               </div>
             `;
           } else {
@@ -1591,7 +1609,13 @@ function updateWeightRepsSet(exIdx, setIdx, field, val) {
 }
 
 function updateCardioSet(exIdx, setIdx, field, val) {
-  state.activeWorkout.exercises[exIdx].sets[setIdx][field] = parseFloat(val) || 0;
+  const set = state.activeWorkout.exercises[exIdx].sets[setIdx];
+  if (field === 'intensity') set[field] = val;
+  else if (field === 'resistanceLevel') set[field] = val === '' ? '' : (parseFloat(val) || 0);
+  else set[field] = parseFloat(val) || 0;
+  set.avgSpeedKmh = calculateCardioSpeed(set);
+  const speedDisplay = document.querySelector(`[data-cardio-speed="${exIdx}-${setIdx}"]`);
+  if (speedDisplay) speedDisplay.value = `${set.avgSpeedKmh.toFixed(2)} km/h`;
 }
 
 function toggleSetComplete(exIdx, setIdx) {
@@ -1655,83 +1679,6 @@ Volume total: ${totalVolume} kg
 /* -------------------------------------------------------------
    GRÁFICO DE EVOLUÇÃO E PROGRESSO DE CARGAS
 -------------------------------------------------------------- */
-function updateProgressChart() {
-  const select = document.getElementById("progressExerciseSelect");
-  const canvas = document.getElementById("progressChartCanvas");
-  if (!select || !canvas) return;
-
-  const selectedExercise = select.value;
-  const ctx = canvas.getContext("2d");
-
-  const dataPoints = [];
-  state.workouts.forEach(w => {
-    if (!w.exercises) return;
-    w.exercises.forEach(e => {
-      if (e.name && e.name.toLowerCase() === selectedExercise.toLowerCase()) {
-        let metricVal = 0;
-        if (state.metricMode === 'maxWeight') {
-          e.sets.forEach(s => {
-            const wVal = parseFloat(s.weight) || 0;
-            if (wVal > metricVal) metricVal = wVal;
-          });
-        } else {
-          e.sets.forEach(s => {
-            const rm = calculate1RM(s.weight, s.reps);
-            if (rm > metricVal) metricVal = rm;
-          });
-        }
-        if (metricVal > 0) {
-          dataPoints.push({
-            date: w.date || 'Recente',
-            value: metricVal
-          });
-        }
-      }
-    });
-  });
-
-  if (window.myProgressChart instanceof Chart) {
-    window.myProgressChart.destroy();
-  }
-
-  if (dataPoints.length === 0) {
-    return;
-  }
-
-  window.myProgressChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: dataPoints.map(d => d.date),
-      datasets: [{
-        label: selectedExercise,
-        data: dataPoints.map(d => d.value),
-        borderColor: '#a3e635',
-        backgroundColor: 'rgba(163, 230, 53, 0.1)',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.3
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        x: {
-          ticks: { color: '#94a3b8', font: { family: 'monospace', size: 10 } },
-          grid: { color: '#1e293b' }
-        },
-        y: {
-          ticks: { color: '#94a3b8', font: { family: 'monospace', size: 10 } },
-          grid: { color: '#1e293b' }
-        }
-      }
-    }
-  });
-}
-
 function setProgressMetricMode(mode) {
   state.metricMode = mode;
   const btnMax = document.getElementById("btnMetricMaxWeight");
@@ -1850,132 +1797,64 @@ function updateProgressChart() {
   const canvas = document.getElementById("progressChartCanvas");
   const cardioNotice = document.getElementById("cardioMetricNotice");
   const weightControls = document.getElementById("weightMetricControls");
-  
+  const cardioMetric = document.getElementById("cardioMetricSelect");
   if (!select || !canvas) return;
+
   const selectedExercise = select.value;
+  const ctx = canvas.getContext("2d");
+  if (window.myProgressChart instanceof Chart) window.myProgressChart.destroy();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (!selectedExercise) return;
 
   const isCardio = isCardioExercise(selectedExercise);
-  if (cardioNotice && weightControls) {
-    if (isCardio) {
-      cardioNotice.classList.remove('hidden');
-      weightControls.classList.add('hidden');
-    } else {
-      cardioNotice.classList.add('hidden');
-      weightControls.classList.remove('hidden');
-    }
-  }
-
-  const ctx = canvas.getContext("2d");
-  let dataPoints = [];
-
+  if (cardioNotice) cardioNotice.classList.toggle('hidden', !isCardio);
+  if (weightControls) weightControls.classList.toggle('hidden', isCardio);
+  const cardioKey = cardioMetric ? cardioMetric.value : 'distanceKm';
+  const metricConfig = {
+    distanceKm: { label: 'Distância (km)', read: s => parseFloat(s.distanceKm) || 0 },
+    duration: { label: 'Duração (min)', read: s => (parseFloat(s.timeMin) || 0) + ((parseFloat(s.timeSec) || 0) / 60) },
+    calories: { label: 'Calorias (kcal)', read: s => parseFloat(s.calories) || 0 },
+    avgSpeedKmh: { label: 'Velocidade média (km/h)', read: s => parseFloat(s.avgSpeedKmh) || calculateCardioSpeed(s) }
+  };
+  const chosenMetric = metricConfig[cardioKey] || metricConfig.distanceKm;
+  const dataPoints = [];
   const now = new Date();
   let cutoffDate = null;
-  if (state.progressPeriod === '7D') {
-    cutoffDate = new Date(); cutoffDate.setDate(now.getDate() - 7);
-  } else if (state.progressPeriod === '1M') {
-    cutoffDate = new Date(); cutoffDate.setMonth(now.getMonth() - 1);
-  } else if (state.progressPeriod === '3M') {
-    cutoffDate = new Date(); cutoffDate.setMonth(now.getMonth() - 3);
-  } else if (state.progressPeriod === '1A') {
-    cutoffDate = new Date(); cutoffDate.setFullYear(now.getFullYear() - 1);
-  }
+  if (state.progressPeriod === '7D') { cutoffDate = new Date(); cutoffDate.setDate(now.getDate() - 7); }
+  else if (state.progressPeriod === '1M') { cutoffDate = new Date(); cutoffDate.setMonth(now.getMonth() - 1); }
+  else if (state.progressPeriod === '3M') { cutoffDate = new Date(); cutoffDate.setMonth(now.getMonth() - 3); }
+  else if (state.progressPeriod === '1A') { cutoffDate = new Date(); cutoffDate.setFullYear(now.getFullYear() - 1); }
 
   state.workouts.forEach(w => {
-    if (!w.exercises) return;
-    
-    if (cutoffDate && w.date) {
-      const wDateObj = new Date(w.date + 'T00:00:00');
-      if (wDateObj < cutoffDate) return;
-    }
-
+    if (!w.exercises || (cutoffDate && w.date && new Date(w.date + 'T00:00:00') < cutoffDate)) return;
     w.exercises.forEach(e => {
-      if (e.name && e.name.toLowerCase() === selectedExercise.toLowerCase()) {
-        let metricVal = 0;
-
-        if (isCardio) {
-          let totalDist = 0;
-          let totalTime = 0;
-          e.sets.forEach(s => {
-            if (s.completed) {
-              totalDist += (parseFloat(s.distanceKm) || 0);
-              totalTime += (parseFloat(s.timeMin) || 0);
-            }
-          });
-          if (totalDist > 0 || totalTime > 0) {
-            dataPoints.push({
-              date: w.date || 'Recente',
-              value: totalDist
-            });
-          }
+      if (!e.name || e.name.toLowerCase() !== selectedExercise.toLowerCase()) return;
+      let metricVal = 0;
+      const completedSets = (e.sets || []).filter(set => set.completed);
+      if (isCardio) {
+        if (cardioKey === 'avgSpeedKmh') {
+          const totalDistance = completedSets.reduce((sum, set) => sum + (parseFloat(set.distanceKm) || 0), 0);
+          const totalMinutes = completedSets.reduce((sum, set) => sum + (parseFloat(set.timeMin) || 0) + ((parseFloat(set.timeSec) || 0) / 60), 0);
+          metricVal = totalMinutes > 0 ? totalDistance / (totalMinutes / 60) : 0;
         } else {
-          if (state.metricMode === 'maxWeight') {
-            e.sets.forEach(s => {
-              if (s.completed) {
-                const wVal = parseFloat(s.weight) || 0;
-                if (wVal > metricVal) metricVal = wVal;
-              }
-            });
-          } else {
-            e.sets.forEach(s => {
-              if (s.completed) {
-                const rm = calculate1RM(s.weight, s.reps);
-                if (rm > metricVal) metricVal = rm;
-              }
-            });
-          }
-          if (metricVal > 0) {
-            dataPoints.push({
-              date: w.date || 'Recente',
-              value: metricVal
-            });
-          }
+          metricVal = completedSets.reduce((sum, set) => sum + chosenMetric.read(set), 0);
         }
+      } else {
+        completedSets.forEach(set => {
+          const value = state.metricMode === 'maxWeight' ? (parseFloat(set.weight) || 0) : calculate1RM(set.weight, set.reps);
+          if (value > metricVal) metricVal = value;
+        });
       }
+      if (metricVal > 0) dataPoints.push({ date: w.date || 'Recente', value: Number(metricVal.toFixed(2)) });
     });
   });
 
-  if (window.myProgressChart instanceof Chart) {
-    window.myProgressChart.destroy();
-  }
-
-  if (dataPoints.length === 0) {
-    const chartArea = ctx.canvas.getContext('2d');
-    chartArea.clearRect(0, 0, canvas.width, canvas.height);
-    return;
-  }
-
+  if (!dataPoints.length) return;
+  const label = isCardio ? chosenMetric.label : (state.metricMode === 'maxWeight' ? 'Carga máxima (kg)' : '1RM estimado (kg)');
   window.myProgressChart = new Chart(ctx, {
     type: 'line',
-    data: {
-      labels: dataPoints.map(d => d.date),
-      datasets: [{
-        label: selectedExercise + (isCardio ? ' (Distância em Km)' : ''),
-        data: dataPoints.map(d => d.value),
-        borderColor: '#a3e635',
-        backgroundColor: 'rgba(163, 230, 53, 0.1)',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.3
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        x: {
-          ticks: { color: '#94a3b8', font: { family: 'monospace', size: 10 } },
-          grid: { color: '#1e293b' }
-        },
-        y: {
-          ticks: { color: '#94a3b8', font: { family: 'monospace', size: 10 } },
-          grid: { color: '#1e293b' }
-        }
-      }
-    }
+    data: { labels: dataPoints.map(d => d.date), datasets: [{ label: `${selectedExercise} • ${label}`, data: dataPoints.map(d => d.value), borderColor: '#a3e635', backgroundColor: 'rgba(163, 230, 53, 0.1)', borderWidth: 2, fill: true, tension: 0.3 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: context => `${context.parsed.y} ${isCardio ? (cardioKey === 'distanceKm' ? 'km' : cardioKey === 'duration' ? 'min' : cardioKey === 'calories' ? 'kcal' : 'km/h') : 'kg'}` } } }, scales: { x: { ticks: { color: '#94a3b8', font: { family: 'monospace', size: 10 } }, grid: { color: '#1e293b' } }, y: { beginAtZero: true, ticks: { color: '#94a3b8', font: { family: 'monospace', size: 10 } }, grid: { color: '#1e293b' } } } }
   });
 }
 
