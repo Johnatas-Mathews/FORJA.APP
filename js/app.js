@@ -542,9 +542,16 @@ function renderTemplates() {
     const exercisesConfig = tpl.exercises_config || [];
     
     let totalSeries = 0;
+    let cardioCount = 0;
     exercisesConfig.forEach(ex => {
-      totalSeries += (parseInt(ex.sets) || 3);
+      const isCardio = ex.type === 'cardio' || isCardioExercise(ex.name);
+      if (isCardio) cardioCount++;
+      else totalSeries += (parseInt(ex.sets) || 3);
     });
+    const templateWorkload = [
+      totalSeries > 0 ? `${totalSeries} séries` : '',
+      cardioCount > 0 ? `${cardioCount} cardio` : ''
+    ].filter(Boolean).join(' · ');
 
     const isOpen = index === 0 ? 'open' : '';
 
@@ -571,7 +578,7 @@ function renderTemplates() {
                     <path d="m3 17 9 5 9-5"/>
                   </svg>
                 </span>
-                <span>${totalSeries} séries</span>
+                <span>${templateWorkload || `${exercisesConfig.length} exercícios`}</span>
               </span>
             </div>
           </div>
@@ -616,7 +623,7 @@ function renderTemplates() {
           ${exercisesConfig.map(ex => `
             <div class="flex justify-between items-center text-xs font-mono text-slate-300 bg-slate-950/40 px-3 py-2 rounded-xl border border-slate-800/60">
               <span class="truncate pr-2">• ${ex.name}</span>
-              <span class="text-slate-400 flex-shrink-0 text-[11px]">${ex.sets || 3} séries (${ex.rest || 60}s)</span>
+              <span class="text-slate-400 flex-shrink-0 text-[11px]">${(ex.type === 'cardio' || isCardioExercise(ex.name)) ? `Cardio · ${ex.durationMin || 20} min` : `${ex.sets || 3} séries (${ex.rest || 60}s)`}</span>
             </div>
           `).join('')}
 
@@ -1078,7 +1085,7 @@ function selectExerciseFromLibrary(exerciseId) {
       type: isCardio ? 'cardio' : 'weight_reps',
       rest: isCardio ? 30 : 60,
       sets: isCardio 
-        ? [createCardioSet({ timeMin: 20, distanceKm: 2.5 })]
+        ? [createCardioSet({ timeMin: ex.durationMin || 20, distanceKm: 0 })]
         : [
             { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false },
             { weight: getLastUsedWeight(ex.name) || 20, reps: 10, completed: false },
@@ -1096,7 +1103,7 @@ function selectExerciseFromLibrary(exerciseId) {
 /* -------------------------------------------------------------
    GERENCIAMENTO DE FICHAS (CRIAÇÃO, EDIÇÃO & EXCLUSÃO)
 -------------------------------------------------------------- */
-function appendExerciseRowToTemplateForm(name = "", sets = 3, rest = 60, cardio = null) {
+function appendExerciseRowToTemplateForm(name = "", sets = 3, rest = 60, cardio = null, durationMin = 20) {
   const container = document.getElementById("tplExerciseInputs");
   if (!container) return;
   const rowId = "tpl-row-" + Date.now() + Math.floor(Math.random() * 1000);
@@ -1104,28 +1111,56 @@ function appendExerciseRowToTemplateForm(name = "", sets = 3, rest = 60, cardio 
   div.id = rowId;
   div.className = "tpl-exercise-row flex items-center gap-1.5 bg-slate-950/60 p-2 rounded-xl tactical-border";
   const matchedExercise = getExerciseDB().find(e => e.name.toLowerCase() === String(name).toLowerCase());
-  div.dataset.exerciseType = cardio === true || (cardio === null && matchedExercise && (matchedExercise.type === 'cardio' || matchedExercise.group === 'Cardio')) ? 'cardio' : 'weight_reps';
+  const isCardio = cardio === true || (cardio === null && matchedExercise && (matchedExercise.type === 'cardio' || matchedExercise.group === 'Cardio'));
+  div.dataset.exerciseType = isCardio ? 'cardio' : 'weight_reps';
+  const escapedName = String(name).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
   div.innerHTML = `
-    <div class="flex-1">
-      <input type="text" list="exerciseSuggestionsList" value="${name}" placeholder="Nome do exercício..." class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-brand-lime" />
+    <div class="flex-1 min-w-0">
+      <input type="text" list="exerciseSuggestionsList" value="${escapedName}" placeholder="Nome do exercício..." class="tpl-exercise-name w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-brand-lime" onchange="updateTemplateExerciseRowType('${rowId}')" />
     </div>
-    <div class="w-14">
-      <input type="number" value="${sets}" min="1" max="10" title="Séries" placeholder="Sets" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-1.5 py-1.5 text-xs text-white text-center focus:outline-none focus:border-brand-lime" />
-    </div>
-    <div class="w-20">
-      <select title="Descanso" class="tpl-rest-select w-full bg-slate-900 border border-slate-800 rounded-lg px-1 py-1.5 text-[11px] font-mono text-brand-lime focus:outline-none focus:border-brand-lime">
+    <div class="tpl-exercise-config flex items-center gap-1.5">${isCardio ? `
+      <label class="flex items-center gap-1 text-[10px] text-slate-400 whitespace-nowrap">Min
+        <input type="number" class="tpl-cardio-duration w-14 bg-slate-900 border border-slate-800 rounded-lg px-1.5 py-1.5 text-xs text-white text-center" value="${durationMin || 20}" min="1" max="300" title="Duração prevista em minutos" />
+      </label>` : `
+      <input type="number" class="tpl-strength-sets w-14 bg-slate-900 border border-slate-800 rounded-lg px-1.5 py-1.5 text-xs text-white text-center" value="${sets || 3}" min="1" max="10" title="Séries" placeholder="Séries" />
+      <select title="Descanso entre séries" class="tpl-rest-select w-16 bg-slate-900 border border-slate-800 rounded-lg px-1 py-1.5 text-[11px] font-mono text-brand-lime focus:outline-none focus:border-brand-lime">
         <option value="45" ${rest == 45 ? 'selected' : ''}>45s</option>
         <option value="60" ${rest == 60 ? 'selected' : ''}>60s</option>
         <option value="90" ${rest == 90 ? 'selected' : ''}>90s</option>
         <option value="120" ${rest == 120 ? 'selected' : ''}>120s</option>
         <option value="180" ${rest == 180 ? 'selected' : ''}>180s</option>
-      </select>
+      </select>`}
     </div>
     <button type="button" onclick="document.getElementById('${rowId}').remove()" title="Remover este exercício" class="p-1 text-slate-500 hover:text-red-400 text-sm font-bold">&times;</button>
   `;
   container.appendChild(div);
 }
 
+function updateTemplateExerciseRowType(rowId) {
+  const row = document.getElementById(rowId);
+  if (!row) return;
+  const nameInput = row.querySelector('.tpl-exercise-name');
+  const name = nameInput ? nameInput.value.trim() : '';
+  const isCardio = isCardioExercise(name);
+  const currentType = row.dataset.exerciseType;
+  if (isCardio === (currentType === 'cardio')) return;
+
+  const config = row.querySelector('.tpl-exercise-config');
+  if (!config) return;
+  if (isCardio) {
+    config.innerHTML = `<label class="flex items-center gap-1 text-[10px] text-slate-400 whitespace-nowrap">Min
+      <input type="number" class="tpl-cardio-duration w-14 bg-slate-900 border border-slate-800 rounded-lg px-1.5 py-1.5 text-xs text-white text-center" value="20" min="1" max="300" title="Duração prevista em minutos" />
+    </label>`;
+    row.dataset.exerciseType = 'cardio';
+  } else {
+    config.innerHTML = `<input type="number" class="tpl-strength-sets w-14 bg-slate-900 border border-slate-800 rounded-lg px-1.5 py-1.5 text-xs text-white text-center" value="3" min="1" max="10" title="Séries" placeholder="Séries" />
+      <select title="Descanso entre séries" class="tpl-rest-select w-16 bg-slate-900 border border-slate-800 rounded-lg px-1 py-1.5 text-[11px] font-mono text-brand-lime focus:outline-none focus:border-brand-lime">
+        <option value="45">45s</option><option value="60" selected>60s</option><option value="90">90s</option><option value="120">120s</option><option value="180">180s</option>
+      </select>`;
+    row.dataset.exerciseType = 'weight_reps';
+  }
+}
 function addTplExerciseRow() {
   appendExerciseRowToTemplateForm("", 3, 60);
 }
@@ -1159,7 +1194,7 @@ function openEditTemplateModal(templateId) {
     appendExerciseRowToTemplateForm("", 3, 60);
   } else {
     exercises.forEach(ex => {
-      appendExerciseRowToTemplateForm(ex.name, ex.sets || 3, ex.rest || 60, ex.type === 'cardio' || isCardioExercise(ex.name));
+      appendExerciseRowToTemplateForm(ex.name, ex.sets || 3, ex.rest || 60, ex.type === 'cardio' || isCardioExercise(ex.name), ex.durationMin || 20);
     });
   }
 
@@ -1182,14 +1217,26 @@ async function saveNewTemplate() {
   const exercises = [];
   const rows = document.querySelectorAll(".tpl-exercise-row");
   rows.forEach(r => {
-    const inputs = r.querySelectorAll("input");
-    const restSelect = r.querySelector(".tpl-rest-select");
-    if (inputs[0] && inputs[0].value.trim()) {
+    const nameInput = r.querySelector('.tpl-exercise-name');
+    const exerciseName = nameInput ? nameInput.value.trim() : '';
+    if (!exerciseName) return;
+
+    const isCardio = r.dataset.exerciseType === 'cardio' || isCardioExercise(exerciseName);
+    if (isCardio) {
+      const durationInput = r.querySelector('.tpl-cardio-duration');
       exercises.push({
-        name: inputs[0].value.trim(),
-        type: (r.dataset.exerciseType === 'cardio' || isCardioExercise(inputs[0].value.trim())) ? 'cardio' : 'weight_reps',
-        sets: (r.dataset.exerciseType === 'cardio' || isCardioExercise(inputs[0].value.trim())) ? 1 : (parseInt(inputs[1].value) || 3),
-        rest: parseInt(restSelect ? restSelect.value : 60) || 60
+        name: exerciseName,
+        type: 'cardio',
+        durationMin: Math.max(1, parseInt(durationInput ? durationInput.value : 20, 10) || 20)
+      });
+    } else {
+      const setsInput = r.querySelector('.tpl-strength-sets');
+      const restSelect = r.querySelector('.tpl-rest-select');
+      exercises.push({
+        name: exerciseName,
+        type: 'weight_reps',
+        sets: Math.max(1, parseInt(setsInput ? setsInput.value : 3, 10) || 3),
+        rest: parseInt(restSelect ? restSelect.value : 60, 10) || 60
       });
     }
   });
@@ -1395,10 +1442,13 @@ function startAutoRest(seconds = 60) {
     }
 
     if (state.restTimer.remaining <= 0) {
+      state.restTimer.remaining = 0;
+      if (secondsDisplay) secondsDisplay.textContent = "0s";
       clearInterval(state.restTimer.intervalId);
       playBeep();
       if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
       if (widget) setTimeout(() => widget.classList.add("hidden"), 3000);
+      return;
     }
     state.restTimer.remaining--;
   };
@@ -1450,7 +1500,7 @@ function loadTemplateIntoWorkout(templateId) {
       type: isCardio ? 'cardio' : 'weight_reps',
       rest: ex.rest || (isCardio ? 30 : 60),
       sets: isCardio 
-        ? [createCardioSet({ timeMin: 20, distanceKm: 2.5 })]
+        ? [createCardioSet({ timeMin: ex.durationMin || 20, distanceKm: 0 })]
         : Array.from({ length: ex.sets || 3 }, () => ({
             weight: getLastUsedWeight(ex.name) || 30,
             reps: 10,
